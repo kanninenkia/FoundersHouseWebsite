@@ -23,9 +23,9 @@ export class DragControls {
   public enabled: boolean = true
   public isDragging: boolean = false
 
-  private panSensitivity: number = 0.4      // Reduced default sensitivity
+  private panSensitivity: number = 0.5      // Reduced default sensitivity
   private rotateSensitivity: number = 0.002  // Reduced default rotation sensitivity
-  private friction: number = 0.85            // Reduced default friction (more stopping power)
+  private friction: number = 0.92            // Reduced default friction (more stopping power)
   private velocityThreshold: number = 0.005  // Increased threshold (stops sooner)
   private rotationThreshold: number = 0.0001 // Increased threshold (stops rotation sooner)
   private smoothingFactor: number = 0.25     // Increased damping

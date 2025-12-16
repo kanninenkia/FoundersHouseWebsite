@@ -46,7 +46,7 @@ export class FoundersHouseMarker {
     }
     if (model) {
       this.highlightFoundersHouse()
-      this.addArrowMarker()
+      this.addArrowMarker() // Enabled: show floating HTML arrow overlay
     }
   }
 
