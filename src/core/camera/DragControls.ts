@@ -15,18 +15,22 @@ export interface DragConfig {
   velocityThreshold: number
   rotationThreshold: number
   smoothingFactor: number
+  maxVelocity?: number
+  maxRotationVelocity?: number
 }
 
 export class DragControls {
   public enabled: boolean = true
   public isDragging: boolean = false
 
-  private panSensitivity: number = 0.5
-  private rotateSensitivity: number = 0.003
-  private friction: number = 0.96
-  private velocityThreshold: number = 0.001
-  private rotationThreshold: number = 0.00001
-  private smoothingFactor: number = 0.2
+  private panSensitivity: number = 0.4      // Reduced default sensitivity
+  private rotateSensitivity: number = 0.002  // Reduced default rotation sensitivity
+  private friction: number = 0.85            // Reduced default friction (more stopping power)
+  private velocityThreshold: number = 0.005  // Increased threshold (stops sooner)
+  private rotationThreshold: number = 0.0001 // Increased threshold (stops rotation sooner)
+  private smoothingFactor: number = 0.25     // Increased damping
+  private maxVelocity: number = 15           // Maximum velocity to prevent excessive swinging
+  private maxRotationVelocity: number = 0.1  // Maximum rotation velocity
 
   private velocity: THREE.Vector3 = new THREE.Vector3()
   private rotationVelocity: number = 0
@@ -45,12 +49,14 @@ export class DragControls {
 
     if (config) {
       this.enabled = config.enabled ?? true
-      this.panSensitivity = config.panSensitivity ?? 0.5
-      this.rotateSensitivity = config.rotateSensitivity ?? 0.003
-      this.friction = config.friction ?? 0.96
-      this.velocityThreshold = config.velocityThreshold ?? 0.001
-      this.rotationThreshold = config.rotationThreshold ?? 0.00001
-      this.smoothingFactor = config.smoothingFactor ?? 0.2
+      this.panSensitivity = config.panSensitivity ?? 0.4
+      this.rotateSensitivity = config.rotateSensitivity ?? 0.002
+      this.friction = config.friction ?? 0.85
+      this.velocityThreshold = config.velocityThreshold ?? 0.005
+      this.rotationThreshold = config.rotationThreshold ?? 0.0001
+      this.smoothingFactor = config.smoothingFactor ?? 0.25
+      this.maxVelocity = config.maxVelocity ?? 15
+      this.maxRotationVelocity = config.maxRotationVelocity ?? 0.1
     }
 
     this.dragTargetPosition.copy(camera.position)
@@ -121,7 +127,8 @@ export class DragControls {
 
       // ROTATION (horizontal drag)
       const targetRotationVelocity = deltaX * this.rotateSensitivity * rotationEasing
-      this.rotationVelocity = targetRotationVelocity
+      // Clamp rotation velocity to prevent excessive swinging
+      this.rotationVelocity = Math.max(-this.maxRotationVelocity, Math.min(this.maxRotationVelocity, targetRotationVelocity))
 
       // Rotate camera in place
       const offsetToTarget = this.orbit.target.clone().sub(this.camera.position)
@@ -134,6 +141,12 @@ export class DragControls {
       const targetPanZ = deltaY * this.panSensitivity * panEasing
       const targetVelocity = new THREE.Vector3()
       targetVelocity.addScaledVector(forward, targetPanZ)
+      
+      // Clamp velocity to prevent excessive swinging
+      if (targetVelocity.length() > this.maxVelocity) {
+        targetVelocity.normalize().multiplyScalar(this.maxVelocity)
+      }
+      
       this.velocity.lerp(targetVelocity, this.smoothingFactor)
 
       this.dragTargetPosition.add(this.velocity)
@@ -171,7 +184,7 @@ export class DragControls {
       offsetToTarget.applyAxisAngle(new THREE.Vector3(0, 1, 0), this.rotationVelocity)
 
       const newTarget = this.camera.position.clone().add(offsetToTarget)
-      this.orbit.target.lerp(newTarget, 0.3)
+      this.orbit.target.lerp(newTarget, 0.1)
       this.camera.lookAt(this.orbit.target)
 
       this.rotationVelocity *= this.friction

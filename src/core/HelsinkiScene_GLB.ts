@@ -8,10 +8,10 @@ import HelsinkiCameraController from './HelsinkiCameraController'
 import { loadHelsinkiModel as loadModel, type RenderMode } from '../loaders'
 import { setupPostProcessing, setupComposer, setupSceneLighting } from '../rendering'
 import { addCityLightsPoints, animateCityLights, removeCityLights, updateCityLightsFog, createStarfield, animateStars, setupSceneFog, updateFogColor } from '../effects'
-import { createPOITransition, updatePOITransition, cancelPOITransition, type POITransitionState, createCinematicAnimation, updateCinematicAnimation, type CinematicAnimationState } from '../animation'
+import { createPOITransition, updatePOITransition, cancelPOITransition, type POITransitionState } from '../animation'
 import { PerlinNoiseGenerator, isNightInHelsinki, updateMaterialsInHierarchy, isLineSegmentsWithBasicMaterial, applyCameraConfig, getCurrentCameraConfig, CAMERA_PRESETS, type CameraConfig, logDeviceInfo } from '../helpers'
 import { createCamera, createRenderer, configureCameraControls, createRenderTarget, handleResize, setupClickHandler } from '../helpers'
-import { AutoTourManager, POIHighlightManager, InteractionManager } from './managers'
+import { AutoTourManager, POIHighlightManager, InteractionManager, FoundersHouseMarker } from './managers'
 import { COLORS, CITY_LIGHTS } from '../constants/designSystem'
 import { POINTS_OF_INTEREST } from '../constants/poi'
 
@@ -41,13 +41,14 @@ export class HelsinkiScene {
   private stars: THREE.Group | THREE.Points | null = null
   private isNightMode: boolean
   private poiTransition: POITransitionState | null = null
-  private cinematicAnimation: CinematicAnimationState | null = null
   private fog: THREE.Fog | null = null
 
   // Managers
   private autoTourManager: AutoTourManager
   private poiHighlightManager: POIHighlightManager
   private interactionManager: InteractionManager
+  private foundersHouseMarker: FoundersHouseMarker
+
 
   public revealProgress: number = 0
   public pencilStrength: number = 1.0
@@ -110,10 +111,14 @@ export class HelsinkiScene {
       }
     )
 
+    this.foundersHouseMarker = new FoundersHouseMarker()
+
+
+
     logDeviceInfo()
 
     // Load model
-    const modelPath = '/untitled.glb'
+    const modelPath = '/draft.glb'
     loadModel({
       modelPath: modelPath,
       scene: this.scene,
@@ -125,25 +130,22 @@ export class HelsinkiScene {
       onLoadComplete: config.onLoadComplete,
     }).then((model) => {
       this.helsinkiModel = model
+
+      // (Tram logic removed)
       this.poiHighlightManager.setModel(model)
+      this.foundersHouseMarker.setModel(model, this.camera)
 
       if (this.isNightMode) {
         try {
           this.addCityLightsPoints(800)
         } catch (e) {
-          console.error('❌ Failed to add city lights:', e)
+          // Failed to add city lights
         }
       }
 
-      // Start cinematic animation
-      const cinematicConfig = createCinematicAnimation()
-      this.cinematicAnimation = {
-        ...cinematicConfig,
-        isPlaying: true,
-        startTime: this.clock.getElapsedTime()
-      }
-    }).catch((error) => {
-      console.error('❌ Helsinki model loading failed:', error)
+  // (Tram logic removed)
+    }).catch(() => {
+      // Helsinki model loading failed
     })
 
     // Setup click handler for debugging (model accessed via getter closure)
@@ -151,6 +153,8 @@ export class HelsinkiScene {
 
     // Make scene available globally
     ;(window as any).helsinkiScene = this
+    
+    // (Tram debug controls removed)
 
     // Setup window resize handler
     window.addEventListener('resize', this.onWindowResize.bind(this))
@@ -183,7 +187,7 @@ export class HelsinkiScene {
    */
   private handleUserInterrupt(): void {
     const wasAnimating = this.interactionManager.handleAnimationInterrupt(
-      this.cinematicAnimation,
+      null,
       this.poiTransition,
       this.autoTourManager.isWaiting(),
       () => this.poiHighlightManager.clearHighlights()
@@ -205,20 +209,11 @@ export class HelsinkiScene {
     // Check for user interruption during animations
     if (this.controls.isUserInteracting()) {
       const wasAnimating =
-        (this.cinematicAnimation && this.cinematicAnimation.isPlaying) ||
         (this.poiTransition && this.poiTransition.isAnimating) ||
         this.autoTourManager.isWaiting()
 
       if (wasAnimating) {
-        console.log('🎮 HANDOFF: User interrupted animation - handing off control')
-
-        if (this.cinematicAnimation && this.cinematicAnimation.isPlaying) {
-          console.log('   → Stopping cinematic animation')
-          this.cinematicAnimation.isPlaying = false
-        }
-
         if (this.poiTransition && this.poiTransition.isAnimating) {
-          console.log('   → Canceling POI transition')
           cancelPOITransition(this.poiTransition)
           this.poiTransition = null
         }
@@ -234,9 +229,7 @@ export class HelsinkiScene {
         const newTarget = this.camera.position.clone().add(direction.multiplyScalar(currentDistance))
         newTarget.y = Math.max(newTarget.y, 10)
 
-        console.log('   → New target:', newTarget)
         this.controls.setTarget(newTarget.x, newTarget.y, newTarget.z)
-        console.log('   ✅ Handoff complete - user has control')
       }
 
       this.controls.resetInteractionFlag()
@@ -244,34 +237,8 @@ export class HelsinkiScene {
       this.autoTourManager.startInactivityTimer(() => this.flyToNextPOI())
     }
 
-    // Update cinematic animation if active
-    if (this.cinematicAnimation && this.cinematicAnimation.isPlaying) {
-      const stillAnimating = updateCinematicAnimation(
-        this.cinematicAnimation,
-        this.camera,
-        this.controls,
-        elapsed,
-        delta
-      )
-
-      // Update fog during cinematic animation
-      if (this.fog) {
-        updateFogColor(this.fog, this.isNightMode)
-      }
-
-      if (!stillAnimating) {
-        this.cinematicAnimation.isPlaying = false
-        this.cinematicAnimation = null
-      }
-    }
-
-    // Determine if any animation is active
-    const isCinematicPlaying = this.cinematicAnimation && this.cinematicAnimation.isPlaying
-    const isPOITransitioning = this.poiTransition && this.poiTransition.isAnimating
-    const isAnyAnimationActive = isCinematicPlaying || isPOITransitioning || this.autoTourManager.isWaiting()
-
     // Update POI transition animation
-    if (isPOITransitioning && this.poiTransition) {
+    if (this.poiTransition && this.poiTransition.isAnimating) {
       const stillAnimating = updatePOITransition(
         this.poiTransition,
         this.camera,
@@ -284,12 +251,17 @@ export class HelsinkiScene {
       }
     }
 
-    // Update controls
+    // Determine if any animation is active
+    const isPOITransitioning = this.poiTransition && this.poiTransition.isAnimating
+    const isAnyAnimationActive = isPOITransitioning || this.autoTourManager.isWaiting()
+
+    // Update controls - adjust damping during animations for smoother motion
     if (isAnyAnimationActive) {
-      const wasDampingEnabled = this.controls.enableDamping
-      this.controls.enableDamping = false
+      // Temporarily adjust damping factor during animations
+      const originalDamping = this.controls.dampingFactor
+      this.controls.dampingFactor = 0.02 // Lower damping during animations
       this.controls.update(delta)
-      this.controls.enableDamping = wasDampingEnabled
+      this.controls.dampingFactor = originalDamping
     } else {
       this.controls.update(delta)
     }
@@ -304,6 +276,8 @@ export class HelsinkiScene {
       animateStars(this.stars, elapsed)
     }
 
+  // (Tram update removed)
+
     this.postProcessMaterial.uniforms.uTime.value = elapsed
     this.postProcessMaterial.uniforms.uPencilStrength.value = this.pencilStrength
 
@@ -311,11 +285,6 @@ export class HelsinkiScene {
     this.renderer.setRenderTarget(null)
     this.renderer.render(this.scene, this.camera)
   }
-
-  // Commented out - not currently used, but may be useful for POI auto-tour feature
-  // private startAutoTour(): void {
-  //   this.autoTourManager.start(() => this.flyToNextPOI())
-  // }
 
   private flyToNextPOI(): void {
     if (!this.autoTourManager.enabled) {
@@ -455,7 +424,6 @@ export class HelsinkiScene {
         finalElevation,
         duration,
         () => {
-          console.log(`✅ POI transition complete for: ${poiName}`)
           this.poiHighlightManager.highlightPOI(poiName, 200)
 
           if (onComplete) {
@@ -549,13 +517,6 @@ export class HelsinkiScene {
     })
   }
 
-  public addCityLights(count = 1000, color: number | string = CITY_LIGHTS.color) {
-    if (!this.helsinkiModel) return
-    this.removeCityLights()
-    const inst = addCityLightsPoints(this.helsinkiModel, count, color)
-    if (inst) this.cityLights = inst as any
-  }
-
   public removeCityLights() {
     if (!this.cityLights) return
     if (this.cityLights.parent) this.cityLights.parent.remove(this.cityLights)
@@ -568,7 +529,7 @@ export class HelsinkiScene {
   }
 
   public setCityLightsDensity(count: number) {
-    this.addCityLights(Math.max(0, Math.floor(count)))
+    this.addCityLightsPoints(Math.max(0, Math.floor(count)))
   }
 
   public setCityLightsEnabled(enabled: boolean) {
@@ -593,4 +554,6 @@ export class HelsinkiScene {
   public getHighlightedPOI(): string | null {
     return this.poiHighlightManager.getHighlightedPOI()
   }
+
+  // (No-op: removed obsolete single-tram public API methods)
 }

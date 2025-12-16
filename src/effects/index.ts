@@ -5,17 +5,13 @@
 
 export {
   setupSceneFog,
-  updateFogColor,
-  disableFog,
-  enableFog,
-  updateFogForAnimation
+  updateFogColor
 } from './fogManager'
 
 export {
   createLightSprite,
   addCityLights,
   addCityLightsPoints,
-  addStreetLights,
   animateCityLights,
   updateCityLightsFog,
   removeCityLights

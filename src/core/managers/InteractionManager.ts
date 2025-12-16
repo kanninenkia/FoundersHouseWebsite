@@ -4,7 +4,7 @@
  */
 import * as THREE from 'three'
 import type HelsinkiCameraController from '../HelsinkiCameraController'
-import type { CinematicAnimationState, POITransitionState } from '../../animation'
+import type { POITransitionState } from '../../animation'
 import { cancelPOITransition } from '../../animation'
 
 export interface InteractionCallbacks {
@@ -67,23 +67,17 @@ export class InteractionManager {
    * Handle smooth handoff from animation to user control
    */
   public handleAnimationInterrupt(
-    cinematicAnimation: CinematicAnimationState | null,
+    _cinematicAnimation: null,
     poiTransition: POITransitionState | null,
     isWaitingForNextPOI: boolean,
     onClearHighlights: () => void
   ): boolean {
     const wasAnimating =
-      (cinematicAnimation && cinematicAnimation.isPlaying) ||
       (poiTransition && poiTransition.isAnimating) ||
       isWaitingForNextPOI
 
     if (!wasAnimating) {
       return false
-    }
-
-    // Stop cinematic animation
-    if (cinematicAnimation && cinematicAnimation.isPlaying) {
-      cinematicAnimation.isPlaying = false
     }
 
     // Cancel POI transition

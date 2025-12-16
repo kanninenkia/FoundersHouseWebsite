@@ -1,19 +1,17 @@
 /**
- * Helpers Module  
+ * Helpers Module
  * Utility functions: geometry operations, time utilities, procedural generation, camera utilities
  */
 
 export {
   collectMeshes,
-  computeSurfaceArea,
   computeMeshAreas,
   updateMaterialsInHierarchy,
   isLineSegmentsWithBasicMaterial
 } from './geometryHelpers'
 
 export {
-  isNightInHelsinki,
-  getHelsinkiHour
+  isNightInHelsinki
 } from './timeUtils'
 
 export {
@@ -23,28 +21,16 @@ export {
 export {
   type CameraConfig,
   CAMERA_PRESETS,
-  polarToCartesian,
-  cartesianToPolar,
   applyCameraConfig,
-  getCurrentCameraConfig,
-  formatCameraConfigAsCode
+  getCurrentCameraConfig
 } from './cameraUtils'
 
 export {
-  detectPerformanceTier,
-  PerformanceMonitor,
-  type PerformanceProfile
+  detectPerformanceTier
 } from './performanceDetector'
 
 export {
-  isMobileDevice,
-  isTabletDevice,
-  isLowEndDevice,
-  hasSlowConnection,
-  getDeviceCapabilities,
-  getRecommendedModelPath,
-  logDeviceInfo,
-  type DeviceCapabilities
+  logDeviceInfo
 } from './deviceDetection'
 
 export {

@@ -6,22 +6,16 @@
 export { HelsinkiScene } from './HelsinkiScene_GLB'
 export { HelsinkiCameraController } from './HelsinkiCameraController'
 
-// Re-export managers (explicitly to avoid conflicts)
+// Re-export managers
 export {
   AutoTourManager,
   POIHighlightManager,
-  InteractionManager as SceneInteractionManager,
-  type AutoTourConfig,
-  type InteractionCallbacks as SceneInteractionCallbacks
+  InteractionManager as SceneInteractionManager
 } from './managers'
 
-// Re-export camera utilities (explicitly to avoid conflicts)
+// Re-export camera utilities
 export {
   BoundaryEasing,
   DragControls,
-  CameraInteractionListeners,
-  easeOutQuart,
-  type BoundaryEasingConfig,
-  type DragConfig,
-  type InteractionCallbacks as CameraInteractionCallbacks
+  CameraInteractionListeners
 } from './camera'

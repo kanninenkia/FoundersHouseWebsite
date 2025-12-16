@@ -25,7 +25,7 @@ export class AutoTourManager {
   public readonly finalPoiPause: number
 
   constructor(config?: Partial<AutoTourConfig>) {
-    this.enabled = config?.enabled ?? true
+    this.enabled = config?.enabled ?? true // Enable auto-tour by default
     this.currentIndex = config?.currentIndex ?? 0
     this.poiSequence = config?.poiSequence ?? [
       'OURA',
@@ -34,7 +34,7 @@ export class AutoTourManager {
       'SILO_AI',
       'WAVE_VENTURES',
     ]
-    this.inactivityTimeout = config?.inactivityTimeout ?? 8000
+    this.inactivityTimeout = config?.inactivityTimeout ?? 35000 // 35 seconds as requested
     this.finalPoiPause = config?.finalPoiPause ?? 3000
   }
 

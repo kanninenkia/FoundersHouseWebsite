@@ -32,17 +32,13 @@ export class POIHighlightManager {
     this.clearHighlights()
 
     if (!this.helsinkiModel) {
-      console.warn('⚠️ Helsinki model not loaded, cannot highlight')
       return
     }
 
     const poi = POINTS_OF_INTEREST[poiName as keyof typeof POINTS_OF_INTEREST]
     if (!poi) {
-      console.warn(`⚠️ POI "${poiName}" not found`)
       return
     }
-
-    console.log(`🎯 Highlighting POI: ${poiName}`)
 
     // Create red material for highlighting
     const highlightMaterial = new THREE.MeshStandardMaterial({
@@ -71,12 +67,9 @@ export class POIHighlightManager {
     // Find all intersections with the model
     const intersects = raycaster.intersectObject(this.helsinkiModel, true)
 
-    let meshCount = 0
     const highlightedObjects = new Set<THREE.Mesh>()
 
     if (intersects.length > 0) {
-      console.log(`📍 Found ${intersects.length} intersections`)
-
       // Highlight the meshes that were hit by the raycast
       const intersectionsToHighlight = intersects.slice(0, maxIntersections)
 
@@ -89,13 +82,8 @@ export class POIHighlightManager {
           // Apply red highlight material
           mesh.material = highlightMaterial
           highlightedObjects.add(mesh)
-          meshCount++
         }
       }
-
-      console.log(`🔴 Highlighted ${meshCount} meshes for POI: ${poiName}`)
-    } else {
-      console.warn(`⚠️ No intersection found with model from camera direction`)
     }
 
     this.highlightedPOI = poiName

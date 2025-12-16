@@ -227,30 +227,3 @@ export function getCurrentCameraConfig(
     far: camera.far
   }
 }
-
-/**
- * Format camera config as copyable code
- * Useful for development - copy/paste into your code
- */
-export function formatCameraConfigAsCode(config: CameraConfig): string {
-  const lines: string[] = []
-  lines.push('{')
-  lines.push(`  targetX: ${Math.round(config.targetX)},`)
-  lines.push(`  targetY: ${Math.round(config.targetY)},`)
-  lines.push(`  targetZ: ${Math.round(config.targetZ)},`)
-  
-  if (config.polar) {
-    lines.push('  polar: {')
-    lines.push(`    distance: ${Math.round(config.polar.distance)},`)
-    lines.push(`    azimuth: ${Math.round(config.polar.azimuth)},`)
-    lines.push(`    elevation: ${Math.round(config.polar.elevation)}`)
-    lines.push('  },')
-  }
-  
-  if (config.fov) {
-    lines.push(`  fov: ${config.fov}`)
-  }
-  
-  lines.push('}')
-  return lines.join('\n')
-}

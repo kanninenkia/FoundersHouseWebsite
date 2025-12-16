@@ -252,18 +252,13 @@ export async function loadHelsinkiModel(params: LoadParams): Promise<THREE.Group
           model.updateMatrixWorld(true)
           const rotatedBox = new THREE.Box3().setFromObject(model)
           const rotatedCenter = rotatedBox.getCenter(new THREE.Vector3())
-          const rotatedSize = rotatedBox.getSize(new THREE.Vector3())
 
           model.position.set(-rotatedCenter.x, -rotatedCenter.y, -rotatedCenter.z)
 
-          const maxDim = Math.max(rotatedSize.x, rotatedSize.z)
-          const fov = camera.fov * (Math.PI / 180)
-          const cameraDistance = maxDim / (2 * Math.tan(fov / 2))
-          const cameraHeight = cameraDistance * 1.2
-
-          camera.position.set(0, cameraHeight, cameraDistance * 0.3)
-          camera.lookAt(0, 0, 0)
-          controls.target.set(0, 0, 0)
+          // Set camera to specific view configuration
+          camera.position.set(386.81, 160.28, -272.85)
+          controls.target.set(-209.85, 0.00, -866.04)
+          camera.lookAt(-209.85, 0.00, -866.04)
         }
 
         scene.add(model)

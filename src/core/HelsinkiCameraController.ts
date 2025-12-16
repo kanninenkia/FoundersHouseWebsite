@@ -17,7 +17,7 @@ export class HelsinkiCameraController {
 
   // Proxyable properties
   public enableDamping: boolean = true
-  public dampingFactor: number = 0.05
+  public dampingFactor: number = 0.12  // Increased from 0.08 (more damping = less swing)
   public screenSpacePanning: boolean = false
   public minDistance: number = 100
   public maxDistance: number = 50000
@@ -87,12 +87,14 @@ export class HelsinkiCameraController {
 
     this.dragControls = new DragControls(this.camera, this.orbit, {
       enabled: true,
-      panSensitivity: 0.5,
-      rotateSensitivity: 0.003,
-      friction: 0.96,
-      velocityThreshold: 0.001,
-      rotationThreshold: 0.00001,
-      smoothingFactor: 0.2
+      panSensitivity: 0.4,        // Reduced from 0.5
+      rotateSensitivity: 0.002,   // Reduced from 0.003 (less sensitive to fast movements)
+      friction: 0.85,             // Reduced from 0.98 (more friction = less momentum)
+      velocityThreshold: 0.005,   // Increased from 0.001 (stops momentum sooner)
+      rotationThreshold: 0.0001,  // Increased from 0.00001 (stops rotation sooner)
+      smoothingFactor: 0.25,      // Increased from 0.15 (more damping)
+      maxVelocity: 12,            // Limit maximum pan velocity
+      maxRotationVelocity: 0.08   // Limit maximum rotation velocity
     })
 
     this.interactionListeners = new CameraInteractionListeners(
@@ -110,6 +112,13 @@ export class HelsinkiCameraController {
     // Setup parallax mouse listeners
     this.domElement.addEventListener('mousemove', this.handleParallaxMouseMove)
     this.domElement.addEventListener('mouseleave', this.handleParallaxMouseLeave)
+  }
+
+  /**
+   * Log camera state for debugging (throttled)
+   */
+  private logCameraState(): void {
+    // Logging disabled
   }
 
   /**
@@ -249,8 +258,11 @@ export class HelsinkiCameraController {
   public update(deltaSeconds?: number) {
     if (this.cameraControls) {
       const raw = typeof deltaSeconds === 'number' ? deltaSeconds : ((performance.now() - this._last) / 1000)
-      const dt = Number(raw)
+      let dt = Number(raw)
       this._last = performance.now()
+
+      // Clamp delta time to prevent large jumps that cause choppy motion
+      dt = Math.min(dt, 1 / 30) // Max 30fps minimum for smooth motion
 
       if (!Number.isFinite(dt) || dt <= 0) {
         try {
@@ -284,6 +296,9 @@ export class HelsinkiCameraController {
 
         // Apply momentum from drag controls
         this.dragControls.applyMomentum()
+
+        // Log camera state (throttled to avoid console spam)
+        this.logCameraState()
       } catch (err) {
         // ignore orbit update errors
       }

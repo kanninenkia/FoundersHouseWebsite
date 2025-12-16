@@ -110,31 +110,4 @@ export class PerlinNoiseGenerator {
 
     return data
   }
-
-  /**
-   * Generate and return a base64 data URL for use in img tags
-   */
-  public generateDataURL(): string {
-    const data = this.generate()
-    const canvas = document.createElement('canvas')
-    canvas.width = this.size
-    canvas.height = this.size
-
-    const ctx = canvas.getContext('2d')
-    if (!ctx) throw new Error('Could not get canvas context')
-
-    const imageData = ctx.createImageData(this.size, this.size)
-
-    // Convert grayscale to RGBA
-    for (let i = 0; i < data.length; i++) {
-      const value = data[i]
-      imageData.data[i * 4 + 0] = value // R
-      imageData.data[i * 4 + 1] = value // G
-      imageData.data[i * 4 + 2] = value // B
-      imageData.data[i * 4 + 3] = 255   // A
-    }
-
-    ctx.putImageData(imageData, 0, 0)
-    return canvas.toDataURL('image/png')
-  }
 }

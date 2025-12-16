@@ -1,19 +1,18 @@
 import { useState } from 'react'
 import HelsinkiViewer from './components/HelsinkiViewer'
 import { LoadingScreen } from './components/LoadingScreen'
-import { TypingAnimation } from './components/TypingAnimation'
 import './App.css'
 
-type AppPhase = 'loading' | 'typing' | 'map'
+type AppPhase = 'loading' | 'map'
 
 function App() {
   const [phase, setPhase] = useState<AppPhase>('loading')
 
   return (
     <div className="App">
-      <div 
+      <div
         className={phase === 'map' ? 'map-visible' : 'map-hidden'}
-        style={{ 
+        style={{
           pointerEvents: phase === 'map' ? 'auto' : 'none'
         }}
       >
@@ -21,11 +20,7 @@ function App() {
       </div>
 
       {phase === 'loading' && (
-        <LoadingScreen onComplete={() => setPhase('typing')} duration={3500} />
-      )}
-      
-      {phase === 'typing' && (
-        <TypingAnimation onComplete={() => setPhase('map')} />
+        <LoadingScreen onComplete={() => setPhase('map')} duration={3500} />
       )}
     </div>
   )

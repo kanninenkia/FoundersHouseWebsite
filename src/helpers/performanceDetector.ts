@@ -3,7 +3,7 @@
  * Detects device capabilities and recommends quality settings
  */
 
-export interface PerformanceProfile {
+interface PerformanceProfile {
   tier: 'low' | 'medium' | 'high'
   pixelRatio: number
   antialias: boolean
@@ -99,53 +99,4 @@ export function detectPerformanceTier(): PerformanceProfile {
   }
 
   return profiles[tier]
-}
-
-/**
- * Monitor FPS and adjust quality if needed
- */
-export class PerformanceMonitor {
-  private frameCount = 0
-  private lastTime = performance.now()
-  private fps = 60
-  private onQualityAdjust?: (profile: PerformanceProfile) => void
-
-  constructor(onQualityAdjust?: (profile: PerformanceProfile) => void) {
-    this.onQualityAdjust = onQualityAdjust
-  }
-
-  update(): number {
-    this.frameCount++
-    const currentTime = performance.now()
-    const elapsed = currentTime - this.lastTime
-
-    // Calculate FPS every second
-    if (elapsed >= 1000) {
-      this.fps = (this.frameCount * 1000) / elapsed
-      this.frameCount = 0
-      this.lastTime = currentTime
-
-      // If FPS drops below 30 for extended period, suggest lower quality
-      if (this.fps < 30 && this.onQualityAdjust) {
-        const currentProfile = detectPerformanceTier()
-        if (currentProfile.tier !== 'low') {
-          // Downgrade to lower tier
-          const lowerTier = currentProfile.tier === 'high' ? 'medium' : 'low'
-          const profiles = {
-            low: detectPerformanceTier(),
-            medium: detectPerformanceTier(),
-            high: detectPerformanceTier(),
-          }
-          profiles[lowerTier].tier = lowerTier
-          this.onQualityAdjust(profiles[lowerTier])
-        }
-      }
-    }
-
-    return this.fps
-  }
-
-  getFPS(): number {
-    return this.fps
-  }
 }

@@ -12,5 +12,3 @@ export {
   removeCityLights,
   createLightSprite
 } from './cityLights_refactored'
-
-export { addStreetLights } from './streetLights'
