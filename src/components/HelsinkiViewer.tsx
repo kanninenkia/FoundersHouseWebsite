@@ -8,7 +8,19 @@ import { HelsinkiScene } from '../core'
 import type { RenderMode } from '../loaders'
 import './HelsinkiViewer.css'
 
-export const HelsinkiViewer = () => {
+interface MapLoadingState {
+  isLoaded: boolean
+  progress: number
+}
+
+interface HelsinkiViewerProps {
+  shouldLoad?: boolean
+  shouldPause?: boolean
+  scrollProgress?: number
+  onMapLoadingChange?: (state: MapLoadingState) => void
+}
+
+export const HelsinkiViewer = ({ shouldLoad = true, shouldPause = false, scrollProgress = 0, onMapLoadingChange }: HelsinkiViewerProps) => {
   const containerRef = useRef<HTMLDivElement>(null)
   const sceneRef = useRef<HelsinkiScene | null>(null)
   const animationFrameRef = useRef<number>(0)
@@ -24,26 +36,33 @@ export const HelsinkiViewer = () => {
   const [currentPOI, setCurrentPOI] = useState<{ name: string; description: string } | null>(null)
 
   useEffect(() => {
-    if (!containerRef.current) return
+    if (!containerRef.current || !shouldLoad || shouldPause) return
 
-    try {
+    // Use requestIdleCallback to load map during browser idle time (non-blocking)
+    const idleCallback = (window as any).requestIdleCallback || ((cb: Function) => setTimeout(cb, 1))
 
-      // Initialize Helsinki scene
-      const scene = new HelsinkiScene({
-        container: containerRef.current,
-        helsinkiCenter: {
-          lat: 60.1699,
-          lng: 24.9384,
-        },
-        radius: 2, // 2km radius
-        onLoadProgress: (progress) => {
-          setStatus(`Loading Helsinki 3D model... ${progress.toFixed(1)}%`)
-        },
-        onLoadComplete: () => {
-          setModelLoaded(true)
-          setStatus('Helsinki 3D - 2km radius')
-        },
-      })
+    const idleHandle = idleCallback(() => {
+      if (!containerRef.current || shouldPause) return
+
+      try {
+        // Initialize Helsinki scene during idle time
+        const scene = new HelsinkiScene({
+          container: containerRef.current,
+          helsinkiCenter: {
+            lat: 60.1699,
+            lng: 24.9384,
+          },
+          radius: 2, // 2km radius
+          onLoadProgress: (progress) => {
+            setStatus(`Loading Helsinki 3D model... ${progress.toFixed(1)}%`)
+            onMapLoadingChange?.({ isLoaded: false, progress })
+          },
+          onLoadComplete: () => {
+            setModelLoaded(true)
+            setStatus('Helsinki 3D - 2km radius')
+            onMapLoadingChange?.({ isLoaded: true, progress: 100 })
+          },
+        })
 
       sceneRef.current = scene
       
@@ -69,14 +88,18 @@ export const HelsinkiViewer = () => {
       }
 
       animate()
-    } catch (err) {
-      const message = err instanceof Error ? err.message : String(err)
-      setStatus('Error: ' + message)
-      setLoading(false)
-    }
+      } catch (err) {
+        const message = err instanceof Error ? err.message : String(err)
+        setStatus('Error: ' + message)
+        setLoading(false)
+      }
+    })
 
     // Cleanup
     return () => {
+      const cancelIdleCallback = (window as any).cancelIdleCallback || clearTimeout
+      cancelIdleCallback(idleHandle)
+
       if (animationFrameRef.current) {
         cancelAnimationFrame(animationFrameRef.current)
       }
@@ -85,7 +108,7 @@ export const HelsinkiViewer = () => {
         sceneRef.current = null
       }
     }
-  }, [])
+  }, [shouldLoad, shouldPause])
 
   // Independent ticker animation - runs smoothly from 0-100 over ~2.5 seconds
   useEffect(() => {
@@ -210,8 +233,7 @@ export const HelsinkiViewer = () => {
       />
 
       {/* UI Overlay - Chartogne style */}
-      <div className="ui-overlay">
-        <div className="main-cta">
+      <div className="ui-overlay" style={{ opacity: scrollProgress >= 1 ? 1 : 0, transition: 'opacity 0.5s ease-out' }}>        <div className="main-cta">
           <img src="/FHLOGO.png" alt="FH Logo" className="fh-logo" />
         </div>
 
@@ -237,16 +259,7 @@ export const HelsinkiViewer = () => {
         <div className="status">{status}</div>
       </div>
 
-      {/* Loading overlay */}
-      {loading && (
-        <div className="loading-overlay">
-          <div className="loading-content">
-            <h1 className="loading-title">The next generation of obsessed builders</h1>
-            {/* small ticker on the right */}
-            <div className="loading-ticker">{Math.floor(tickerProgress)}%</div>
-          </div>
-        </div>
-      )}
+      {/* Loading overlay removed - handled by main LoadingScreen component */}
 
       {/* POI Label Overlay */}
       {currentPOI && (

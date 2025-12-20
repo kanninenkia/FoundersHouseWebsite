@@ -1,27 +1,40 @@
-import { useState } from 'react'
-import HelsinkiViewer from './components/HelsinkiViewer'
+import { useState, useEffect, useRef } from 'react'
 import { LoadingScreen } from './components/LoadingScreen'
 import './App.css'
 
-type AppPhase = 'loading' | 'map'
-
 function App() {
-  const [phase, setPhase] = useState<AppPhase>('loading')
+  const isInitialMount = useRef(true)
+
+  // Persist scroll progress across tab switches, but NOT on page reload
+  const [scrollProgress, setScrollProgress] = useState(() => {
+    // Only restore from sessionStorage if this is NOT a page reload
+    if (performance.navigation.type !== 1) { // 1 = TYPE_RELOAD
+      const saved = sessionStorage.getItem('scrollProgress')
+      return saved ? parseFloat(saved) : 0
+    }
+    // Clear sessionStorage on reload
+    sessionStorage.removeItem('scrollProgress')
+    sessionStorage.removeItem('animationStage')
+    return 0
+  })
+
+  // Save scroll progress to sessionStorage whenever it changes (but not on initial mount if it's a reload)
+  useEffect(() => {
+    if (isInitialMount.current) {
+      isInitialMount.current = false
+      return
+    }
+    sessionStorage.setItem('scrollProgress', scrollProgress.toString())
+  }, [scrollProgress])
 
   return (
     <div className="App">
-      <div
-        className={phase === 'map' ? 'map-visible' : 'map-hidden'}
-        style={{
-          pointerEvents: phase === 'map' ? 'auto' : 'none'
-        }}
-      >
-        <HelsinkiViewer />
-      </div>
-
-      {phase === 'loading' && (
-        <LoadingScreen onComplete={() => setPhase('map')} duration={3500} />
-      )}
+      <LoadingScreen
+        onComplete={() => {}}
+        duration={6000}
+        scrollProgress={scrollProgress}
+        onScrollProgressChange={setScrollProgress}
+      />
     </div>
   )
 }

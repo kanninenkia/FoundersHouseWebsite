@@ -77,13 +77,6 @@ export class HelsinkiCameraController {
   private smoothingFactor: number = 0.32 // Higher = more smoothing/easing
 
   // --- Parallax effect state ---
-    // --- Parallax drag-release damping state ---
-    private parallaxDampeningActive = false;
-    private parallaxDampeningStart = 0;
-    private parallaxDampeningDuration = 1500; // ms (1.5 seconds)
-    private parallaxDampeningEasing = 0.005; // Very strong damping during cooldown
-    private parallaxNormalEasing = 0.04; // Normal value
-  private mouseParallaxActive = true;
   private mouseNormalizedX = 0;
   private mouseNormalizedY = 0;
   private parallaxOffsetX = 0;
@@ -247,10 +240,10 @@ export class HelsinkiCameraController {
    */
   private applyBoundaryEasing(deltaX: number, deltaY: number, deltaZoom: number): void {
     if (!this.softBoundaryEnabled || !this.orbit) return
-    
+
     // Calculate easing factors for each constraint
-    const zoomEasing = deltaZoom !== 0 
-      ? this.calculateZoomEasing(zoomingIn) 
+    const zoomEasing = deltaZoom !== 0
+      ? this.calculateZoomEasing(deltaZoom > 0)
       : 1.0
     
     const polarEasing = deltaY !== 0 
@@ -471,7 +464,7 @@ export class HelsinkiCameraController {
     this.domElement.addEventListener('pointerdown', this.handlePointerDown)
     this.domElement.addEventListener('pointermove', this.handlePointerMoveWithEasing)
     this.domElement.addEventListener('pointerup', this.handlePointerUp)
-    this.domElement.addEventListener('pointerleave', (event) => {
+    this.domElement.addEventListener('pointerleave', () => {
       this.handlePointerUp()
     })
     this.domElement.addEventListener('wheel', this.handleWheelWithEasing, { passive: true })
@@ -559,65 +552,6 @@ export class HelsinkiCameraController {
       // console.warn('camera-controls not available, using OrbitControls')
       return false
     }
-  }
-
-  /**
-   * Update controls. If camera-controls is active, pass delta seconds; otherwise update OrbitControls.
-   */
-  public update(deltaSeconds?: number) {
-    if (this.cameraControls) {
-      // compute delta (seconds) and ensure it's a finite positive number
-      const raw = typeof deltaSeconds === 'number' ? deltaSeconds : ((performance.now() - this._last) / 1000)
-      const dt = Number(raw)
-      this._last = performance.now()
-
-      if (!Number.isFinite(dt) || dt <= 0) {
-        // guard: avoid calling update with invalid delta which can throw inside camera-controls
-        try {
-          // still attempt a tiny non-zero update to allow internal ticks
-          this.cameraControls.update(1 / 60)
-        } catch (err) {
-          // fall back to OrbitControls on error
-          try {
-            if (this.cameraControls && this.cameraControls.dispose) this.cameraControls.dispose()
-          } catch (e) {}
-          this.cameraControls = null
-          if (!this.orbit) {
-            this.orbit = new OrbitControls(this.camera, this.domElement)
-          }
-        }
-      } else {
-        // Normal path
-        try {
-          this.cameraControls.update(dt)
-        } catch (err) {
-          // If camera-controls throws, catch and fallback to OrbitControls so the app doesn't stop animating
-          try {
-            if (this.cameraControls && this.cameraControls.dispose) this.cameraControls.dispose()
-          } catch (e) {}
-          this.cameraControls = null
-          if (!this.orbit) {
-            this.orbit = new OrbitControls(this.camera, this.domElement)
-          }
-        }
-      }
-    } else if (this.orbit) {
-      try {
-        // Ensure constraints are enforced on every update
-        this.syncPropertiesToOrbit()
-        this.orbit.update()
-        
-        // Apply momentum for smooth easing after drag release
-        this.applyMomentum()
-        
-        this._applyMouseParallax();
-      } catch (err) {
-        // ignore orbit update errors
-      }
-    }
-
-    // update target proxy
-    if (this.orbit) this.target.copy(this.orbit.target)
   }
 
   public setLookAt(px: number, py: number, pz: number, tx: number, ty: number, tz: number, enableTransition = true) {

@@ -21,7 +21,7 @@ export interface LoadParams {
 }
 
 export async function loadHelsinkiModel(params: LoadParams): Promise<THREE.Group | null> {
-  const { modelPath, scene, camera, controls, isNightMode = false, renderMode = 'textured', onLoadProgress, onLoadComplete } = params
+  const { modelPath, scene, camera, isNightMode = false, renderMode = 'textured', onLoadProgress, onLoadComplete } = params
   // Quick existence check: try a HEAD request with timeout to fail fast if the GLB isn't available
   const checkResourceExists = async (url: string, timeoutMs = 8000): Promise<boolean> => {
     if (typeof fetch === 'undefined') return true // runtime doesn't support fetch (unlikely in browser)
@@ -255,10 +255,7 @@ export async function loadHelsinkiModel(params: LoadParams): Promise<THREE.Group
 
           model.position.set(-rotatedCenter.x, -rotatedCenter.y, -rotatedCenter.z)
 
-          // Set camera to specific view configuration
-          camera.position.set(386.81, 160.28, -272.85)
-          controls.target.set(-209.85, 0.00, -866.04)
-          camera.lookAt(-209.85, 0.00, -866.04)
+          // Camera position is already set in CAMERA_BASE constants - no need to move it here
         }
 
         scene.add(model)

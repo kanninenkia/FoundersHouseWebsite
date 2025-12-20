@@ -3,7 +3,7 @@
 .loading-screen {
   position: fixed;
   inset: 0;
-  background: #FFF8F2; /* Cream background */
+  background: transparent;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -20,28 +20,60 @@
   justify-content: center;
 }
 
-/* Stage 1: Logo + Loading Bar */
+/* Background image layer - behind logo and loading bar */
+.loading-background-image {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 1;
+  margin: 0;
+  padding: 0;
+}
+
+.loading-background-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* Noise overlay - REMOVED (saved for future use)
+.loading-noise-overlay {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 9999;
+  opacity: 0.15;
+  pointer-events: none;
+  margin: 0;
+  padding: 0;
+}
+
+.loading-noise-overlay img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+*/
+
+/* Stage 1: Logo + Loading Bar (on top of background) */
 .loading-logo {
   position: relative;
-  z-index: 10;
-  animation: blurOut 0.8s ease-out 2.7s forwards;
+  z-index: 2;
+  transition: filter 2.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.loading-logo.blur-out {
+  filter: blur(12px);
 }
 
 .loading-logo img {
   height: 120px;
   width: auto;
   display: block;
-}
-
-@keyframes blurOut {
-  from {
-    filter: blur(0px);
-    opacity: 1;
-  }
-  to {
-    filter: blur(12px);
-    opacity: 0;
-  }
 }
 
 .loading-bar-container {
@@ -52,7 +84,7 @@
   width: 380px;
   max-width: 90vw;
   height: 2px;
-  background: rgba(0, 0, 0, 0.1);
+  background: rgba(255, 255, 255, 0.3);
   border-radius: 1px;
   overflow: hidden;
   z-index: 10;
@@ -61,76 +93,35 @@
 .loading-bar {
   height: 100%;
   width: 0%;
-  background: #c23d2a;
+  background: #FFFFFF;
   border-radius: 1px;
-  animation: fillBar 3.5s ease-out forwards;
+  transition: width 0.1s ease-out;
 }
 
-@keyframes fillBar {
-  from {
-    width: 0%;
-  }
-  to {
-    width: 100%;
-  }
-}
-
-/* Background image that gets pixelated */
-.loading-image {
-  position: fixed;
-  inset: 0;
-  width: 100vw;
-  height: 100vh;
-  z-index: 2;
-  opacity: 0;
-  margin: 0;
-  padding: 0;
-}
-
-.loading-image.visible {
-  animation: imageAppear 0.3s ease-out forwards;
-}
-
-.loading-image img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover; /* Changed to cover to fill entire screen */
-  display: block;
-}
-
-@keyframes imageAppear {
-  to {
-    opacity: 1;
-  }
-}
-
-/* Blocks container for pixelation effect */
+/* Blocks container for pixelation effect - covers the background image and logo */
 .blocks-container {
   position: fixed;
   inset: 0;
   width: 100vw;
   height: 100vh;
-  z-index: 3;
+  z-index: 5;
   margin: 0;
   padding: 0;
 }
 
-/* Individual block - pixels that reveal text by covering image */
+/* Individual block - pixels that dissolve to dark red */
 .block {
   position: absolute;
-  background: #FFF8F2; /* Cream color matching the background */
+  background: #590D0F; /* Dark red */
   opacity: 0;
 }
 
 .block.pixel-reveal {
-  animation: blockReveal 0.8s ease-out forwards;
+  animation: blockReveal 0s forwards;
 }
 
 @keyframes blockReveal {
-  0% {
-    opacity: 0;
-  }
-  100% {
+  to {
     opacity: 1;
   }
 }
@@ -143,80 +134,225 @@
   height: 100vh;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  z-index: 1;
+  justify-content: center;
+  align-items: center;
+  z-index: 2;
   padding: clamp(1.5rem, 3vw, 3rem);
   margin: 0;
 }
 
-/* Top-left text positioning */
+/* Unified text page - stays persistent, only content changes */
+.text-page {
+  background: #590D0F;
+}
+
+.text-page.slide-up {
+  animation: textSlideUpWithFade 4s ease-out forwards;
+}
+
+.text-page.slide-up .text-centered {
+  animation: textFadeOut 4s ease-out forwards !important;
+}
+
+.text-page.slide-up .corner-label {
+  animation: fadeOutCornerElements 1s ease-out forwards !important;
+}
+
+/* Bottom corner lines for text page */
+.text-page::before,
+.text-page::after {
+  content: '';
+  position: fixed;
+  bottom: 1.5rem;
+  width: 40px;
+  height: 1px;
+  background: #FFFFFF;
+  z-index: 3;
+  opacity: 0;
+  animation: fadeInCornerElements 0.2s ease-out forwards;
+  transform-origin: top left;
+  box-sizing: border-box;
+}
+
+.text-page::before {
+  left: 1.5rem;
+}
+
+.text-page::after {
+  right: 1.5rem;
+  transform-origin: top right;
+}
+
+/* Horizontal lines - expand from corners to meet in center */
+.text-page.lines-connect::before {
+  opacity: 1;
+  animation: expandHorizontalLeft 2s ease-out forwards;
+  background: #FFFFFF;
+  height: 1px;
+  bottom: 1.5rem;
+}
+
+.text-page.lines-connect::after {
+  opacity: 1;
+  animation: expandHorizontalRight 2s ease-out forwards;
+  background: #FFFFFF;
+  height: 1px;
+  bottom: 1.5rem;
+}
+
+/* Vertical drop lines from original corner positions */
+.vertical-line-left {
+  position: fixed;
+  left: 1.5rem;
+  top: calc(100vh - 1.5rem);
+  width: 1px;
+  height: 0;
+  background: #FFFFFF;
+  z-index: 3;
+  animation: dropVerticalLine 2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.vertical-line-right {
+  position: fixed;
+  right: 1.5rem;
+  top: calc(100vh - 1.5rem);
+  width: 1px;
+  height: 0;
+  background: #FFFFFF;
+  z-index: 3;
+  animation: dropVerticalLine 2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Map container - starts hidden, fades into box, then slides up */
+.map-container {
+  position: fixed;
+  left: 50%;
+  bottom: 0;
+  width: calc(100vw - 3rem); /* Full width minus margins */
+  height: 1.5rem; /* Height of the box formed by lines */
+  background: #000000;
+  z-index: 2;
+  opacity: 0;
+  transform: translateX(-50%);
+  overflow: hidden;
+  /* GPU acceleration optimizations */
+  will-change: transform, opacity, height, width;
+  transform-origin: center bottom;
+  backface-visibility: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Step 1: Fade into the box when lines connect */
+.map-container.show-in-box {
+  animation: fadeIntoBox 1s ease-out forwards;
+}
+
+/* Step 2: Slide up animations - smooth ease out */
+.map-container.sliding-up {
+  animation: slideMapUp 2.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+
+.vertical-line-left.sliding-up,
+.vertical-line-right.sliding-up {
+  animation: slideLineUp 3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Text gets pushed by the map - v2 higher specificity */
+.text-page .text-centered.text-pushed-by-box {
+  animation: getPushedByBox 2.5s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
+  /* GPU acceleration for smooth animation */
+  will-change: transform, opacity;
+  /* Don't set transform here - let animation control it */
+  animation-fill-mode: forwards !important;
+}
+
+/* Override animation when scrolling */
+.text-page .text-centered.text-pushed-by-box[data-scrolling="true"] {
+  animation: none !important;
+}
+
+/* Centered text positioning */
 .text-top-left {
   display: flex;
   flex-direction: row;
   align-items: center;
-  align-self: flex-start;
+  justify-content: center;
   gap: 0.5em;
   line-height: 1;
   animation: textFadeIn 0.6s ease-out forwards;
   white-space: nowrap;
+  text-align: center;
+  flex-wrap: wrap;
 }
 
-/* Bottom-right text positioning */
+/* Bottom-right text positioning - for second text screen */
 .text-bottom-right {
   display: flex;
   flex-direction: row;
   align-items: center;
-  align-self: flex-end;
-  justify-self: flex-end;
-  margin-left: auto;
+  justify-content: center;
   gap: 0.5em;
   line-height: 1;
   animation: textFadeIn 0.6s ease-out 0.2s forwards;
   opacity: 0;
   white-space: nowrap;
+  text-align: center;
+  flex-wrap: wrap;
+  margin-top: 1rem;
 }
 
-/* Phase 1: "THE NEXT GENERATION OF OBSESSED BUILDERS" */
-.text-phase-1 .text-normal {
-  font-family: 'IBM Plex Sans', sans-serif;
-  font-weight: 400;
-  font-size: clamp(3rem, 8vw, 7rem);
-  color: #590D0F;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
+/* Text content styling - shared by both text phases */
+.text-page .text-centered {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2em;
+  text-align: center;
+  opacity: 0;
+  animation: appearMainText 0s 0.7s forwards;
 }
 
-.text-phase-1 .text-emphasis {
-  font-family: 'IBM Plex Sans', sans-serif;
-  font-weight: 700;
-  font-size: clamp(3rem, 8vw, 7rem);
-  color: #c23d2a;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
+.text-page .text-centered.align-left {
+  align-items: flex-start;
+  text-align: left;
 }
 
-/* Phase 2: "WHERE AMBITION CONCENTRATES TALENT MULTIPLIES" */
-.text-phase-2 {
-  animation: textSlideUpExit 0.8s ease-in forwards;
-  animation-delay: 1.5s;
-}
-
-.text-phase-2 .tagline-line {
-  font-family: 'IBM Plex Sans', sans-serif;
-  font-weight: 400;
-  font-size: clamp(2.5rem, 6vw, 5.5rem);
-  color: #2a2a2a;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-}
-
-.text-phase-2 .tagline-emphasis {
+.text-page .text-centered div {
   font-family: 'IBM Plex Sans', sans-serif;
   font-weight: 700;
-  font-size: clamp(2.5rem, 6vw, 5.5rem);
-  color: #c23d2a;
+  font-size: clamp(2.5rem, 6vw, 5rem);
+  color: #FFFFFF;
   letter-spacing: 0.05em;
   text-transform: uppercase;
+  line-height: 1;
+  white-space: nowrap;
+  overflow: visible;
+}
+
+/* Corner labels - persistent throughout both text phases */
+.text-page .corner-label {
+  position: absolute;
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-weight: 400;
+  font-size: clamp(0.65rem, 1vw, 0.85rem);
+  color: #FFFFFF;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  opacity: 0;
+  animation: fadeInCornerElements 0.2s ease-out forwards;
+}
+
+.text-page .corner-label.top-left {
+  top: 0;
+  left: 0;
+  padding: 1.5rem;
+}
+
+.text-page .corner-label.top-right {
+  top: 0;
+  right: 0;
+  padding: 1.5rem;
 }
 
 @keyframes textFadeIn {
@@ -240,3 +376,160 @@
     opacity: 1;
   }
 }
+
+@keyframes fadeInCornerElements {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes appearMainText {
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes expandHorizontalLeft {
+  from {
+    width: 40px;
+    left: 1.5rem;
+  }
+  to {
+    width: calc(50vw - 1.5rem);
+    left: 1.5rem;
+  }
+}
+
+@keyframes expandHorizontalRight {
+  from {
+    width: 40px;
+    right: 1.5rem;
+  }
+  to {
+    width: calc(50vw - 1.5rem);
+    right: 1.5rem;
+  }
+}
+
+@keyframes dropVerticalLine {
+  from {
+    height: 0;
+  }
+  to {
+    height: 1.5rem;
+  }
+}
+
+@keyframes fadeInFill {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideBlockUp {
+  from {
+    bottom: 0;
+    height: 1.5rem;
+  }
+  to {
+    bottom: 0;
+    height: 67vh;
+  }
+}
+
+/* Optimize animation for performance */
+@media (prefers-reduced-motion: no-preference) {
+  .map-container.sliding-up {
+    animation-timing-function: cubic-bezier(0.25, 0.1, 0.25, 1); /* Smoother easing */
+  }
+}
+
+@keyframes slideLineUp {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(-100vh);
+  }
+}
+
+/* v5 - Text fades to 0.8 opacity, not 0 */
+@keyframes getPushedByBox {
+  /* Text stays completely stationary while map grows from bottom */
+  0% {
+    transform: translateY(0) translateZ(0);
+    opacity: 1;
+  }
+  /* Map is growing but hasn't reached text yet - text stays still */
+  30% {
+    transform: translateY(0) translateZ(0);
+    opacity: 1;
+  }
+  /* Map reaches 67vh - text is glued to top with 0.8 opacity */
+  /* Text stays visible at 0.8 opacity (only fades to 0 during scroll) */
+  100% {
+    transform: translateY(-25vh) translateZ(0);
+    opacity: 0.8;
+  }
+}
+
+/* Fade into the box at bottom */
+@keyframes fadeIntoBox {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 0.7;
+  }
+}
+
+/* Slide map up from box to 67vh - smooth continuous growth */
+@keyframes slideMapUp {
+  0% {
+    height: 1.5rem;
+    width: calc(100vw - 3rem);
+    opacity: 0.7;
+  }
+  100% {
+    height: 67vh;
+    width: 80vw;
+    opacity: 0.9;
+  }
+}
+
+@keyframes textSlideUpWithFade {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(-100%);
+  }
+}
+
+@keyframes textFadeOut {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes fadeOutCornerElements {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+

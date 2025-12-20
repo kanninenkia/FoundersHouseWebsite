@@ -175,10 +175,19 @@ export class FoundersHouseMarker {
    * Remove the arrow marker
    */
   public removeArrow(): void {
+    // Remove our tracked arrow
     if (this.arrowOverlay && this.arrowOverlay.parentElement) {
       this.arrowOverlay.parentElement.removeChild(this.arrowOverlay)
       this.arrowOverlay = null
     }
+
+    // Also remove any stale arrows from previous instances (e.g., hot reload)
+    const allArrows = document.querySelectorAll('img[src="/fharrow.png"]')
+    allArrows.forEach(arrow => {
+      if (arrow.parentElement) {
+        arrow.parentElement.removeChild(arrow)
+      }
+    })
   }
 
   /**
