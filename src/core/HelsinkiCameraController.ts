@@ -84,6 +84,7 @@ export class HelsinkiCameraController {
   private parallaxStrength = 30; // units
   private parallaxEasing = 0.04;
   private baseCameraPosition: THREE.Vector3 = new THREE.Vector3();
+  private parallaxEnabled = true; // Control to enable/disable parallax
 
   // --- Smoothed camera state ---
   private cameraTargetPosition: THREE.Vector3 = new THREE.Vector3();
@@ -703,11 +704,29 @@ export class HelsinkiCameraController {
       this.mouseNormalizedX = this._latestMouseX;
       this.mouseNormalizedY = this._latestMouseY;
     }
-    // Always ease offset toward target
-    const targetX = this.mouseNormalizedX * this.parallaxStrength;
-    const targetY = this.mouseNormalizedY * this.parallaxStrength * 0.6;
-    this.parallaxOffsetX += (targetX - this.parallaxOffsetX) * this.parallaxEasing;
-    this.parallaxOffsetY += (targetY - this.parallaxOffsetY) * this.parallaxEasing;
+    // Always ease offset toward target (only if parallax enabled)
+    if (this.parallaxEnabled) {
+      const targetX = this.mouseNormalizedX * this.parallaxStrength;
+      const targetY = this.mouseNormalizedY * this.parallaxStrength * 0.6;
+      this.parallaxOffsetX += (targetX - this.parallaxOffsetX) * this.parallaxEasing;
+      this.parallaxOffsetY += (targetY - this.parallaxOffsetY) * this.parallaxEasing;
+    } else {
+      // When disabled, reset offsets to 0
+      this.parallaxOffsetX *= 0.9; // Gradually fade out
+      this.parallaxOffsetY *= 0.9;
+    }
+  }
+
+  /**
+   * Enable or disable parallax effect
+   */
+  public setParallaxEnabled(enabled: boolean) {
+    this.parallaxEnabled = enabled;
+    if (!enabled) {
+      // Reset mouse positions when disabling
+      this.mouseNormalizedX = 0;
+      this.mouseNormalizedY = 0;
+    }
   }
 }
 

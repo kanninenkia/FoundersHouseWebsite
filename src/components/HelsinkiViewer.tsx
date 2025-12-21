@@ -6,6 +6,8 @@
 import { useEffect, useRef, useState } from 'react'
 import { HelsinkiScene } from '../core'
 import type { RenderMode } from '../loaders'
+import type { PointOfInterest } from '../constants/poi'
+import { POINavigator } from './POINavigator'
 import './HelsinkiViewer.css'
 
 interface MapLoadingState {
@@ -109,6 +111,15 @@ export const HelsinkiViewer = ({ shouldLoad = true, shouldPause = false, scrollP
       }
     }
   }, [shouldLoad, shouldPause])
+
+  // Control parallax based on scroll progress - disable during animation, enable at fullscreen
+  useEffect(() => {
+    if (!sceneRef.current) return
+
+    // Disable parallax when map is animating (scrollProgress < 1)
+    // Enable parallax when map reaches fullscreen (scrollProgress >= 1)
+    sceneRef.current.setParallaxEnabled(scrollProgress >= 1)
+  }, [scrollProgress])
 
   // Independent ticker animation - runs smoothly from 0-100 over ~2.5 seconds
   useEffect(() => {
@@ -225,6 +236,13 @@ export const HelsinkiViewer = ({ shouldLoad = true, shouldPause = false, scrollP
     }
   }
 
+  const handlePOISelect = (poi: PointOfInterest) => {
+    if (sceneRef.current && (sceneRef.current as any).focusPOI) {
+      // Use the focusPOI method to smoothly transition to the selected POI
+      ;(sceneRef.current as any).focusPOI(poi.id.toUpperCase().replace(/-/g, '_'))
+    }
+  }
+
   return (
     <>
       <div
@@ -269,6 +287,11 @@ export const HelsinkiViewer = ({ shouldLoad = true, shouldPause = false, scrollP
             <p className="poi-label-description">{currentPOI.description}</p>
           </div>
         </div>
+      )}
+
+      {/* POI Navigator - Bottom navigation bar */}
+      {scrollProgress >= 1 && (
+        <POINavigator onPOISelect={handlePOISelect} initialPOI="FOUNDERS_HOUSE" />
       )}
     </>
   )

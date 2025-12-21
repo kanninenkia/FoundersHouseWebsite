@@ -25,14 +25,20 @@ export class AutoTourManager {
   public readonly finalPoiPause: number
 
   constructor(config?: Partial<AutoTourConfig>) {
-    this.enabled = config?.enabled ?? true // Enable auto-tour by default
+    this.enabled = config?.enabled ?? false // Disable auto-tour by default
     this.currentIndex = config?.currentIndex ?? 0
     this.poiSequence = config?.poiSequence ?? [
+      'SUPERCELL',
+      'RELEX',
+      'TOM',
+      'METACORE',
+      'IXI',
+      'FOUNDERS_HOUSE',
+      'VARJO',
       'OURA',
-      'WOLT',
-      'LIFELINE_VENTURES',
-      'SILO_AI',
-      'WAVE_VENTURES',
+      'LINEAR',
+      'DISTANCE',
+      'SWARMIA',
     ]
     this.inactivityTimeout = config?.inactivityTimeout ?? 35000 // 35 seconds as requested
     this.finalPoiPause = config?.finalPoiPause ?? 3000

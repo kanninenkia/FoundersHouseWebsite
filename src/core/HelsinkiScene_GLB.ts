@@ -555,5 +555,14 @@ export class HelsinkiScene {
     return this.poiHighlightManager.getHighlightedPOI()
   }
 
+  /**
+   * Enable or disable camera parallax effect
+   */
+  public setParallaxEnabled(enabled: boolean): void {
+    if (this.controls && typeof this.controls.setParallaxEnabled === 'function') {
+      this.controls.setParallaxEnabled(enabled)
+    }
+  }
+
   // (No-op: removed obsolete single-tram public API methods)
 }

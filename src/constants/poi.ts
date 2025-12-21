@@ -92,21 +92,21 @@ export const OURA_POI: PointOfInterest = {
 }
 
 /**
- * Wolt HQ
- * Located at world coordinates: x: -99, y: -38, z: -781
+ * Supercell
+ * TODO: Click on the actual Supercell building to get correct coordinates
  */
-export const WOLT_POI: PointOfInterest = {
-  id: 'wolt',
-  name: 'Wolt',
-  description: 'Wolt - Food delivery and logistics platform',
+export const SUPERCELL_POI: PointOfInterest = {
+  id: 'supercell',
+  name: 'Supercell',
+  description: 'Supercell - Mobile game developer',
   mapCoords: {
-    x: -99,
-    y: 781
+    x: -400,
+    y: 200
   },
   worldCoords: {
-    x: -99,
-    y: -38,
-    z: -781
+    x: -400,
+    y: -40,
+    z: -200
   },
   cameraView: {
     distance: 320,
@@ -116,21 +116,21 @@ export const WOLT_POI: PointOfInterest = {
 }
 
 /**
- * Lifeline Ventures
- * TODO: Click on the actual Lifeline building to get correct coordinates
+ * Relex
+ * TODO: Click on the actual Relex building to get correct coordinates
  */
-export const LIFELINE_VENTURES_POI: PointOfInterest = {
-  id: 'lifeline-ventures',
-  name: 'Lifeline Ventures',
-  description: 'Lifeline Ventures - Early-stage venture capital',
+export const RELEX_POI: PointOfInterest = {
+  id: 'relex',
+  name: 'Relex',
+  description: 'Relex - Supply chain and retail planning',
   mapCoords: {
-    x: 233,
-    y: -691
+    x: -250,
+    y: 400
   },
   worldCoords: {
-    x: 233,
-    y: -48,
-    z: 691
+    x: -250,
+    y: -42,
+    z: -400
   },
   cameraView: {
     distance: 300,
@@ -140,22 +140,21 @@ export const LIFELINE_VENTURES_POI: PointOfInterest = {
 }
 
 /**
- * Silo AI
- * TODO: Click on the actual Silo AI building to get correct coordinates
- * Currently using placeholder - NEEDS DIFFERENT COORDS FROM LIFELINE
+ * TOM (The Orthopedic Marketplace)
+ * TODO: Click on the actual TOM building to get correct coordinates
  */
-export const SILO_AI_POI: PointOfInterest = {
-  id: 'silo-ai',
-  name: 'Silo AI',
-  description: 'Silo AI - Europe\'s largest private AI lab',
+export const TOM_POI: PointOfInterest = {
+  id: 'tom',
+  name: 'TOM',
+  description: 'TOM - The Orthopedic Marketplace',
   mapCoords: {
-    x: -200,
-    y: -500
+    x: -100,
+    y: 600
   },
   worldCoords: {
-    x: -200,
-    y: -48,
-    z: 500
+    x: -100,
+    y: -38,
+    z: -600
   },
   cameraView: {
     distance: 290,
@@ -165,21 +164,21 @@ export const SILO_AI_POI: PointOfInterest = {
 }
 
 /**
- * Wave Ventures
- * TODO: Click on the actual Wave Ventures building to get correct coordinates
+ * Metacore
+ * TODO: Click on the actual Metacore building to get correct coordinates
  */
-export const WAVE_VENTURES_POI: PointOfInterest = {
-  id: 'wave-ventures',
-  name: 'Wave Ventures',
-  description: 'Wave Ventures - Venture capital and startup acceleration',
+export const METACORE_POI: PointOfInterest = {
+  id: 'metacore',
+  name: 'Metacore',
+  description: 'Metacore - Mobile game developer',
   mapCoords: {
-    x: 52,
-    y: 529
+    x: 0,
+    y: 700
   },
   worldCoords: {
-    x: 52,
-    y: -37,
-    z: -529
+    x: 0,
+    y: -35,
+    z: -700
   },
   cameraView: {
     distance: 310,
@@ -189,14 +188,140 @@ export const WAVE_VENTURES_POI: PointOfInterest = {
 }
 
 /**
+ * IXI
+ * TODO: Click on the actual IXI building to get correct coordinates
+ */
+export const IXI_POI: PointOfInterest = {
+  id: 'ixi',
+  name: 'IXI',
+  description: 'IXI - Innovation and investment',
+  mapCoords: {
+    x: 100,
+    y: 750
+  },
+  worldCoords: {
+    x: 100,
+    y: -36,
+    z: -750
+  },
+  cameraView: {
+    distance: 300,
+    azimuth: 90,
+    elevation: 40
+  }
+}
+
+/**
+ * Varjo
+ * TODO: Click on the actual Varjo building to get correct coordinates
+ */
+export const VARJO_POI: PointOfInterest = {
+  id: 'varjo',
+  name: 'Varjo',
+  description: 'Varjo - Professional VR/XR headsets',
+  mapCoords: {
+    x: 600,
+    y: 400
+  },
+  worldCoords: {
+    x: 600,
+    y: -45,
+    z: -400
+  },
+  cameraView: {
+    distance: 295,
+    azimuth: 90,
+    elevation: 40
+  }
+}
+
+/**
+ * Linear
+ * TODO: Click on the actual Linear building to get correct coordinates
+ */
+export const LINEAR_POI: PointOfInterest = {
+  id: 'linear',
+  name: 'Linear',
+  description: 'Linear - Project management and issue tracking',
+  mapCoords: {
+    x: 300,
+    y: -400
+  },
+  worldCoords: {
+    x: 300,
+    y: -44,
+    z: 400
+  },
+  cameraView: {
+    distance: 305,
+    azimuth: 90,
+    elevation: 40
+  }
+}
+
+/**
+ * Distance
+ * TODO: Click on the actual Distance building to get correct coordinates
+ */
+export const DISTANCE_POI: PointOfInterest = {
+  id: 'distance',
+  name: 'Distance',
+  description: 'Distance - Technology and innovation',
+  mapCoords: {
+    x: 100,
+    y: -600
+  },
+  worldCoords: {
+    x: 100,
+    y: -46,
+    z: 600
+  },
+  cameraView: {
+    distance: 315,
+    azimuth: 90,
+    elevation: 40
+  }
+}
+
+/**
+ * Swarmia
+ * TODO: Click on the actual Swarmia building to get correct coordinates
+ */
+export const SWARMIA_POI: PointOfInterest = {
+  id: 'swarmia',
+  name: 'Swarmia',
+  description: 'Swarmia - Engineering analytics and insights',
+  mapCoords: {
+    x: -100,
+    y: -700
+  },
+  worldCoords: {
+    x: -100,
+    y: -47,
+    z: 700
+  },
+  cameraView: {
+    distance: 300,
+    azimuth: 90,
+    elevation: 40
+  }
+}
+
+/**
  * All Points of Interest
  * Add new locations here as the site expands
+ * Order matches the landing page navigation (left to right)
  */
 export const POINTS_OF_INTEREST: Record<string, PointOfInterest> = {
+  SUPERCELL: SUPERCELL_POI,
+  RELEX: RELEX_POI,
+  TOM: TOM_POI,
+  METACORE: METACORE_POI,
+  IXI: IXI_POI,
   FOUNDERS_HOUSE: FOUNDERS_HOUSE_POI,
+  VARJO: VARJO_POI,
   OURA: OURA_POI,
-  WOLT: WOLT_POI,
-  LIFELINE_VENTURES: LIFELINE_VENTURES_POI,
-  SILO_AI: SILO_AI_POI,
-  WAVE_VENTURES: WAVE_VENTURES_POI,
+  LINEAR: LINEAR_POI,
+  DISTANCE: DISTANCE_POI,
+  SWARMIA: SWARMIA_POI,
 }

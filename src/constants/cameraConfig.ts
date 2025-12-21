@@ -13,16 +13,16 @@
 export const CAMERA_BASE = {
   // Target point (what we're looking at)
   target: {
-    x: -209.85,
+    x: -73.22,
     y: 0.00,
-    z: -866.04
+    z: -256.96
   },
 
   // Ideal camera position
   position: {
-    x: 386.81,
-    y: 160.28,
-    z: -272.85
+    x: 28.05,
+    y: 83.02,
+    z: -942.71
   },
 
   // Polar coordinates (easier to work with for restrictions)
