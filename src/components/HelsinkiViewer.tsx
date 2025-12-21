@@ -55,6 +55,7 @@ export const HelsinkiViewer = ({ shouldLoad = true, shouldPause = false, scrollP
             lng: 24.9384,
           },
           radius: 2, // 2km radius
+          isNightMode: isDemoNightMode, // Use day mode by default
           onLoadProgress: (progress) => {
             setStatus(`Loading Helsinki 3D model... ${progress.toFixed(1)}%`)
             onMapLoadingChange?.({ isLoaded: false, progress })
@@ -81,10 +82,51 @@ export const HelsinkiViewer = ({ shouldLoad = true, shouldPause = false, scrollP
       
       setStatus('Loading Helsinki 3D model...')
 
-      // Animation loop
+      // Animation loop with camera logging
+      let lastLogTime = 0
+      const logInterval = 2000 // Log every 2 seconds
+
       const animate = () => {
         if (sceneRef.current) {
           sceneRef.current.update()
+
+          // Log camera data periodically
+          const now = Date.now()
+          if (now - lastLogTime >= logInterval) {
+            const camera = sceneRef.current.getCamera()
+            const scene = sceneRef.current as any
+            const pos = camera.position
+            const rotX = camera.rotation.x * 180 / Math.PI
+            const rotY = camera.rotation.y * 180 / Math.PI
+            const rotZ = camera.rotation.z * 180 / Math.PI
+
+            console.log('📷 CAMERA:', {
+              position: {
+                x: Math.round(pos.x),
+                y: Math.round(pos.y),
+                z: Math.round(pos.z)
+              },
+              rotation: {
+                x: rotX.toFixed(1) + '°',
+                y: rotY.toFixed(1) + '°',
+                z: rotZ.toFixed(1) + '°'
+              },
+              target: scene.controls?.target ? {
+                x: Math.round(scene.controls.target.x),
+                y: Math.round(scene.controls.target.y),
+                z: Math.round(scene.controls.target.z)
+              } : 'N/A',
+              height: Math.round(pos.y),
+              distance: Math.round(Math.sqrt(
+                Math.pow(pos.x - (scene.controls?.target?.x || 0), 2) +
+                Math.pow(pos.y - (scene.controls?.target?.y || 0), 2) +
+                Math.pow(pos.z - (scene.controls?.target?.z || 0), 2)
+              ))
+            })
+
+            lastLogTime = now
+          }
+
           animationFrameRef.current = requestAnimationFrame(animate)
         }
       }
@@ -120,6 +162,7 @@ export const HelsinkiViewer = ({ shouldLoad = true, shouldPause = false, scrollP
     // Enable parallax when map reaches fullscreen (scrollProgress >= 1)
     sceneRef.current.setParallaxEnabled(scrollProgress >= 1)
   }, [scrollProgress])
+
 
   // Independent ticker animation - runs smoothly from 0-100 over ~2.5 seconds
   useEffect(() => {
@@ -287,6 +330,37 @@ export const HelsinkiViewer = ({ shouldLoad = true, shouldPause = false, scrollP
             <p className="poi-label-description">{currentPOI.description}</p>
           </div>
         </div>
+      )}
+
+      {/* Hero Text Overlay - "FOUNDERS HOUSE" */}
+      {scrollProgress >= 1 && (
+        <div className="hero-text-container">
+          <div className="hero-text-wrapper">
+            <div className="hero-subtext-row">
+              <p className="hero-subtext hero-subtext-left">Built for the obsessed.</p>
+              <p className="hero-subtext hero-subtext-right">Built for the exceptional.</p>
+            </div>
+            <h1 className="hero-title">
+              <span className="hero-title-founders">FOUNDERS</span> <span className="hero-title-house">HOUSE</span>
+            </h1>
+          </div>
+        </div>
+      )}
+
+      {/* Top vignette overlay - subtle cream tint */}
+      {scrollProgress >= 1 && (
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            height: '178px',
+            background: 'linear-gradient(180deg, rgba(255, 248, 242, 0.02) 0%, rgba(255, 248, 242, 0) 100%)',
+            pointerEvents: 'none',
+            zIndex: 99,
+          }}
+        />
       )}
 
       {/* POI Navigator - Bottom navigation bar */}

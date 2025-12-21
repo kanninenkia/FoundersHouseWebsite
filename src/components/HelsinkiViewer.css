@@ -4,7 +4,9 @@
  */
 
 /* Import IBM Plex Sans for the intro typography */
-@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;600;700&display=swap');
+/* Import Outfit font for hero text */
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;800&display=swap');
 
 /* Container */
 .helsinki-container {
@@ -291,5 +293,99 @@
   
   .poi-label-description {
     font-size: 0.875rem;
+  }
+}
+
+
+/* Hero Text Overlay */
+.hero-text-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  z-index: 1001;
+  padding-bottom: 25vh;
+  animation: heroFadeIn 1s ease-out;
+}
+
+@keyframes heroFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.hero-text-wrapper {
+  text-align: center;
+  max-width: 90vw;
+}
+
+.hero-subtext-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  margin-bottom: -0.5rem;
+  gap: 2rem;
+}
+
+.hero-title {
+  font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: clamp(4rem, 12vw, 10rem);
+  color: #AD1013;
+  letter-spacing: -0.02em;
+  margin: 0;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.hero-title-founders {
+  font-weight: 800;
+}
+
+.hero-title-house {
+  font-weight: 400;
+}
+
+.hero-subtext {
+  font-family: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: clamp(1.2rem, 3.6vw, 3rem);
+  font-weight: 400;
+  color: #8D8D8D;
+  margin: 0;
+  line-height: 1.4;
+  white-space: nowrap;
+}
+
+.hero-subtext-left {
+  text-align: left;
+}
+
+.hero-subtext-right {
+  text-align: right;
+}
+
+@media (max-width: 768px) {
+  .hero-title {
+    font-size: clamp(2.5rem, 10vw, 6rem);
+  }
+
+  .hero-subtext {
+    font-size: clamp(0.9rem, 3vw, 1.8rem);
+  }
+
+  .hero-subtext-left,
+  .hero-subtext-right {
+    padding-left: 1rem;
+    padding-right: 1rem;
   }
 }
