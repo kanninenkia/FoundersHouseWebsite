@@ -11,25 +11,25 @@
  * Derived from the ideal view: Distance ~856.49, Azimuth 45.17°, Elevation 79.21°, Height 160.28
  */
 export const CAMERA_BASE = {
-  // Target point (what we're looking at)
+  // Target point (what we're looking at) - Hardcoded initial view
   target: {
-    x: -151,
+    x: -152,
     y: 0,
-    z: -808
+    z: -810
   },
 
-  // Ideal camera position
+  // Ideal camera position - Hardcoded initial view
   position: {
-    x: 241,
-    y: 87,
-    z: -237
+    x: 292,
+    y: 195,
+    z: -173
   },
 
   // Polar coordinates (easier to work with for restrictions)
   polar: {
-    distance: 698,       // Distance from target
-    azimuth: 34.2,       // Horizontal angle
-    elevation: -9.7,     // Vertical angle (rotation.x)
+    distance: 800,       // Distance from target
+    azimuth: 33.6,       // Horizontal angle
+    elevation: -18.1,    // Vertical angle (rotation.x)
   },
 
   // Camera properties

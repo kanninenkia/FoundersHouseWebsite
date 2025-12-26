@@ -4,7 +4,7 @@ import postProcessFragmentShader from '../shaders/postProcessFragment.glsl?raw'
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js'
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js'
 import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js'
-import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js'
+// import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js'
 import { COLORS } from '../constants/designSystem'
 
 export function setupPostProcessing(renderTarget: THREE.WebGLRenderTarget, perlinTexture: THREE.DataTexture) {
@@ -51,7 +51,7 @@ export function setupComposer(renderer: THREE.WebGLRenderer, scene: THREE.Scene,
     shaderPass.renderToScreen = true
     composer.addPass(shaderPass)
 
-    return { composer, bloomPass }
+    return { composer, bloomPass: null }
   } catch (err) {
     return { composer: null, bloomPass: null }
   }

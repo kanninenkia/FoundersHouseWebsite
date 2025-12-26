@@ -42,7 +42,7 @@ export class HelsinkiCameraController {
   public enableDamping: boolean = true
   public dampingFactor: number = 0.05
   public screenSpacePanning: boolean = false
-  public minDistance: number = 100
+  public minDistance: number = 700  // Increased to prevent seeing model imperfections
   public maxDistance: number = 50000
   public maxPolarAngle: number = Math.PI / 2
   public minPolarAngle: number = 0

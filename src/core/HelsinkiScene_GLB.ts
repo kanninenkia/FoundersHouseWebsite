@@ -8,7 +8,7 @@ import HelsinkiCameraController from './HelsinkiCameraController'
 import { loadHelsinkiModel as loadModel, type RenderMode } from '../loaders'
 import { setupPostProcessing, setupComposer, setupSceneLighting } from '../rendering'
 import { addCityLightsPoints, animateCityLights, removeCityLights, updateCityLightsFog, createStarfield, animateStars, setupSceneFog, updateFogColor } from '../effects'
-import { createPOITransition, updatePOITransition, cancelPOITransition, type POITransitionState, createSmoothPOIAnimation, updateSmoothPOIAnimation, interruptSmoothPOIAnimation, type SmoothPOIAnimation } from '../animation'
+import { createSmoothPOIAnimation, updateSmoothPOIAnimation, interruptSmoothPOIAnimation, type SmoothPOIAnimation } from '../animation'
 import { PerlinNoiseGenerator, isNightInHelsinki, updateMaterialsInHierarchy, isLineSegmentsWithBasicMaterial, applyCameraConfig, getCurrentCameraConfig, CAMERA_PRESETS, type CameraConfig, logDeviceInfo } from '../helpers'
 import { createCamera, createRenderer, configureCameraControls, createRenderTarget, handleResize, setupClickHandler } from '../helpers'
 import { AutoTourManager, POIHighlightManager, InteractionManager, FoundersHouseMarker } from './managers'
@@ -118,7 +118,7 @@ export class HelsinkiScene {
     logDeviceInfo()
 
     // Load model
-    const modelPath = '/draft.glb'
+    const modelPath = '/untitled.glb'
     loadModel({
       modelPath: modelPath,
       scene: this.scene,
@@ -219,8 +219,8 @@ export class HelsinkiScene {
     const bounds = this.getMapBounds()
     if (!bounds) return position
 
-    // Define safe zone - keep camera within 90% of map bounds (10% from edge)
-    const safetyMargin = 0.90
+    // Define safe zone - allow camera all the way to edges (100% of map bounds)
+    const safetyMargin = 1.0
     const maxX = bounds.max.x * safetyMargin
     const minX = bounds.min.x * safetyMargin
     const maxZ = bounds.max.z * safetyMargin
@@ -242,8 +242,8 @@ export class HelsinkiScene {
 
     const cameraTarget = this.controls.target || new THREE.Vector3(0, 0, 0)
 
-    // Define safe zone - keep camera within 90% of map bounds (10% from edge)
-    const safetyMargin = 0.90
+    // Define safe zone - allow camera all the way to edges (100% of map bounds)
+    const safetyMargin = 1.0
     const maxX = bounds.max.x * safetyMargin
     const minX = bounds.min.x * safetyMargin
     const maxZ = bounds.max.z * safetyMargin
@@ -268,46 +268,22 @@ export class HelsinkiScene {
       clamped = true
     }
 
+    // CRITICAL: Enforce camera height constraints (220-300)
+    if (this.camera.position.y < 220) {
+      this.camera.position.y = 220
+      clamped = true
+    }
+    if (this.camera.position.y > 300) {
+      this.camera.position.y = 300
+      clamped = true
+    }
+
     // Update controls target if clamped
     if (clamped) {
       this.controls.setTarget(cameraTarget.x, cameraTarget.y, cameraTarget.z)
     }
   }
 
-  private updateDynamicFog(): void {
-    if (!this.fog || !this.camera || !this.helsinkiModel) return
-
-    const bounds = this.getMapBounds()
-    if (!bounds) return
-
-    // Get camera position (controls.target is the look-at point)
-    const cameraTarget = this.controls.target || new THREE.Vector3(0, 0, 0)
-    const camX = cameraTarget.x
-    const camZ = cameraTarget.z
-
-    // Use actual map radius from model bounds
-    const mapRadius = bounds.radius
-    const edgeThreshold = mapRadius * 0.7 // Start tightening fog at 70% of radius
-
-    // Calculate distance from center
-    const distFromCenter = Math.sqrt(camX * camX + camZ * camZ)
-
-    // Calculate how close we are to the edge (0 = center, 1 = at edge)
-    const edgeProximity = Math.max(0, (distFromCenter - edgeThreshold) / (mapRadius - edgeThreshold))
-
-    // Dynamic fog values based on edge proximity
-    const baseFogNear = 300
-    const baseFogFar = 1200
-
-    // When approaching edge, tighten fog dramatically
-    // At edge: near and far converge to create thick fog wall
-    const fogNear = baseFogNear - (edgeProximity * 250) // Tighten near fog
-    const fogFar = baseFogFar - (edgeProximity * 600)   // Pull far fog closer
-
-    // Apply to Three.js fog
-    this.fog.near = Math.max(50, fogNear)
-    this.fog.far = Math.max(fogNear + 100, fogFar) // Ensure far > near
-  }
 
   public update(): void {
     const elapsed = this.clock.getElapsedTime()
@@ -315,9 +291,6 @@ export class HelsinkiScene {
 
     // Enforce camera boundaries (keep camera within map bounds)
     this.enforceCameraBoundaries()
-
-    // Update dynamic fog based on camera position
-    this.updateDynamicFog()
 
     // ==========================================
     // SMOOTH POI ANIMATION SYSTEM
@@ -530,17 +503,55 @@ export class HelsinkiScene {
     const poi = POINTS_OF_INTEREST[poiName]
     if (!poi) return
 
+    // HARDCODED: Oura POI endpoint (exact camera position)
+    if (poiName === 'OURA' && animated) {
+      this.poiHighlightManager.clearHighlights()
+
+      if (this.poiAnimation && this.poiAnimation.isActive) {
+        interruptSmoothPOIAnimation(this.poiAnimation)
+      }
+
+      const currentTarget = this.controls.target ? this.controls.target.clone() : new THREE.Vector3(0, 0, 0)
+      const hardcodedCameraPos = new THREE.Vector3(831, 149, -215)
+      const hardcodedTarget = new THREE.Vector3(781, -49, -911)
+
+      this.poiAnimation = {
+        isActive: true,
+        startTime: performance.now() / 1000,
+        duration,
+        startCameraPosition: this.camera.position.clone(),
+        startTargetPosition: currentTarget.clone(),
+        endCameraPosition: hardcodedCameraPos,
+        endTargetPosition: hardcodedTarget,
+        currentVelocity: new THREE.Vector3(),
+        currentTargetVelocity: new THREE.Vector3(),
+        onComplete: () => {
+          this.poiHighlightManager.highlightPOI(poiName, 200)
+          this.controls.setTarget(hardcodedTarget.x, hardcodedTarget.y, hardcodedTarget.z)
+          this.controls.minDistance = 700
+          if (this.controls.syncInternalState) {
+            this.controls.syncInternalState()
+          }
+          if (onComplete) onComplete()
+        },
+        onInterrupt: () => {
+          this.poiHighlightManager.clearHighlights()
+        }
+      }
+      return
+    }
+
     // Get desired values from parameters or POI config
     const desiredDistance = distance ?? poi.cameraView?.distance ?? 300
     const desiredAzimuth = azimuth ?? poi.cameraView?.azimuth ?? 90
     const desiredElevation = elevation ?? poi.cameraView?.elevation ?? 40
 
-    // Clamp to safe ranges for POI viewing (more lenient than base camera restrictions)
-    // Distance: Allow closer for POI close-ups, but not too close (200-900 range)
+    // Clamp distance to allow close POI views while preventing seeing model imperfections
+    // Distance: Allow 200-900 range (closer than general camera restrictions for POI close-ups)
     const finalDistance = Math.max(200, Math.min(900, desiredDistance))
     // Azimuth: Allow full 360° rotation for POI viewing (no restriction)
     const finalAzimuth = desiredAzimuth
-    // Elevation: Clamp to restriction range to prevent bird's eye view (8-15° range)
+    // Elevation: Clamp to restriction range (8-15° range)
     const finalElevation = Math.max(8, Math.min(15, desiredElevation))
 
     if (animated) {
@@ -575,9 +586,9 @@ export class HelsinkiScene {
           // Use clamped target to stay within boundaries
           this.controls.setTarget(clampedPOITarget.x, clampedPOITarget.y, clampedPOITarget.z)
 
-          // CRITICAL: Adjust minDistance to allow close POI views (prevents zoom-out on click)
-          // Set minDistance to slightly below current distance to lock it in place
-          this.controls.minDistance = Math.max(50, finalDistance * 0.9)
+          // CRITICAL: Restore camera constraints after POI animation
+          // Reset minDistance to respect camera constraints (700 minimum)
+          this.controls.minDistance = 700
 
           // Sync all internal camera state to prevent any movement
           if (this.controls.syncInternalState) {

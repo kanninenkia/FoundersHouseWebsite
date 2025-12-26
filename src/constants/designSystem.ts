@@ -73,7 +73,7 @@ export const SCENE_CONFIG = {
     fov: 60,
     near: 1,
     far: 100000,
-    initialPosition: { x: 0, y: 5000, z: 10000 },
+    initialPosition: { x: 292, y: 195, z: -173 },  // Hardcoded starting position
   },
   lighting: {
     ambient: {
@@ -121,8 +121,8 @@ export const TIME_CONFIG = {
 } as const
 
 export const FOG = {
-  near: 300,  // Fog starts much closer to camera
-  far: 1200,
+  near: 400,   // Fog starts at reasonable distance
+  far: 1200,   // Fog extends to create depth
   colors: {
     day: 0xFFF8F2,  // Cream fog to match sky
     night: 0x0a0a15,

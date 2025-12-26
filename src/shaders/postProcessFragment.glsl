@@ -66,26 +66,11 @@ vec4 gaussianBlur(sampler2D tex, vec2 uv, vec2 resolution, float blurAmount) {
 }
 
 void main() {
-  // Calculate vertical position for fog gradient
-  float verticalPos = vUv.y;
-
-  // Calculate bottom fog gradient (extends higher up the screen)
-  // 0.0 at bottom (full fog) -> 1.0 at 50% height (no fog)
-  float fogFactor = smoothstep(0.0, 0.5, verticalPos);
-
-  // Sample original scene (no blur)
+  // Sample original scene (no blur, no fog)
   vec4 sceneColor = texture2D(tDiffuse, vUv);
 
-  // Detect edges
-  float edgeStrength = getEdgeStrength(tDiffuse, vUv, uResolution);
-  edgeStrength = smoothstep(0.05, 0.15, edgeStrength);
-
-  // Start with clean scene color
+  // Use clean scene color (brightness/contrast handled in CSS)
   vec3 finalColor = sceneColor.rgb;
-
-  // Apply bottom fog gradient (reversed fog from bottom up)
-  // More fog at bottom, fades to clear at quarter height
-  finalColor = mix(uBottomFogColor, finalColor, fogFactor);
 
   gl_FragColor = vec4(finalColor, 1.0);
 }

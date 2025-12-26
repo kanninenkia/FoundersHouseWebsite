@@ -4,6 +4,7 @@
  */
 
 import { useEffect, useRef, useState } from 'react'
+import * as THREE from 'three'
 import { HelsinkiScene } from '../core'
 import type { RenderMode } from '../loaders'
 import type { PointOfInterest } from '../constants/poi'
@@ -37,7 +38,8 @@ export const HelsinkiViewer = ({ shouldLoad = true, shouldPause = false, scrollP
   const [isAdvancedCamera, setIsAdvancedCamera] = useState<boolean>(false)
   const [renderMode, setRenderMode] = useState<RenderMode>('textured-red')
   const [currentPOI, setCurrentPOI] = useState<{ name: string; description: string } | null>(null)
-  const [cameraRotationX, setCameraRotationX] = useState<number>(0)
+  const [grayscaleAmount, setGrayscaleAmount] = useState<number>(90) // Start at 90% grayscale
+  const [heroTextOpacity, setHeroTextOpacity] = useState<number>(1) // Hero text opacity based on camera direction
 
   useEffect(() => {
     if (!containerRef.current || !shouldLoad || shouldPause) return
@@ -91,7 +93,35 @@ export const HelsinkiViewer = ({ shouldLoad = true, shouldPause = false, scrollP
           // Update camera rotation for hero text positioning (every frame)
           const camera = sceneRef.current.getCamera()
           const rotX = camera.rotation.x
-          setCameraRotationX(rotX)
+
+          // Calculate hero text opacity based on Founders House viewport position
+          // Hero text should only appear when Founders House is near center of screen
+
+          // Founders House position (updated)
+          const foundersHousePos = new THREE.Vector3(30.77, -20.14, -533.42)
+
+          // Project Founders House position to screen coordinates
+          const screenPos = foundersHousePos.clone()
+          screenPos.project(camera)
+
+          // Convert from normalized device coordinates (-1 to 1) to viewport percentage (0 to 100)
+          const viewportX = (screenPos.x + 1) * 50  // 0-100%
+          const viewportY = (1 - screenPos.y) * 50  // 0-100% (flip Y axis)
+
+          // Calculate distance from target point (50% horizontal, 65% vertical)
+          const centerX = 50
+          const centerY = 65
+          const distanceFromCenterX = Math.abs(viewportX - centerX)
+          const distanceFromCenterY = Math.abs(viewportY - centerY)
+
+          // Show hero text when Founders House is within 13vh/vw of center
+          const threshold = 13
+          const isInCenter = distanceFromCenterX <= threshold && distanceFromCenterY <= threshold
+
+          // Fade based on distance from center
+          const maxDistance = Math.max(distanceFromCenterX, distanceFromCenterY)
+          const opacity = isInCenter ? Math.max(0, Math.min(1, 1 - (maxDistance / threshold))) : 0
+          setHeroTextOpacity(opacity)
 
           // Log camera data periodically
           const now = Date.now()
@@ -123,7 +153,14 @@ export const HelsinkiViewer = ({ shouldLoad = true, shouldPause = false, scrollP
                 Math.pow(pos.x - (scene.controls?.target?.x || 0), 2) +
                 Math.pow(pos.y - (scene.controls?.target?.y || 0), 2) +
                 Math.pow(pos.z - (scene.controls?.target?.z || 0), 2)
-              ))
+              )),
+              heroTextDebug: {
+                viewportX: viewportX.toFixed(1) + '%',
+                viewportY: viewportY.toFixed(1) + '%',
+                distanceFromCenterX: distanceFromCenterX.toFixed(1),
+                distanceFromCenterY: distanceFromCenterY.toFixed(1),
+                opacity: opacity.toFixed(2)
+              }
             })
 
             lastLogTime = now
@@ -161,6 +198,33 @@ export const HelsinkiViewer = ({ shouldLoad = true, shouldPause = false, scrollP
     // Enable parallax when map reaches fullscreen (scrollProgress >= 1)
     sceneRef.current.setParallaxEnabled(scrollProgress >= 1)
   }, [scrollProgress])
+
+  // Wheel event listener to control grayscale slider - bidirectional and very gradual
+  useEffect(() => {
+    const handleWheel = (event: WheelEvent) => {
+      setGrayscaleAmount(prev => {
+        // Scroll down (positive deltaY) = reduce grayscale
+        // Scroll up (negative deltaY) = increase grayscale
+        // 90% / 400 scrolls = 0.225% per scroll tick
+        const change = event.deltaY > 0 ? -0.3 : 0.3
+        const newAmount = Math.max(0, Math.min(90, prev + change))
+        return newAmount
+      })
+    }
+
+    window.addEventListener('wheel', handleWheel)
+    return () => window.removeEventListener('wheel', handleWheel)
+  }, [])
+
+  // Apply grayscale dynamically to canvas
+  useEffect(() => {
+    if (!containerRef.current) return
+
+    const canvas = containerRef.current.querySelector('canvas')
+    if (canvas) {
+      canvas.style.filter = `grayscale(${grayscaleAmount}%) brightness(1.15) contrast(0.85)`
+    }
+  }, [grayscaleAmount])
 
 
   // Independent ticker animation - runs smoothly from 0-100 over ~2.5 seconds
@@ -357,7 +421,9 @@ export const HelsinkiViewer = ({ shouldLoad = true, shouldPause = false, scrollP
           style={{
             // Simpler positioning - just use fixed offset for now
             // Camera tracking causes text to go off-screen
-            transform: `translateY(0vh)`
+            transform: `translateY(0vh)`,
+            opacity: heroTextOpacity,
+            transition: 'opacity 0.3s ease-out'
           }}
         >
           <div className="hero-text-wrapper">

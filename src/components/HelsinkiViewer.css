@@ -28,7 +28,22 @@
 
 /* Apply full grayscale filter */
 .helsinki-container canvas {
-  filter: grayscale(90%) brightness(0.9) contrast(1);
+  filter: grayscale(90%) brightness(1.15) contrast(0.85);
+}
+
+/* Bottom viewport blur - subtle focus effect like mockup */
+.helsinki-container::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 8vh;
+  background: linear-gradient(to top, rgba(255, 248, 242, 0.15) 0%, transparent 100%);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+  pointer-events: none;
+  z-index: 1;
 }
 
 /* UI Overlay */
@@ -353,16 +368,7 @@
   pointer-events: none;
   z-index: 1001;
   padding-bottom: 20vh;
-  animation: heroFadeIn 1s ease-out forwards;
-}
-
-@keyframes heroFadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
+  /* Removed animation - opacity now controlled by React state based on camera direction */
 }
 
 .hero-text-wrapper {
