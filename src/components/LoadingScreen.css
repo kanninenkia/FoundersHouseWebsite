@@ -309,8 +309,23 @@
   align-items: center;
   gap: 0.2em;
   text-align: center;
+  opacity: 1;
+}
+
+/* Fade-in animation for text with ease-out timing */
+.fade-in-text {
+  display: inline-block;
+  animation: fadeInEaseOut 1.2s ease-out forwards;
   opacity: 0;
-  animation: appearMainText 0s 0.7s forwards;
+}
+
+@keyframes fadeInEaseOut {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 .text-page .text-centered.align-left {
@@ -328,6 +343,55 @@
   line-height: 1;
   white-space: nowrap;
   overflow: visible;
+}
+
+/* Navigation Logo - Top Left */
+.nav-logo-container {
+  position: absolute;
+  top: 2.5rem;
+  left: 2.5rem;
+  z-index: 1003;
+  cursor: pointer;
+  opacity: 0;
+  animation: fadeInCornerElements 0.2s ease-out forwards;
+  transition: all 0.3s ease;
+  pointer-events: none;
+}
+
+.nav-logo-container:hover {
+  opacity: 0.8;
+  transform: scale(1.05);
+}
+
+.nav-cube-logo {
+  height: 58px;
+  width: 58px;
+  display: block;
+  transition: all 0.3s ease;
+}
+
+/* Navigation Hamburger Menu - Top Right */
+.nav-hamburger-menu {
+  position: absolute;
+  top: 2.5rem;
+  right: 2.5rem;
+  z-index: 1003;
+  cursor: pointer;
+  opacity: 0;
+  animation: fadeInCornerElements 0.2s ease-out forwards;
+  transition: all 0.3s ease;
+  padding: 0.5rem;
+}
+
+.nav-hamburger-menu:hover {
+  opacity: 0.7;
+}
+
+.nav-hamburger-icon {
+  height: 26px;
+  width: 35px;
+  display: block;
+  transition: all 0.3s ease;
 }
 
 /* Corner labels - persistent throughout both text phases */
@@ -459,20 +523,21 @@
   }
 }
 
-/* v5 - Text fades to 0.8 opacity, not 0 */
+/* v5 - Text stays still until map reaches it, then moves up together */
 @keyframes getPushedByBox {
-  /* Text stays completely stationary while map grows from bottom */
+  /* Text stays completely still while map grows from bottom */
   0% {
     transform: translateY(0) translateZ(0);
     opacity: 1;
   }
-  /* Map is growing but hasn't reached text yet - text stays still */
-  30% {
+  /* Map reaches the bottom of the text - start moving together */
+  /* Map grows from 1.5rem to 67vh (~67vh total growth) */
+  /* Text is ~40vh from bottom, so map reaches it at ~40vh/67vh = ~37% */
+  37% {
     transform: translateY(0) translateZ(0);
     opacity: 1;
   }
-  /* Map reaches 67vh - text is glued to top with 0.8 opacity */
-  /* Text stays visible at 0.8 opacity (only fades to 0 during scroll) */
+  /* Map continues growing to 67vh, pushing text up by 25vh */
   100% {
     transform: translateY(-25vh) translateZ(0);
     opacity: 0.8;

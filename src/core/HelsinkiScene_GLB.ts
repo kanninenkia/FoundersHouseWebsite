@@ -195,11 +195,10 @@ export class HelsinkiScene {
 
     if (wasAnimating) {
       this.autoTourManager.stop()
-      this.autoTourManager.startInactivityTimer(() => this.flyToNextPOI())
     }
 
+    // Auto-tour disabled - remove inactivity timers
     this.autoTourManager.recordInteraction()
-    this.autoTourManager.startInactivityTimer(() => this.flyToNextPOI())
   }
 
   public update(): void {
@@ -234,7 +233,7 @@ export class HelsinkiScene {
 
       this.controls.resetInteractionFlag()
       this.autoTourManager.recordInteraction()
-      this.autoTourManager.startInactivityTimer(() => this.flyToNextPOI())
+      // Auto-tour disabled - remove inactivity timer
     }
 
     // Update POI transition animation

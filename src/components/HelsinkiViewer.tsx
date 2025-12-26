@@ -7,6 +7,7 @@ import { useEffect, useRef, useState } from 'react'
 import { HelsinkiScene } from '../core'
 import type { RenderMode } from '../loaders'
 import type { PointOfInterest } from '../constants/poi'
+import { POINTS_OF_INTEREST } from '../constants/poi'
 import { POINavigator } from './POINavigator'
 import './HelsinkiViewer.css'
 
@@ -40,15 +41,11 @@ export const HelsinkiViewer = ({ shouldLoad = true, shouldPause = false, scrollP
   useEffect(() => {
     if (!containerRef.current || !shouldLoad || shouldPause) return
 
-    // Use requestIdleCallback to load map during browser idle time (non-blocking)
-    const idleCallback = (window as any).requestIdleCallback || ((cb: Function) => setTimeout(cb, 1))
-
-    const idleHandle = idleCallback(() => {
-      if (!containerRef.current || shouldPause) return
-
-      try {
-        // Initialize Helsinki scene during idle time
-        const scene = new HelsinkiScene({
+    // Initialize immediately - no setTimeout/requestIdleCallback
+    // This ensures loading starts even in background tabs
+    try {
+      // Initialize Helsinki scene
+      const scene = new HelsinkiScene({
           container: containerRef.current,
           helsinkiCenter: {
             lat: 60.1699,
@@ -132,17 +129,14 @@ export const HelsinkiViewer = ({ shouldLoad = true, shouldPause = false, scrollP
       }
 
       animate()
-      } catch (err) {
-        const message = err instanceof Error ? err.message : String(err)
-        setStatus('Error: ' + message)
-        setLoading(false)
-      }
-    })
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err)
+      setStatus('Error: ' + message)
+      setLoading(false)
+    }
 
     // Cleanup
     return () => {
-      const cancelIdleCallback = (window as any).cancelIdleCallback || clearTimeout
-      cancelIdleCallback(idleHandle)
 
       if (animationFrameRef.current) {
         cancelAnimationFrame(animationFrameRef.current)
@@ -152,7 +146,7 @@ export const HelsinkiViewer = ({ shouldLoad = true, shouldPause = false, scrollP
         sceneRef.current = null
       }
     }
-  }, [shouldLoad, shouldPause])
+  }, [shouldLoad, shouldPause, isDemoNightMode])
 
   // Control parallax based on scroll progress - disable during animation, enable at fullscreen
   useEffect(() => {
@@ -165,11 +159,12 @@ export const HelsinkiViewer = ({ shouldLoad = true, shouldPause = false, scrollP
 
 
   // Independent ticker animation - runs smoothly from 0-100 over ~2.5 seconds
+  // Uses setInterval instead of requestAnimationFrame to ensure it runs even when tab is inactive
   useEffect(() => {
     if (!loading) return
 
-    let raf = 0
     const TICKER_DURATION = 2500 // 2.5 seconds to reach 100
+    const UPDATE_INTERVAL = 16 // ~60fps (16ms per frame)
 
     const tick = () => {
       const elapsed = Date.now() - tickerStartTimeRef.current
@@ -186,13 +181,11 @@ export const HelsinkiViewer = ({ shouldLoad = true, shouldPause = false, scrollP
         const increment = distance * 0.1
         return prev + increment
       })
-
-      // Keep animating - the cleanup or loading state change will cancel it
-      raf = requestAnimationFrame(tick)
     }
 
-    raf = requestAnimationFrame(tick)
-    return () => cancelAnimationFrame(raf)
+    // Use setInterval instead of requestAnimationFrame to continue in background
+    const intervalId = setInterval(tick, UPDATE_INTERVAL)
+    return () => clearInterval(intervalId)
   }, [loading])
 
   // Hide loading screen when both ticker reaches ~100 AND model is loaded
@@ -281,8 +274,15 @@ export const HelsinkiViewer = ({ shouldLoad = true, shouldPause = false, scrollP
 
   const handlePOISelect = (poi: PointOfInterest) => {
     if (sceneRef.current && (sceneRef.current as any).focusPOI) {
-      // Use the focusPOI method to smoothly transition to the selected POI
-      ;(sceneRef.current as any).focusPOI(poi.id.toUpperCase().replace(/-/g, '_'))
+      // Find the POI key by matching the POI id
+      const poiKey = Object.entries(POINTS_OF_INTEREST).find(
+        ([_, poiObj]) => poiObj.id === poi.id
+      )?.[0]
+
+      if (poiKey) {
+        // Use the focusPOI method to smoothly transition to the selected POI
+        ;(sceneRef.current as any).focusPOI(poiKey)
+      }
     }
   }
 
@@ -293,12 +293,25 @@ export const HelsinkiViewer = ({ shouldLoad = true, shouldPause = false, scrollP
         className={`helsinki-container ${renderMode === 'textured-red' || renderMode === 'no-texture-red' ? 'red-filter' : ''}`}
       />
 
-      {/* UI Overlay - Chartogne style */}
-      <div className="ui-overlay" style={{ opacity: scrollProgress >= 1 ? 1 : 0, transition: 'opacity 0.5s ease-out' }}>        <div className="main-cta">
-          <img src="/FHLOGO.png" alt="FH Logo" className="fh-logo" />
+      {/* Logo - Top Left */}
+      {scrollProgress >= 1 && (
+        <div className="logo-container">
+          <img src="/logo.svg" alt="Founders House Logo" className="cube-logo" />
         </div>
+      )}
 
-        <div className="controls">
+      {/* Hamburger Menu - Top Right */}
+      {scrollProgress >= 1 && (
+        <div className="hamburger-menu">
+          <img src="/hamburger.svg" alt="Menu" className="hamburger-icon" />
+        </div>
+      )}
+
+      {/* UI Overlay - Debug controls */}
+      <div className="ui-overlay" style={{ opacity: scrollProgress >= 1 ? 1 : 0, transition: 'opacity 0.5s ease-out' }}>
+
+        {/* Debug Controls - Hidden by default, can be toggled */}
+        <div className="controls debug-controls">
           <div className="mode-selector">
             <label>Render Mode:</label>
             <select value={renderMode} onChange={(e) => handleRenderModeChange(e.target.value as RenderMode)}>

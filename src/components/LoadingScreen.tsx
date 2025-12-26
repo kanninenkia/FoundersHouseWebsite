@@ -14,45 +14,9 @@ interface MapLoadingState {
   progress: number
 }
 
-// Characters to cycle through during animation
-const CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%&*'
-
-// Animated text component that cycles through random characters
-const AnimatedText = ({ text, duration = 20 }: { text: string; duration?: number }) => {
-  const [displayText, setDisplayText] = useState(text.split('').map(() => CHARS[0]))
-
-  useEffect(() => {
-    const chars = text.split('')
-    let iterations = 0
-    const maxIterations = duration // Number of random chars to show before settling
-
-    const interval = setInterval(() => {
-      setDisplayText((prev) =>
-        prev.map((_char, index) => {
-          // If this character is a space, keep it as space
-          if (chars[index] === ' ') return ' '
-
-          // If we've reached the final iteration for this character, show the final letter
-          if (iterations >= maxIterations - index) {
-            return chars[index]
-          }
-
-          // Otherwise show random character
-          return CHARS[Math.floor(Math.random() * CHARS.length)]
-        })
-      )
-
-      iterations++
-
-      if (iterations >= maxIterations + chars.length) {
-        clearInterval(interval)
-      }
-    }, 50) // Update every 50ms
-
-    return () => clearInterval(interval)
-  }, [text])
-
-  return <>{displayText.join('')}</>
+// Animated text component with fade-in effect
+const AnimatedText = ({ text }: { text: string; duration?: number }) => {
+  return <span className="fade-in-text">{text}</span>
 }
 
 interface Block {
@@ -85,24 +49,24 @@ export const LoadingScreen = ({ onComplete, duration, scrollProgress, onScrollPr
   }, [stage])
 
   // Loading bar effect - runs for exactly 7 seconds, independent of map loading
+  // Uses timestamp-based progress to work in background tabs
   useEffect(() => {
     if (scrollProgress > 0) return
 
     const LOADING_DURATION = 7000 // 7 seconds
-    const frameTime = 8.33 // ~120fps for smooth animation
-    const totalFrames = LOADING_DURATION / frameTime
-    const incrementPerFrame = 100 / totalFrames
+    const startTime = Date.now()
 
+    // Use setInterval with timestamp checking instead of increment-based
     const interval = setInterval(() => {
-      setLoadingBarProgress((prev) => {
-        const next = prev + incrementPerFrame
-        if (next >= 100) {
-          clearInterval(interval)
-          return 100
-        }
-        return next
-      })
-    }, frameTime)
+      const elapsed = Date.now() - startTime
+      const progress = Math.min((elapsed / LOADING_DURATION) * 100, 100)
+
+      setLoadingBarProgress(progress)
+
+      if (progress >= 100) {
+        clearInterval(interval)
+      }
+    }, 50) // Check every 50ms - will continue even if throttled in background
 
     // After 7 seconds, check if map is loaded
     const checkTimer = setTimeout(() => {
@@ -119,7 +83,7 @@ export const LoadingScreen = ({ onComplete, duration, scrollProgress, onScrollPr
       clearInterval(interval)
       clearTimeout(checkTimer)
     }
-  }, [scrollProgress])
+  }, [scrollProgress, mapLoadingState.isLoaded])
 
   // Watch for map loading completion after 7 seconds
   useEffect(() => {
@@ -177,46 +141,35 @@ export const LoadingScreen = ({ onComplete, duration, scrollProgress, onScrollPr
   }, [duration, onComplete])
 
   // Stage transitions triggered after loading completes
+  // Uses timestamp-based checking with setInterval to work in background tabs
   useEffect(() => {
     if (!canProceedToBlur || scrollProgress > 0) return
 
-    // Bar disappears, wait 0.5s, then blur logo
-    const logoBlurTimer = setTimeout(() => {
-      setStage('logo-blur')
-    }, 500)
+    // Record start time for time-based stage transitions
+    const startTime = Date.now()
 
-    // Pixelation starts while logo is blurring (0.8s into the blur)
-    const pixelOutTimer = setTimeout(() => {
-      setStage('pixel-out-to-text1')
-    }, 500 + 800)
+    // Use setInterval instead of setTimeout chain to work in background tabs
+    const checkInterval = setInterval(() => {
+      const elapsed = Date.now() - startTime
 
-    // Pixel out to reveal first text (1.5s pixel animation)
-    const text1Timer = setTimeout(() => {
-      setStage('text1')
-    }, 500 + 800 + 1500)
-
-    // Show first text (3.5s - ticker animation 1.75s + 1.75s hold), then transition to text2
-    const text2Timer = setTimeout(() => {
-      setStage('text2')
-    }, 500 + 800 + 1500 + 3500)
-
-    // Show second text (2s - ticker animation 1s + 1s hold)
-    const linesConnectTimer = setTimeout(() => {
-      setStage('lines-connect')
-    }, 500 + 800 + 1500 + 3500 + 2000)
-
-    // After lines connect and fill (2.8s), start sliding up
-    const slideUpStartTimer = setTimeout(() => {
-      setStage('slide-up-start')
-    }, 500 + 800 + 1500 + 3500 + 2000 + 2800)
+      if (elapsed >= 500 && elapsed < 1300) {
+        setStage('logo-blur')
+      } else if (elapsed >= 1300 && elapsed < 2800) {
+        setStage('pixel-out-to-text1')
+      } else if (elapsed >= 2800 && elapsed < 6300) {
+        setStage('text1')
+      } else if (elapsed >= 6300 && elapsed < 8300) {
+        setStage('text2')
+      } else if (elapsed >= 8300 && elapsed < 11100) {
+        setStage('lines-connect')
+      } else if (elapsed >= 11100) {
+        setStage('slide-up-start')
+        clearInterval(checkInterval) // Stop checking once we reach final stage
+      }
+    }, 50) // Check every 50ms for smooth transitions
 
     return () => {
-      clearTimeout(logoBlurTimer)
-      clearTimeout(pixelOutTimer)
-      clearTimeout(text1Timer)
-      clearTimeout(text2Timer)
-      clearTimeout(linesConnectTimer)
-      clearTimeout(slideUpStartTimer)
+      clearInterval(checkInterval)
     }
   }, [canProceedToBlur, scrollProgress])
 
@@ -296,9 +249,17 @@ export const LoadingScreen = ({ onComplete, duration, scrollProgress, onScrollPr
   const shouldSlideUp = stage === 'slide-up-start'
   // Start loading map immediately at page launch (all stages)
   const shouldLoadMap = true
-  // Pause map loading during pixel-out-to-text1, text1, text2 stages ONLY
-  // Let it load during lines-connect so it's ready to fade in
-  const shouldPauseMapLoading = stage === 'pixel-out-to-text1' || stage === 'text1' || stage === 'text2'
+  // NEVER pause map loading - even in background tabs
+  // This ensures the map loads regardless of tab visibility or animation stage
+  const shouldPauseMapLoading = false
+
+  // Debug logging
+  console.log('[LoadingScreen] Render:', {
+    stage,
+    shouldLoadMap,
+    shouldPauseMapLoading,
+    scrollProgress
+  })
 
   return (
     <div
@@ -356,6 +317,8 @@ export const LoadingScreen = ({ onComplete, duration, scrollProgress, onScrollPr
               pointerEvents: 'none'
             }}
           >
+            {/* Logo and Hamburger - Hidden on loading screen, will show on map view instead */}
+
             <span
               className="corner-label top-left"
               style={{
@@ -410,14 +373,14 @@ export const LoadingScreen = ({ onComplete, duration, scrollProgress, onScrollPr
             >
               {showText1 && (
                 <>
-                  <div><AnimatedText text="FOR THE NEXT" duration={35} /></div>
-                  <div><AnimatedText text="FOUNDER GENERATION" duration={35} /></div>
+                  <div><AnimatedText text="FOR THE NEXT" /></div>
+                  <div><AnimatedText text="FOUNDER GENERATION" /></div>
                 </>
               )}
               {showText2 && (
                 <>
-                  <div><AnimatedText text="Where builders converge," duration={20} /></div>
-                  <div><AnimatedText text="Where potential multiplies" duration={20} /></div>
+                  <div><AnimatedText text="Where builders converge," /></div>
+                  <div><AnimatedText text="Where potential multiplies" /></div>
                 </>
               )}
             </div>

@@ -69,20 +69,19 @@ export const FOUNDERS_HOUSE_POI: PointOfInterest = {
 
 /**
  * Oura Ring HQ
- * TODO: Click on the actual Oura building to get correct coordinates
  */
 export const OURA_POI: PointOfInterest = {
   id: 'oura',
   name: 'Oura',
   description: 'Oura Ring - Health technology and wearables',
   mapCoords: {
-    x: 804,
-    y: 520
+    x: 778.20,
+    y: 517.65
   },
   worldCoords: {
-    x: 804,
-    y: -47,
-    z: -520
+    x: 778.20,
+    y: -49.46,
+    z: -517.65
   },
   cameraView: {
     distance: 280,
@@ -93,20 +92,19 @@ export const OURA_POI: PointOfInterest = {
 
 /**
  * Supercell
- * TODO: Click on the actual Supercell building to get correct coordinates
  */
 export const SUPERCELL_POI: PointOfInterest = {
   id: 'supercell',
   name: 'Supercell',
   description: 'Supercell - Mobile game developer',
   mapCoords: {
-    x: -400,
-    y: 200
+    x: -530.54,
+    y: -295.63
   },
   worldCoords: {
-    x: -400,
-    y: -40,
-    z: -200
+    x: -530.54,
+    y: -49.53,
+    z: 295.63
   },
   cameraView: {
     distance: 320,
@@ -164,45 +162,43 @@ export const TOM_POI: PointOfInterest = {
 }
 
 /**
- * Metacore
- * TODO: Click on the actual Metacore building to get correct coordinates
+ * Wolt
  */
-export const METACORE_POI: PointOfInterest = {
-  id: 'metacore',
-  name: 'Metacore',
-  description: 'Metacore - Mobile game developer',
+export const WOLT_POI: PointOfInterest = {
+  id: 'wolt',
+  name: 'Wolt',
+  description: 'Wolt - Food delivery and retail technology',
   mapCoords: {
-    x: 0,
-    y: 700
+    x: -107.40,
+    y: 774.90
   },
   worldCoords: {
-    x: 0,
-    y: -35,
-    z: -700
+    x: -107.40,
+    y: -38.01,
+    z: -774.90
   },
   cameraView: {
-    distance: 310,
+    distance: 300,
     azimuth: 90,
     elevation: 40
   }
 }
 
 /**
- * IXI
- * TODO: Click on the actual IXI building to get correct coordinates
+ * Lifeline Ventures
  */
-export const IXI_POI: PointOfInterest = {
-  id: 'ixi',
-  name: 'IXI',
-  description: 'IXI - Innovation and investment',
+export const LIFELINE_VENTURES_POI: PointOfInterest = {
+  id: 'lifeline-ventures',
+  name: 'Lifeline Ventures',
+  description: 'Lifeline Ventures - Venture capital firm',
   mapCoords: {
-    x: 100,
-    y: 750
+    x: 218.08,
+    y: -594.14
   },
   worldCoords: {
-    x: 100,
-    y: -36,
-    z: -750
+    x: 218.08,
+    y: -44.56,
+    z: 594.14
   },
   cameraView: {
     distance: 300,
@@ -315,12 +311,12 @@ export const SWARMIA_POI: PointOfInterest = {
 export const POINTS_OF_INTEREST: Record<string, PointOfInterest> = {
   SUPERCELL: SUPERCELL_POI,
   RELEX: RELEX_POI,
-  TOM: TOM_POI,
-  METACORE: METACORE_POI,
-  IXI: IXI_POI,
+  OURA: OURA_POI,
+  WOLT: WOLT_POI,
+  LIFELINE_VENTURES: LIFELINE_VENTURES_POI,
   FOUNDERS_HOUSE: FOUNDERS_HOUSE_POI,
   VARJO: VARJO_POI,
-  OURA: OURA_POI,
+  TOM: TOM_POI,
   LINEAR: LINEAR_POI,
   DISTANCE: DISTANCE_POI,
   SWARMIA: SWARMIA_POI,

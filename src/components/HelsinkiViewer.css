@@ -40,30 +40,51 @@
   pointer-events: auto;
 }
 
-/* Main CTA (FH Logo) - Chartogne style */
-.main-cta {
+/* Logo Container - Top Left */
+.logo-container {
   position: fixed;
-  left: 3.125rem;
-  top: 3.125rem;
+  left: 2.5rem;
+  top: 2.5rem;
   cursor: pointer;
-  display: flex;
+  z-index: 10002;
   transition: all 0.3s ease;
 }
 
-.main-cta:hover {
-  opacity: 0.7;
+.logo-container:hover {
+  opacity: 0.8;
   transform: scale(1.05);
 }
 
-/* FH Logo */
-.main-cta .fh-logo {
-  height: 50px;
-  width: auto;
+.cube-logo {
+  height: 58px;
+  width: 58px;
   display: block;
   transition: all 0.3s ease;
 }
 
-/* Controls */
+/* Hamburger Menu - Top Right */
+.hamburger-menu {
+  position: fixed;
+  right: 2.5rem;
+  top: 2.5rem;
+  cursor: pointer;
+  z-index: 10002;
+  transition: all 0.3s ease;
+  padding: 0.5rem;
+}
+
+.hamburger-menu:hover {
+  opacity: 0.7;
+}
+
+.hamburger-icon {
+  height: 26px;
+  width: 35px;
+  display: block;
+  transition: all 0.3s ease;
+}
+
+/* Controls - Debug mode (hidden by default) */
 .controls {
   position: fixed;
   right: 3.125rem;
@@ -74,6 +95,11 @@
   background: rgba(253, 252, 245, 0.95);
   padding: 1rem;
   border-radius: 6px;
+}
+
+/* Hide debug controls by default */
+.controls.debug-controls {
+  display: none;
 }
 
 .mode-selector {
@@ -188,9 +214,24 @@
 
 /* Mobile responsive */
 @media (max-width: 767px) {
-  .main-cta {
+  .logo-container {
     left: 1.5rem;
     top: 1.5rem;
+  }
+
+  .cube-logo {
+    height: 45px;
+    width: 45px;
+  }
+
+  .hamburger-menu {
+    right: 1.5rem;
+    top: 1.5rem;
+  }
+
+  .hamburger-icon {
+    height: 20px;
+    width: 28px;
   }
 
   .controls {
@@ -327,6 +368,7 @@
 .hero-text-wrapper {
   text-align: center;
   max-width: 90vw;
+  display: inline-block;
 }
 
 .hero-subtext-row {
@@ -346,6 +388,8 @@
   margin: 0;
   line-height: 1;
   text-transform: uppercase;
+  width: 100%;
+  text-align: center;
 }
 
 .hero-title-founders {
