@@ -68,11 +68,11 @@ vec4 gaussianBlur(sampler2D tex, vec2 uv, vec2 resolution, float blurAmount) {
 void main() {
   // Calculate vertical position for fog gradient
   float verticalPos = vUv.y;
-  
-  // Calculate bottom fog gradient (quarter of fog range)
-  // 0.0 at bottom (full fog) -> 1.0 at quarter height (no fog)
-  float fogFactor = smoothstep(0.0, 0.25, verticalPos);
-  
+
+  // Calculate bottom fog gradient (extends higher up the screen)
+  // 0.0 at bottom (full fog) -> 1.0 at 50% height (no fog)
+  float fogFactor = smoothstep(0.0, 0.5, verticalPos);
+
   // Sample original scene (no blur)
   vec4 sceneColor = texture2D(tDiffuse, vUv);
 
@@ -80,32 +80,12 @@ void main() {
   float edgeStrength = getEdgeStrength(tDiffuse, vUv, uResolution);
   edgeStrength = smoothstep(0.05, 0.15, edgeStrength);
 
-  // Sample Perlin noise for organic variation
-  vec2 perlinUv = vUv * 4.0 + uTime * 0.0001;
-  float perlinValue = texture2D(uPerlinTexture, perlinUv).r;
-
-  // Add subtle grain
-  vec2 grainUv = vUv * 2.0;
-  float grain = random2d(grainUv + uTime * 0.0001) * 0.05;
-
-  // Mix pencil color on edges
+  // Start with clean scene color
   vec3 finalColor = sceneColor.rgb;
-
-  // Apply pencil strokes to edges (reduced on blurred areas)
-  float pencilMask = edgeStrength * (0.8 + perlinValue * 0.4) * blurFactor;
-  finalColor = mix(finalColor, uPencilColor * 0.7, pencilMask * uPencilStrength);
-
-  // Apply paper texture (subtle)
-  finalColor = mix(finalColor, uPaperColor, (1.0 - sceneColor.a) * 0.2);
-
-  // Add grain (less on blurred areas)
-  finalColor += grain * blurFactor;
 
   // Apply bottom fog gradient (reversed fog from bottom up)
   // More fog at bottom, fades to clear at quarter height
   finalColor = mix(uBottomFogColor, finalColor, fogFactor);
-
-  // (no desaturation)
 
   gl_FragColor = vec4(finalColor, 1.0);
 }

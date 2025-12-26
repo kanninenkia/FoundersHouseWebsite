@@ -92,9 +92,14 @@ const VectorPath = ({ selectedIndex, totalItems }: VectorPathProps) => {
       setPath(pathData.trim().replace(/\s+/g, ' '))
     }
 
+    // Delay to ensure CSS has been applied before calculating positions
+    const timeoutId = setTimeout(updatePath, 50)
     updatePath()
     window.addEventListener('resize', updatePath)
-    return () => window.removeEventListener('resize', updatePath)
+    return () => {
+      clearTimeout(timeoutId)
+      window.removeEventListener('resize', updatePath)
+    }
   }, [selectedIndex, totalItems])
 
   return (

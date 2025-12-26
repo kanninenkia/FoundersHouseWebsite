@@ -88,7 +88,7 @@ export class InteractionManager {
     // Clear highlights
     onClearHighlights()
 
-    // Calculate smooth handoff target
+    // Calculate smooth handoff target from current camera position/direction
     const currentTarget = this.controls.target || new THREE.Vector3(0, 0, 0)
     const currentDistance = this.camera.position.distanceTo(currentTarget)
     const direction = new THREE.Vector3()
@@ -96,7 +96,7 @@ export class InteractionManager {
     const newTarget = this.camera.position.clone().add(direction.multiplyScalar(currentDistance))
     newTarget.y = Math.max(newTarget.y, 10)
 
-    // Hand off to user control
+    // Hand off to user control with current camera state
     this.controls.setTarget(newTarget.x, newTarget.y, newTarget.z)
 
     return true

@@ -728,6 +728,42 @@ export class HelsinkiCameraController {
       this.mouseNormalizedY = 0;
     }
   }
+
+  /**
+   * Sync all internal camera state after programmatic camera movement (e.g., POI transitions)
+   * Call this when you manually set camera.position and controls.target to prevent snap-back
+   */
+  public syncInternalState(): void {
+    // Sync all internal position tracking to current camera state
+    this.baseCameraPosition.copy(this.camera.position)
+    this.dragTargetPosition.copy(this.camera.position)
+    this.desiredCameraPosition.copy(this.camera.position)
+    this.cameraTargetPosition.copy(this.camera.position)
+
+    // Reset all velocities and momentum
+    this.velocity.set(0, 0, 0)
+    this.rotationVelocity = 0
+
+    // Sync orbit controls target
+    if (this.orbit && this.orbit.target) {
+      this.target.copy(this.orbit.target)
+    }
+  }
+
+  /**
+   * Apply initial velocity for smooth handoff (e.g., when interrupting POI animation)
+   * The velocity will naturally decelerate via existing momentum system
+   */
+  public applyHandoffVelocity(velocity: THREE.Vector3): void {
+    // Scale down velocity for smoother handoff (reduce by 30%)
+    this.velocity.copy(velocity).multiplyScalar(0.3)
+
+    // Sync internal state
+    this.baseCameraPosition.copy(this.camera.position)
+    this.dragTargetPosition.copy(this.camera.position)
+    this.desiredCameraPosition.copy(this.camera.position)
+    this.cameraTargetPosition.copy(this.camera.position)
+  }
 }
 
 export default HelsinkiCameraController

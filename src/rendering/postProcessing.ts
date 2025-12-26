@@ -40,11 +40,12 @@ export function setupComposer(renderer: THREE.WebGLRenderer, scene: THREE.Scene,
     const renderPass = new RenderPass(scene, camera)
     composer.addPass(renderPass)
 
-    const bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 1.2, 0.4, 0.85)
-    bloomPass.threshold = 0.8
-    bloomPass.strength = 1.0
-    bloomPass.radius = 0.4
-    composer.addPass(bloomPass)
+    // DISABLED: Bloom effect (removed white glow)
+    // const bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 0.3, 0.2, 0.95)
+    // bloomPass.threshold = 0.95
+    // bloomPass.strength = 0.3
+    // bloomPass.radius = 0.2
+    // composer.addPass(bloomPass)
 
     const shaderPass = new (ShaderPass as any)(postProcessMaterial as any)
     shaderPass.renderToScreen = true

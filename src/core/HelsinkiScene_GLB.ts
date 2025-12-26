@@ -8,7 +8,7 @@ import HelsinkiCameraController from './HelsinkiCameraController'
 import { loadHelsinkiModel as loadModel, type RenderMode } from '../loaders'
 import { setupPostProcessing, setupComposer, setupSceneLighting } from '../rendering'
 import { addCityLightsPoints, animateCityLights, removeCityLights, updateCityLightsFog, createStarfield, animateStars, setupSceneFog, updateFogColor } from '../effects'
-import { createPOITransition, updatePOITransition, cancelPOITransition, type POITransitionState } from '../animation'
+import { createPOITransition, updatePOITransition, cancelPOITransition, type POITransitionState, createSmoothPOIAnimation, updateSmoothPOIAnimation, interruptSmoothPOIAnimation, type SmoothPOIAnimation } from '../animation'
 import { PerlinNoiseGenerator, isNightInHelsinki, updateMaterialsInHierarchy, isLineSegmentsWithBasicMaterial, applyCameraConfig, getCurrentCameraConfig, CAMERA_PRESETS, type CameraConfig, logDeviceInfo } from '../helpers'
 import { createCamera, createRenderer, configureCameraControls, createRenderTarget, handleResize, setupClickHandler } from '../helpers'
 import { AutoTourManager, POIHighlightManager, InteractionManager, FoundersHouseMarker } from './managers'
@@ -40,7 +40,7 @@ export class HelsinkiScene {
   private container: HTMLElement
   private stars: THREE.Group | THREE.Points | null = null
   private isNightMode: boolean
-  private poiTransition: POITransitionState | null = null
+  private poiAnimation: SmoothPOIAnimation | null = null
   private fog: THREE.Fog | null = null
 
   // Managers
@@ -184,43 +184,165 @@ export class HelsinkiScene {
 
   /**
    * Handle user interruption of animations
+   * NOTE: User interruption is now handled directly in the update() loop
+   * This method is kept for compatibility but does minimal work
    */
   private handleUserInterrupt(): void {
-    const wasAnimating = this.interactionManager.handleAnimationInterrupt(
-      null,
-      this.poiTransition,
-      this.autoTourManager.isWaiting(),
-      () => this.poiHighlightManager.clearHighlights()
-    )
+    // User interruption is handled in update() loop now
+    // This just records the interaction for auto-tour
+    this.autoTourManager.recordInteraction()
+  }
 
-    if (wasAnimating) {
-      this.autoTourManager.stop()
+  private getMapBounds(): { min: THREE.Vector3; max: THREE.Vector3; radius: number } | null {
+    if (!this.helsinkiModel) return null
+
+    // Calculate bounding box of the model
+    const boundingBox = new THREE.Box3().setFromObject(this.helsinkiModel)
+    const min = boundingBox.min
+    const max = boundingBox.max
+
+    // Calculate approximate radius (largest horizontal extent)
+    const sizeX = max.x - min.x
+    const sizeZ = max.z - min.z
+    const radius = Math.max(sizeX, sizeZ) / 2
+
+    return { min, max, radius }
+  }
+
+  /**
+   * Clamp a position to camera boundaries
+   * Returns a new clamped position object
+   */
+  private clampPositionToBoundaries(position: { x: number; y: number; z: number }): { x: number; y: number; z: number } {
+    if (!this.helsinkiModel) return position
+
+    const bounds = this.getMapBounds()
+    if (!bounds) return position
+
+    // Define safe zone - keep camera within 90% of map bounds (10% from edge)
+    const safetyMargin = 0.90
+    const maxX = bounds.max.x * safetyMargin
+    const minX = bounds.min.x * safetyMargin
+    const maxZ = bounds.max.z * safetyMargin
+    const minZ = bounds.min.z * safetyMargin
+
+    // Clamp position to boundaries
+    return {
+      x: Math.max(minX, Math.min(maxX, position.x)),
+      y: position.y,
+      z: Math.max(minZ, Math.min(maxZ, position.z))
+    }
+  }
+
+  private enforceCameraBoundaries(): void {
+    if (!this.controls || !this.helsinkiModel) return
+
+    const bounds = this.getMapBounds()
+    if (!bounds) return
+
+    const cameraTarget = this.controls.target || new THREE.Vector3(0, 0, 0)
+
+    // Define safe zone - keep camera within 90% of map bounds (10% from edge)
+    const safetyMargin = 0.90
+    const maxX = bounds.max.x * safetyMargin
+    const minX = bounds.min.x * safetyMargin
+    const maxZ = bounds.max.z * safetyMargin
+    const minZ = bounds.min.z * safetyMargin
+
+    // Clamp camera target to boundaries
+    let clamped = false
+    if (cameraTarget.x > maxX) {
+      cameraTarget.x = maxX
+      clamped = true
+    }
+    if (cameraTarget.x < minX) {
+      cameraTarget.x = minX
+      clamped = true
+    }
+    if (cameraTarget.z > maxZ) {
+      cameraTarget.z = maxZ
+      clamped = true
+    }
+    if (cameraTarget.z < minZ) {
+      cameraTarget.z = minZ
+      clamped = true
     }
 
-    // Auto-tour disabled - remove inactivity timers
-    this.autoTourManager.recordInteraction()
+    // Update controls target if clamped
+    if (clamped) {
+      this.controls.setTarget(cameraTarget.x, cameraTarget.y, cameraTarget.z)
+    }
+  }
+
+  private updateDynamicFog(): void {
+    if (!this.fog || !this.camera || !this.helsinkiModel) return
+
+    const bounds = this.getMapBounds()
+    if (!bounds) return
+
+    // Get camera position (controls.target is the look-at point)
+    const cameraTarget = this.controls.target || new THREE.Vector3(0, 0, 0)
+    const camX = cameraTarget.x
+    const camZ = cameraTarget.z
+
+    // Use actual map radius from model bounds
+    const mapRadius = bounds.radius
+    const edgeThreshold = mapRadius * 0.7 // Start tightening fog at 70% of radius
+
+    // Calculate distance from center
+    const distFromCenter = Math.sqrt(camX * camX + camZ * camZ)
+
+    // Calculate how close we are to the edge (0 = center, 1 = at edge)
+    const edgeProximity = Math.max(0, (distFromCenter - edgeThreshold) / (mapRadius - edgeThreshold))
+
+    // Dynamic fog values based on edge proximity
+    const baseFogNear = 300
+    const baseFogFar = 1200
+
+    // When approaching edge, tighten fog dramatically
+    // At edge: near and far converge to create thick fog wall
+    const fogNear = baseFogNear - (edgeProximity * 250) // Tighten near fog
+    const fogFar = baseFogFar - (edgeProximity * 600)   // Pull far fog closer
+
+    // Apply to Three.js fog
+    this.fog.near = Math.max(50, fogNear)
+    this.fog.far = Math.max(fogNear + 100, fogFar) // Ensure far > near
   }
 
   public update(): void {
     const elapsed = this.clock.getElapsedTime()
     const delta = this.clock.getDelta()
 
-    // Check for user interruption during animations
+    // Enforce camera boundaries (keep camera within map bounds)
+    this.enforceCameraBoundaries()
+
+    // Update dynamic fog based on camera position
+    this.updateDynamicFog()
+
+    // ==========================================
+    // SMOOTH POI ANIMATION SYSTEM
+    // ==========================================
+
+    // Check for user interruption - this allows seamless handoff at ANY moment
     if (this.controls.isUserInteracting()) {
-      const wasAnimating =
-        (this.poiTransition && this.poiTransition.isAnimating) ||
-        this.autoTourManager.isWaiting()
+      const wasAnimating = (this.poiAnimation && this.poiAnimation.isActive) || this.autoTourManager.isWaiting()
 
       if (wasAnimating) {
-        if (this.poiTransition && this.poiTransition.isAnimating) {
-          cancelPOITransition(this.poiTransition)
-          this.poiTransition = null
+        // Store velocity before interrupting (for smooth deceleration)
+        const currentVelocity = this.poiAnimation?.currentVelocity?.clone() || new THREE.Vector3()
+
+        // Interrupt animation smoothly
+        if (this.poiAnimation && this.poiAnimation.isActive) {
+          interruptSmoothPOIAnimation(this.poiAnimation)
+          this.poiAnimation = null
         }
 
+        // Stop auto-tour and clear highlights
         this.autoTourManager.setWaiting(false)
         this.autoTourManager.stop()
         this.poiHighlightManager.clearHighlights()
 
+        // Calculate smooth handoff target based on current camera direction
         const currentTarget = this.controls.target || new THREE.Vector3(0, 0, 0)
         const currentDistance = this.camera.position.distanceTo(currentTarget)
         const direction = new THREE.Vector3()
@@ -228,41 +350,44 @@ export class HelsinkiScene {
         const newTarget = this.camera.position.clone().add(direction.multiplyScalar(currentDistance))
         newTarget.y = Math.max(newTarget.y, 10)
 
+        // Hand off control to user with smooth deceleration
         this.controls.setTarget(newTarget.x, newTarget.y, newTarget.z)
+
+        // Apply velocity for smooth slowdown (instead of instant stop)
+        if (this.controls.applyHandoffVelocity && currentVelocity.length() > 0) {
+          this.controls.applyHandoffVelocity(currentVelocity)
+        }
       }
 
       this.controls.resetInteractionFlag()
       this.autoTourManager.recordInteraction()
-      // Auto-tour disabled - remove inactivity timer
     }
 
-    // Update POI transition animation
-    if (this.poiTransition && this.poiTransition.isAnimating) {
-      const stillAnimating = updatePOITransition(
-        this.poiTransition,
-        this.camera,
-        this.controls,
-        elapsed
-      )
+    // Update smooth POI animation if active
+    let currentCameraTarget = this.controls.target || new THREE.Vector3(0, 0, 0)
 
-      if (!stillAnimating) {
-        this.poiTransition = null
+    if (this.poiAnimation && this.poiAnimation.isActive) {
+      const result = updateSmoothPOIAnimation(this.poiAnimation, this.camera, elapsed, delta)
+      currentCameraTarget = result.currentTarget
+
+      if (!result.stillAnimating) {
+        this.poiAnimation = null
       }
     }
 
-    // Determine if any animation is active
-    const isPOITransitioning = this.poiTransition && this.poiTransition.isAnimating
-    const isAnyAnimationActive = isPOITransitioning || this.autoTourManager.isWaiting()
+    // Update controls
+    // During POI animation: DON'T call controls.update() to avoid fighting with animation
+    // After POI animation: Resume normal controls
+    const isPOIAnimating = this.poiAnimation && this.poiAnimation.isActive
 
-    // Update controls - adjust damping during animations for smoother motion
-    if (isAnyAnimationActive) {
-      // Temporarily adjust damping factor during animations
-      const originalDamping = this.controls.dampingFactor
-      this.controls.dampingFactor = 0.02 // Lower damping during animations
+    if (!isPOIAnimating) {
+      // Normal controls operation
       this.controls.update(delta)
-      this.controls.dampingFactor = originalDamping
     } else {
-      this.controls.update(delta)
+      // During animation: sync controls target without updating (prevents fighting)
+      if (this.controls.target) {
+        this.controls.target.copy(currentCameraTarget)
+      }
     }
 
     // Animate city lights
@@ -280,9 +405,14 @@ export class HelsinkiScene {
     this.postProcessMaterial.uniforms.uTime.value = elapsed
     this.postProcessMaterial.uniforms.uPencilStrength.value = this.pencilStrength
 
-    // Render scene
-    this.renderer.setRenderTarget(null)
-    this.renderer.render(this.scene, this.camera)
+    // Render scene with post-processing effects (warm tint, film grain, bloom, etc.)
+    if (this.composer) {
+      this.composer.render()
+    } else {
+      // Fallback if composer setup failed
+      this.renderer.setRenderTarget(null)
+      this.renderer.render(this.scene, this.camera)
+    }
   }
 
   private flyToNextPOI(): void {
@@ -393,45 +523,78 @@ export class HelsinkiScene {
     distance?: number,
     azimuth?: number,
     elevation?: number,
-    duration: number = 2.0,
+    duration: number = 2.5,
     animated: boolean = true,
     onComplete?: () => void
   ): void {
     const poi = POINTS_OF_INTEREST[poiName]
     if (!poi) return
 
-    const finalDistance = distance ?? poi.cameraView?.distance ?? 300
-    const finalAzimuth = azimuth ?? poi.cameraView?.azimuth ?? 90
-    const finalElevation = elevation ?? poi.cameraView?.elevation ?? 40
+    // Get desired values from parameters or POI config
+    const desiredDistance = distance ?? poi.cameraView?.distance ?? 300
+    const desiredAzimuth = azimuth ?? poi.cameraView?.azimuth ?? 90
+    const desiredElevation = elevation ?? poi.cameraView?.elevation ?? 40
+
+    // Clamp to safe ranges for POI viewing (more lenient than base camera restrictions)
+    // Distance: Allow closer for POI close-ups, but not too close (200-900 range)
+    const finalDistance = Math.max(200, Math.min(900, desiredDistance))
+    // Azimuth: Allow full 360° rotation for POI viewing (no restriction)
+    const finalAzimuth = desiredAzimuth
+    // Elevation: Clamp to restriction range to prevent bird's eye view (8-15° range)
+    const finalElevation = Math.max(8, Math.min(15, desiredElevation))
 
     if (animated) {
+      // Clear existing highlights
       this.poiHighlightManager.clearHighlights()
 
-      if (this.poiTransition) {
-        cancelPOITransition(this.poiTransition)
+      // Cancel any existing animation
+      if (this.poiAnimation && this.poiAnimation.isActive) {
+        interruptSmoothPOIAnimation(this.poiAnimation)
       }
 
+      // Get current camera target
       const currentTarget = this.controls.target ? this.controls.target.clone() : new THREE.Vector3(0, 0, 0)
-      const currentTime = this.clock.getElapsedTime()
 
-      this.poiTransition = createPOITransition(
+      // Clamp POI target to camera boundaries to prevent snap-back
+      const clampedPOITarget = this.clampPositionToBoundaries(poi.worldCoords)
+
+      // Create smooth POI animation
+      this.poiAnimation = createSmoothPOIAnimation(
         this.camera,
         currentTarget,
-        poi.worldCoords,
+        clampedPOITarget,
         finalDistance,
         finalAzimuth,
         finalElevation,
         duration,
         () => {
+          // On complete: highlight POI
           this.poiHighlightManager.highlightPOI(poiName, 200)
+
+          // CRITICAL: Set controls to EXACT final position (prevents drift)
+          // Use clamped target to stay within boundaries
+          this.controls.setTarget(clampedPOITarget.x, clampedPOITarget.y, clampedPOITarget.z)
+
+          // CRITICAL: Adjust minDistance to allow close POI views (prevents zoom-out on click)
+          // Set minDistance to slightly below current distance to lock it in place
+          this.controls.minDistance = Math.max(50, finalDistance * 0.9)
+
+          // Sync all internal camera state to prevent any movement
+          if (this.controls.syncInternalState) {
+            this.controls.syncInternalState()
+          }
 
           if (onComplete) {
             onComplete()
           }
         },
-        currentTime
+        () => {
+          // On interrupt: clear highlights
+          this.poiHighlightManager.clearHighlights()
+        }
       )
     } else {
+      // Instant teleport (no animation)
       const config: CameraConfig = {
         targetX: poi.worldCoords.x,
         targetY: poi.worldCoords.y,

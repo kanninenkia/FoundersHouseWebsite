@@ -37,6 +37,7 @@ export const HelsinkiViewer = ({ shouldLoad = true, shouldPause = false, scrollP
   const [isAdvancedCamera, setIsAdvancedCamera] = useState<boolean>(false)
   const [renderMode, setRenderMode] = useState<RenderMode>('textured-red')
   const [currentPOI, setCurrentPOI] = useState<{ name: string; description: string } | null>(null)
+  const [cameraRotationX, setCameraRotationX] = useState<number>(0)
 
   useEffect(() => {
     if (!containerRef.current || !shouldLoad || shouldPause) return
@@ -87,13 +88,17 @@ export const HelsinkiViewer = ({ shouldLoad = true, shouldPause = false, scrollP
         if (sceneRef.current) {
           sceneRef.current.update()
 
+          // Update camera rotation for hero text positioning (every frame)
+          const camera = sceneRef.current.getCamera()
+          const rotX = camera.rotation.x
+          setCameraRotationX(rotX)
+
           // Log camera data periodically
           const now = Date.now()
           if (now - lastLogTime >= logInterval) {
-            const camera = sceneRef.current.getCamera()
             const scene = sceneRef.current as any
             const pos = camera.position
-            const rotX = camera.rotation.x * 180 / Math.PI
+            const rotXDeg = rotX * 180 / Math.PI
             const rotY = camera.rotation.y * 180 / Math.PI
             const rotZ = camera.rotation.z * 180 / Math.PI
 
@@ -104,7 +109,7 @@ export const HelsinkiViewer = ({ shouldLoad = true, shouldPause = false, scrollP
                 z: Math.round(pos.z)
               },
               rotation: {
-                x: rotX.toFixed(1) + '°',
+                x: rotXDeg.toFixed(1) + '°',
                 y: rotY.toFixed(1) + '°',
                 z: rotZ.toFixed(1) + '°'
               },
@@ -347,7 +352,14 @@ export const HelsinkiViewer = ({ shouldLoad = true, shouldPause = false, scrollP
 
       {/* Hero Text Overlay - "FOUNDERS HOUSE" */}
       {scrollProgress >= 1 && (
-        <div className="hero-text-container">
+        <div
+          className="hero-text-container"
+          style={{
+            // Simpler positioning - just use fixed offset for now
+            // Camera tracking causes text to go off-screen
+            transform: `translateY(0vh)`
+          }}
+        >
           <div className="hero-text-wrapper">
             <div className="hero-subtext-row">
               <p className="hero-subtext hero-subtext-left">Built for the obsessed.</p>
@@ -360,26 +372,12 @@ export const HelsinkiViewer = ({ shouldLoad = true, shouldPause = false, scrollP
         </div>
       )}
 
-      {/* Top vignette overlay - subtle cream tint */}
-      {scrollProgress >= 1 && (
-        <div
-          style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
-            height: '178px',
-            background: 'linear-gradient(180deg, rgba(255, 248, 242, 0.02) 0%, rgba(255, 248, 242, 0) 100%)',
-            pointerEvents: 'none',
-            zIndex: 99,
-          }}
-        />
-      )}
 
       {/* POI Navigator - Bottom navigation bar */}
       {scrollProgress >= 1 && (
         <POINavigator onPOISelect={handlePOISelect} initialPOI="FOUNDERS_HOUSE" />
       )}
+
     </>
   )
 }

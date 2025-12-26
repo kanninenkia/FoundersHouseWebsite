@@ -13,23 +13,23 @@
 export const CAMERA_BASE = {
   // Target point (what we're looking at)
   target: {
-    x: -73.22,
-    y: 0.00,
-    z: -256.96
+    x: -151,
+    y: 0,
+    z: -808
   },
 
   // Ideal camera position
   position: {
-    x: 28.05,
-    y: 83.02,
-    z: -942.71
+    x: 241,
+    y: 87,
+    z: -237
   },
 
   // Polar coordinates (easier to work with for restrictions)
   polar: {
-    distance: 856.49,    // Distance from target
-    azimuth: 45.17,      // Horizontal angle (45.17° = northeast view)
-    elevation: 79.21,    // Vertical angle (79.21° polar angle)
+    distance: 698,       // Distance from target
+    azimuth: 34.2,       // Horizontal angle
+    elevation: -9.7,     // Vertical angle (rotation.x)
   },
 
   // Camera properties

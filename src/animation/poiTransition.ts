@@ -78,7 +78,7 @@ export function createPOITransition(
 /**
  * Update POI transition animation
  * Call this in your render loop when a transition is active
- * 
+ *
  * @param transition - Transition state
  * @param camera - Camera to animate
  * @param controls - Camera controls (to update target)
@@ -125,6 +125,15 @@ export function updatePOITransition(
 
   // Check if animation is complete
   if (progress >= 1.0) {
+    // Ensure we're EXACTLY at final position
+    camera.position.copy(transition.targetPosition)
+    if (controls.setTarget) {
+      controls.setTarget(transition.targetLookAt.x, transition.targetLookAt.y, transition.targetLookAt.z)
+    } else if (controls.target) {
+      controls.target.copy(transition.targetLookAt)
+    }
+    camera.lookAt(transition.targetLookAt)
+
     transition.isAnimating = false
     if (transition.onComplete) {
       transition.onComplete()

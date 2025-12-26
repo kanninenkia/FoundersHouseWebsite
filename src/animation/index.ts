@@ -9,3 +9,10 @@ export {
   cancelPOITransition,
   type POITransitionState
 } from './poiTransition'
+
+export {
+  createSmoothPOIAnimation,
+  updateSmoothPOIAnimation,
+  interruptSmoothPOIAnimation,
+  type SmoothPOIAnimation
+} from './smoothPOIAnimation'

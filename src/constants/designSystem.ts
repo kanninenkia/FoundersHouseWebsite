@@ -78,12 +78,12 @@ export const SCENE_CONFIG = {
   lighting: {
     ambient: {
       color: 0xffffff,
-      intensity: 0.6,
+      intensity: 1.0, // Increased for better overall illumination
     },
     directional: {
       color: 0xffffff,
-      intensity: 0.8,
-      position: { x: 100, y: 500, z: 100 },
+      intensity: 1.2, // Increased for better definition
+      position: { x: 500, y: 1000, z: 500 }, // Higher sun position for better lighting angle
       shadow: {
         left: -10000,
         right: 10000,
@@ -93,8 +93,8 @@ export const SCENE_CONFIG = {
     },
     hemisphere: {
       skyColor: 0xffffff,
-      groundColor: 0x444444,
-      intensity: 0.4,
+      groundColor: 0x888888, // Lighter ground color for less harsh contrast
+      intensity: 0.6, // Increased for softer fill light
     },
   },
   stars: {
@@ -121,8 +121,8 @@ export const TIME_CONFIG = {
 } as const
 
 export const FOG = {
-  near: 750,
-  far: 1450,
+  near: 300,  // Fog starts much closer to camera
+  far: 1200,
   colors: {
     day: 0xFFF8F2,  // Cream fog to match sky
     night: 0x0a0a15,

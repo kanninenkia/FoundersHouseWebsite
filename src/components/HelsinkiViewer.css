@@ -8,6 +8,8 @@
 /* Import Outfit font for hero text */
 @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400;800&display=swap');
 
+/* Removed - using global noise overlay instead */
+
 /* Container */
 .helsinki-container {
   width: 100%;
@@ -24,9 +26,9 @@
   opacity: 1 !important;
 }
 
-/* Apply grayscale filter (only on red modes) */
-.helsinki-container.red-filter canvas {
-  filter: grayscale(90%) brightness(1.2);
+/* Apply full grayscale filter */
+.helsinki-container canvas {
+  filter: grayscale(90%) brightness(0.9) contrast(1);
 }
 
 /* UI Overlay */
@@ -350,18 +352,16 @@
   justify-content: center;
   pointer-events: none;
   z-index: 1001;
-  padding-bottom: 25vh;
-  animation: heroFadeIn 1s ease-out;
+  padding-bottom: 20vh;
+  animation: heroFadeIn 1s ease-out forwards;
 }
 
 @keyframes heroFadeIn {
   from {
     opacity: 0;
-    transform: translateY(20px);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
   }
 }
 
@@ -369,6 +369,8 @@
   text-align: center;
   max-width: 90vw;
   display: inline-block;
+  position: relative;
+  z-index: 1;
 }
 
 .hero-subtext-row {
@@ -382,9 +384,9 @@
 
 .hero-title {
   font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  font-size: clamp(4rem, 12vw, 10rem);
+  font-size: clamp(3rem, 8.7vw, 8.7rem);
   color: #AD1013;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.04em;
   margin: 0;
   line-height: 1;
   text-transform: uppercase;
@@ -402,7 +404,7 @@
 
 .hero-subtext {
   font-family: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  font-size: clamp(1.2rem, 3.6vw, 3rem);
+  font-size: clamp(0.66rem, 1.32vw, 1.5rem);
   font-weight: 400;
   color: #8D8D8D;
   margin: 0;
@@ -420,11 +422,11 @@
 
 @media (max-width: 768px) {
   .hero-title {
-    font-size: clamp(2.5rem, 10vw, 6rem);
+    font-size: clamp(1.8rem, 7.2vw, 4.8rem);
   }
 
   .hero-subtext {
-    font-size: clamp(0.9rem, 3vw, 1.8rem);
+    font-size: clamp(0.54rem, 1.2vw, 1.08rem);
   }
 
   .hero-subtext-left,
