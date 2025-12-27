@@ -364,11 +364,6 @@ export class HelsinkiCameraController {
   public applyMomentum(): void {
     if (!this.orbit || this.isDragging) return
 
-    // Debug: log momentum state
-    if (window && (window as any).DEBUG_PARALLAX) {
-      console.log('[Momentum] rotationVelocity:', this.rotationVelocity, 'rotationThreshold:', this.rotationThreshold, 'velocity:', this.velocity.length(), 'velocityThreshold:', this.velocityThreshold);
-    }
-
     // === ROTATION MOMENTUM ===
     if (Math.abs(this.rotationVelocity) > this.rotationThreshold) {
       // Rotate camera in place - pivot around camera position, not target

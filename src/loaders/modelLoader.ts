@@ -7,21 +7,18 @@ import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import { COLORS } from '../constants/designSystem'
 import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js'
 
-export type RenderMode = 'wireframe' | 'textured' | 'textured-red' | 'no-texture-red' | 'faint-buildings'
-
 export interface LoadParams {
   modelPath: string
   scene: THREE.Scene
   camera: THREE.PerspectiveCamera
   controls: any
   isNightMode?: boolean
-  renderMode?: RenderMode
   onLoadProgress?: (progress: number) => void
   onLoadComplete?: () => void
 }
 
 export async function loadHelsinkiModel(params: LoadParams): Promise<THREE.Group | null> {
-  const { modelPath, scene, camera, isNightMode = false, renderMode = 'textured', onLoadProgress, onLoadComplete } = params
+  const { modelPath, scene, camera, isNightMode = false, onLoadProgress, onLoadComplete } = params
   // Quick existence check: try a HEAD request with timeout to fail fast if the GLB isn't available
   const checkResourceExists = async (url: string, timeoutMs = 8000): Promise<boolean> => {
     if (typeof fetch === 'undefined') return true // runtime doesn't support fetch (unlikely in browser)
@@ -65,177 +62,50 @@ export async function loadHelsinkiModel(params: LoadParams): Promise<THREE.Group
             const size = box.getSize(new THREE.Vector3())
             const isBuilding = size.y > 10 // Buildings have vertical height > 10 units
 
-            const isRedMode = renderMode === 'textured-red' || renderMode === 'no-texture-red'
-            const buildingOpacity = isRedMode ? 0.98 : 0.98 // 65% opacity
+            const buildingOpacity = 0.98
 
-            if (renderMode === 'wireframe') {
-              // Wireframe mode - buildings with heavily reduced edge lines only
-              if (isBuilding) {
-                // Make building surfaces invisible/very faint
-                try {
-                  const mat = (child as any).material
-                  if (Array.isArray(mat)) {
-                    mat.forEach((m: any) => {
-                      if (m) {
-                        m.transparent = true
-                        m.opacity = 0.05 // Almost invisible
-                        m.depthWrite = true
-                      }
-                    })
-                  } else if (mat) {
-                    mat.transparent = true
-                    mat.opacity = 0.05 // Almost invisible
-                    mat.depthWrite = true
-                  }
-                } catch (e) {
-                  // Non-fatal
+            // Apply transparency/opacity only to buildings
+            if (isBuilding) {
+              try {
+                const mat = (child as any).material
+                if (Array.isArray(mat)) {
+                  mat.forEach((m: any) => {
+                    if (m) {
+                      m.transparent = true
+                      m.opacity = buildingOpacity
+                      m.depthWrite = true
+                    }
+                  })
+                } else if (mat) {
+                  mat.transparent = true
+                  mat.opacity = buildingOpacity
+                  mat.depthWrite = true
                 }
-
-                // Add heavily reduced edge lines (very high threshold = very few lines)
-                const edges = new THREE.EdgesGeometry(child.geometry, 45) // Very high threshold for minimal lines
-                const lineMaterial = new THREE.LineBasicMaterial({
-                  color: isNightMode ? COLORS.night.wireframe : COLORS.day.wireframe,
-                  transparent: false,
-                  opacity: 1.0,
-                  linewidth: 1,
-                  depthTest: true,
-                  depthWrite: false,
-                })
-                ;(lineMaterial as any).polygonOffset = true
-                ;(lineMaterial as any).polygonOffsetFactor = 1
-                ;(lineMaterial as any).polygonOffsetUnits = 1
-
-                const lineSegments = new THREE.LineSegments(edges, lineMaterial)
-                lineSegments.frustumCulled = false
-                if (child.parent) {
-                  child.parent.add(lineSegments)
-                }
+              } catch (e) {
+                // Non-fatal
               }
-              // Non-buildings keep original materials
-            } else if (renderMode === 'faint-buildings') {
-              // Faint buildings mode - buildings with reduced edge lines
-              if (isBuilding) {
-                // Use original material but make it subtle
-                try {
-                  const mat = (child as any).material
-                  if (Array.isArray(mat)) {
-                    mat.forEach((m: any) => {
-                      if (m) {
-                        m.transparent = true
-                        m.opacity = 0.1 // Very faint buildings
-                        m.depthWrite = true
-                      }
-                    })
-                  } else if (mat) {
-                    mat.transparent = true
-                    mat.opacity = 0.1 // Very faint buildings
-                    mat.depthWrite = true
-                  }
-                } catch (e) {
-                  // Non-fatal
-                }
 
-                // Add heavily reduced edge lines (very high threshold = very few lines)
-                const edges = new THREE.EdgesGeometry(child.geometry, 45) // Very high threshold for minimal lines
-                const lineMaterial = new THREE.LineBasicMaterial({
-                  color: isNightMode ? COLORS.night.wireframe : COLORS.day.wireframe,
-                  transparent: false,
-                  opacity: 1.0,
-                  linewidth: 1,
-                  depthTest: true,
-                  depthWrite: false,
-                })
-                ;(lineMaterial as any).polygonOffset = true
-                ;(lineMaterial as any).polygonOffsetFactor = 1
-                ;(lineMaterial as any).polygonOffsetUnits = 1
+              // Add edge lines to buildings
+              const edges = new THREE.EdgesGeometry(child.geometry, 15)
+              const lineMaterial = new THREE.LineBasicMaterial({
+                color: isNightMode ? COLORS.night.wireframe : COLORS.day.wireframe,
+                transparent: true,
+                opacity: isNightMode ? COLORS.night.wireframeOpacity : COLORS.day.wireframeOpacity,
+                linewidth: 1,
+                depthTest: true,
+                depthWrite: false,
+              })
+              ;(lineMaterial as any).polygonOffset = true
+              ;(lineMaterial as any).polygonOffsetFactor = 1
+              ;(lineMaterial as any).polygonOffsetUnits = 1
 
-                const lineSegments = new THREE.LineSegments(edges, lineMaterial)
-                lineSegments.frustumCulled = false
-                if (child.parent) {
-                  child.parent.add(lineSegments)
-                }
+              const lineSegments = new THREE.LineSegments(edges, lineMaterial)
+              lineSegments.frustumCulled = false
+              if (child.parent) {
+                child.parent.add(lineSegments)
               }
-              // Non-buildings keep original materials
-            } else if (renderMode === 'no-texture-red') {
-              // No texture mode - apply to buildings only
-              if (isBuilding) {
-                child.material = new THREE.MeshStandardMaterial({
-                  color: 0xffffff, // White so CSS filter can tint it
-                  transparent: true,
-                  opacity: buildingOpacity,
-                  depthWrite: true,
-                  roughness: 0.8,
-                  metalness: 0.2,
-                })
-                child.visible = true
-                child.frustumCulled = false
-
-                // Add edge lines to buildings
-                const edges = new THREE.EdgesGeometry(child.geometry, 15)
-                const lineMaterial = new THREE.LineBasicMaterial({
-                  color: isNightMode ? COLORS.night.wireframe : COLORS.day.wireframe,
-                  transparent: false,
-                  opacity: isNightMode ? COLORS.night.wireframeOpacity : COLORS.day.wireframeOpacity,
-                  linewidth: 1,
-                  depthTest: true,
-                  depthWrite: false,
-                })
-                ;(lineMaterial as any).polygonOffset = true
-                ;(lineMaterial as any).polygonOffsetFactor = 1
-                ;(lineMaterial as any).polygonOffsetUnits = 1
-
-                const lineSegments = new THREE.LineSegments(edges, lineMaterial)
-                lineSegments.frustumCulled = false
-                if (child.parent) {
-                  child.parent.add(lineSegments)
-                }
-              }
-              // Non-buildings keep original materials
-            } else {
-              // Textured modes (textured or textured-red)
-              // Apply transparency/opacity only to buildings
-              if (isBuilding) {
-                try {
-                  const mat = (child as any).material
-                  if (Array.isArray(mat)) {
-                    mat.forEach((m: any) => {
-                      if (m) {
-                        m.transparent = true
-                        m.opacity = buildingOpacity
-                        m.depthWrite = true
-                      }
-                    })
-                  } else if (mat) {
-                    mat.transparent = true
-                    mat.opacity = buildingOpacity
-                    mat.depthWrite = true
-                  }
-                } catch (e) {
-                  // Non-fatal
-                }
-
-                // Add edge lines to buildings
-                const edges = new THREE.EdgesGeometry(child.geometry, 15)
-                const lineMaterial = new THREE.LineBasicMaterial({
-                  color: isNightMode ? COLORS.night.wireframe : COLORS.day.wireframe,
-                  transparent: true,
-                  opacity: isNightMode ? COLORS.night.wireframeOpacity : COLORS.day.wireframeOpacity,
-                  linewidth: 1,
-                  depthTest: true,
-                  depthWrite: false,
-                })
-                ;(lineMaterial as any).polygonOffset = true
-                ;(lineMaterial as any).polygonOffsetFactor = 1
-                ;(lineMaterial as any).polygonOffsetUnits = 1
-
-                const lineSegments = new THREE.LineSegments(edges, lineMaterial)
-                lineSegments.frustumCulled = false
-                if (child.parent) {
-                  child.parent.add(lineSegments)
-                }
-              }
-              // Non-buildings keep their original materials untouched
             }
+            // Non-buildings keep their original materials untouched
           }
         })
 

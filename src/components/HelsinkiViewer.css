@@ -26,9 +26,9 @@
   opacity: 1 !important;
 }
 
-/* Apply full grayscale filter */
+/* Apply full grayscale filter - NOTE: This gets overridden by inline style in HelsinkiViewer.tsx */
 .helsinki-container canvas {
-  filter: grayscale(90%) brightness(1.15) contrast(0.85);
+  filter: grayscale(90%) brightness(1.38) contrast(0.85);
 }
 
 /* Bottom viewport blur - subtle focus effect like mockup */
@@ -112,62 +112,6 @@
   background: rgba(253, 252, 245, 0.95);
   padding: 1rem;
   border-radius: 6px;
-}
-
-/* Hide debug controls by default */
-.controls.debug-controls {
-  display: none;
-}
-
-.mode-selector {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.mode-selector label {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  font-size: 11px;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  color: #625e54;
-  font-weight: 600;
-}
-
-.mode-selector select {
-  padding: 0.5rem;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  font-size: 13px;
-  border: 1px solid rgba(0, 0, 0, 0.15);
-  background: #fff;
-  cursor: pointer;
-  border-radius: 4px;
-  transition: all 0.3s ease;
-}
-
-.mode-selector select:hover {
-  background: #f9f6ee;
-}
-
-.controls button {
-  padding: 0.5rem 1rem;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  font-size: 13px;
-  letter-spacing: 0.05em;
-  border: 1px solid rgba(0, 0, 0, 0.15);
-  background: #fff;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  border-radius: 4px;
-}
-
-.controls button:hover {
-  background: #f9f6ee;
-  transform: translateY(-1px);
-}
-
-.controls button:active {
-  transform: translateY(0);
 }
 
 /* Status */

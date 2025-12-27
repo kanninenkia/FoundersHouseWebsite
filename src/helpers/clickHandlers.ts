@@ -42,42 +42,8 @@ export function setupClickHandler(
 }
 
 /**
- * Log click point for POI setup - simple coordinate logging
+ * Log click point for POI setup - disabled for production
  */
-function logClickPoint(intersection: THREE.Intersection): void {
-  const clickPoint = intersection.point
-
-  // Console log for easy copy-paste to POI config
-  console.log('\n📍 ═══════════════════════════════════════════════════')
-  console.log('🗺️  AREA/TILE CLICKED - POI Configuration Data')
-  console.log('════════════════════════════════════════════════════\n')
-
-  console.log('📌 Click Position (use this for POI position):')
-  console.log(`   x: ${clickPoint.x.toFixed(2)}`)
-  console.log(`   y: ${clickPoint.y.toFixed(2)}`)
-  console.log(`   z: ${clickPoint.z.toFixed(2)}`)
-
-  console.log('\n📋 Copy-Paste POI Config:')
-  console.log('─────────────────────────────────────────────────────')
-  console.log(`export const YOUR_POI_NAME: PointOfInterest = {
-  id: 'your-poi-id',
-  name: 'Your Area/Section Name',
-  description: 'Description here',
-  position: {
-    x: ${clickPoint.x.toFixed(2)},
-    y: ${clickPoint.y.toFixed(2)},
-    z: ${clickPoint.z.toFixed(2)}
-  },
-  cameraDistance: 250,
-  cameraHeight: 100,
-  cameraAngle: -45
-}`)
-  console.log('─────────────────────────────────────────────────────\n')
-
-  // Store for window access
-  ;(window as any).__clickPoint = {
-    x: clickPoint.x.toFixed(2),
-    y: clickPoint.y.toFixed(2),
-    z: clickPoint.z.toFixed(2)
-  }
+function logClickPoint(_intersection: THREE.Intersection): void {
+  // Debug logging removed
 }

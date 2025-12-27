@@ -253,14 +253,6 @@ export const LoadingScreen = ({ onComplete, duration, scrollProgress, onScrollPr
   // This ensures the map loads regardless of tab visibility or animation stage
   const shouldPauseMapLoading = false
 
-  // Debug logging
-  console.log('[LoadingScreen] Render:', {
-    stage,
-    shouldLoadMap,
-    shouldPauseMapLoading,
-    scrollProgress
-  })
-
   return (
     <div
       className="loading-screen"

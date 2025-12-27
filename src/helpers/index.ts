@@ -30,10 +30,6 @@ export {
 } from './performanceDetector'
 
 export {
-  logDeviceInfo
-} from './deviceDetection'
-
-export {
   setupClickHandler
 } from './clickHandlers'
 

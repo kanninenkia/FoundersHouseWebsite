@@ -1,17 +1,31 @@
 /**
- * Helsinki 3D Scene - GLB Version (Refactored)
+ * Helsinki 3D Scene
  * Three.js scene setup with Helsinki GLB model and pencil shader effect
  * Based on Chartogne-Taillet visual style
  */
 import * as THREE from 'three'
 import HelsinkiCameraController from './HelsinkiCameraController'
-import { loadHelsinkiModel as loadModel, type RenderMode } from '../loaders'
+import { loadHelsinkiModel as loadModel } from '../loaders'
 import { setupPostProcessing, setupComposer, setupSceneLighting } from '../rendering'
 import { addCityLightsPoints, animateCityLights, removeCityLights, updateCityLightsFog, createStarfield, animateStars, setupSceneFog, updateFogColor } from '../effects'
 import { createSmoothPOIAnimation, updateSmoothPOIAnimation, interruptSmoothPOIAnimation, type SmoothPOIAnimation } from '../animation'
-import { PerlinNoiseGenerator, isNightInHelsinki, updateMaterialsInHierarchy, isLineSegmentsWithBasicMaterial, applyCameraConfig, getCurrentCameraConfig, CAMERA_PRESETS, type CameraConfig, logDeviceInfo } from '../helpers'
-import { createCamera, createRenderer, configureCameraControls, createRenderTarget, handleResize, setupClickHandler } from '../helpers'
-import { AutoTourManager, POIHighlightManager, InteractionManager, FoundersHouseMarker } from './managers'
+import {
+  PerlinNoiseGenerator,
+  isNightInHelsinki,
+  updateMaterialsInHierarchy,
+  isLineSegmentsWithBasicMaterial,
+  applyCameraConfig,
+  getCurrentCameraConfig,
+  CAMERA_PRESETS,
+  type CameraConfig,
+  createCamera,
+  createRenderer,
+  configureCameraControls,
+  createRenderTarget,
+  handleResize,
+  setupClickHandler
+} from '../helpers'
+import { AutoTourManager, POIHighlightManager, FoundersHouseMarker } from './managers'
 import { COLORS, CITY_LIGHTS } from '../constants/designSystem'
 import { POINTS_OF_INTEREST } from '../constants/poi'
 
@@ -19,7 +33,6 @@ export interface SceneConfig {
   container: HTMLElement
   helsinkiCenter: { lat: number; lng: number }
   radius: number // km
-  renderMode?: RenderMode
   isNightMode?: boolean
   onLoadProgress?: (progress: number) => void
   onLoadComplete?: () => void
@@ -29,7 +42,7 @@ export class HelsinkiScene {
   private scene: THREE.Scene
   private camera: THREE.PerspectiveCamera
   private renderer: THREE.WebGLRenderer
-  private controls: any
+  private controls: HelsinkiCameraController
   private helsinkiModel: THREE.Group | null = null
   private cityLights: THREE.Object3D | null = null
   private perlinTexture: THREE.DataTexture
@@ -46,7 +59,6 @@ export class HelsinkiScene {
   // Managers
   private autoTourManager: AutoTourManager
   private poiHighlightManager: POIHighlightManager
-  private interactionManager: InteractionManager
   private foundersHouseMarker: FoundersHouseMarker
 
 
@@ -102,20 +114,10 @@ export class HelsinkiScene {
 
     this.autoTourManager = new AutoTourManager()
 
-    this.interactionManager = new InteractionManager(
-      this.renderer.domElement,
-      this.camera,
-      this.controls,
-      {
-        onInterrupt: () => this.handleUserInterrupt()
-      }
-    )
-
     this.foundersHouseMarker = new FoundersHouseMarker()
 
-
-
-    logDeviceInfo()
+    // Setup interaction event listeners
+    this.setupInteractionListeners()
 
     // Load model
     const modelPath = '/untitled.glb'
@@ -125,7 +127,6 @@ export class HelsinkiScene {
       camera: this.camera,
       controls: this.controls,
       isNightMode: this.isNightMode,
-      renderMode: config.renderMode || 'textured',
       onLoadProgress: config.onLoadProgress,
       onLoadComplete: config.onLoadComplete,
     }).then((model) => {
@@ -150,11 +151,6 @@ export class HelsinkiScene {
 
     // Setup click handler for debugging (model accessed via getter closure)
     setupClickHandler(this.renderer, this.camera, () => this.helsinkiModel)
-
-    // Make scene available globally
-    ;(window as any).helsinkiScene = this
-    
-    // (Tram debug controls removed)
 
     // Setup window resize handler
     window.addEventListener('resize', this.onWindowResize.bind(this))
@@ -183,14 +179,25 @@ export class HelsinkiScene {
   }
 
   /**
-   * Handle user interruption of animations
-   * NOTE: User interruption is now handled directly in the update() loop
-   * This method is kept for compatibility but does minimal work
+   * Setup interaction event listeners for auto-tour
    */
-  private handleUserInterrupt(): void {
-    // User interruption is handled in update() loop now
-    // This just records the interaction for auto-tour
-    this.autoTourManager.recordInteraction()
+  private setupInteractionListeners(): void {
+    const handleInteraction = () => {
+      this.autoTourManager.recordInteraction()
+    }
+
+    this.renderer.domElement.addEventListener('pointerdown', (ev: PointerEvent) => {
+      if (ev.button !== 0) return
+      handleInteraction()
+    }, { passive: true })
+
+    this.renderer.domElement.addEventListener('touchstart', () => {
+      handleInteraction()
+    }, { passive: true })
+
+    this.renderer.domElement.addEventListener('wheel', () => {
+      handleInteraction()
+    }, { passive: true })
   }
 
   private getMapBounds(): { min: THREE.Vector3; max: THREE.Vector3; radius: number } | null {
@@ -421,7 +428,6 @@ export class HelsinkiScene {
   public dispose(): void {
     this.autoTourManager.dispose()
     this.poiHighlightManager.dispose()
-    this.interactionManager.dispose()
 
     window.removeEventListener('resize', this.onWindowResize.bind(this))
     this.controls.dispose()

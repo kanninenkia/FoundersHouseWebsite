@@ -3,14 +3,13 @@
  * Main scene management, camera controls, and managers
  */
 
-export { HelsinkiScene } from './HelsinkiScene_GLB'
+export { HelsinkiScene } from './HelsinkiScene'
 export { HelsinkiCameraController } from './HelsinkiCameraController'
 
 // Re-export managers
 export {
   AutoTourManager,
-  POIHighlightManager,
-  InteractionManager as SceneInteractionManager
+  POIHighlightManager
 } from './managers'
 
 // Re-export camera utilities

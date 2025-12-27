@@ -4,6 +4,5 @@
  */
 
 export {
-  loadHelsinkiModel,
-  type RenderMode
+  loadHelsinkiModel
 } from './modelLoader'

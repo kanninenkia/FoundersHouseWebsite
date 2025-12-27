@@ -11,14 +11,7 @@ export class FoundersHouseMarker {
   private searchRadius: number = 50
 
   constructor() {
-    // Expose controls to console
-    ;(window as any).adjustFoundersHouseMarker = {
-      setSearchRadius: (radius: number) => {
-        this.searchRadius = radius
-        this.clearHighlight()
-        this.highlightFoundersHouse()
-      }
-    }
+    // Constructor
   }
 
   /**

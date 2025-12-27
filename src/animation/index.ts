@@ -4,13 +4,6 @@
  */
 
 export {
-  createPOITransition,
-  updatePOITransition,
-  cancelPOITransition,
-  type POITransitionState
-} from './poiTransition'
-
-export {
   createSmoothPOIAnimation,
   updateSmoothPOIAnimation,
   interruptSmoothPOIAnimation,

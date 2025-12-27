@@ -6,7 +6,6 @@
 import { useEffect, useRef, useState } from 'react'
 import * as THREE from 'three'
 import { HelsinkiScene } from '../core'
-import type { RenderMode } from '../loaders'
 import type { PointOfInterest } from '../constants/poi'
 import { POINTS_OF_INTEREST } from '../constants/poi'
 import { POINavigator } from './POINavigator'
@@ -34,12 +33,11 @@ export const HelsinkiViewer = ({ shouldLoad = true, shouldPause = false, scrollP
   const [loading, setLoading] = useState<boolean>(true)
   const [tickerProgress, setTickerProgress] = useState<number>(0)
   const [modelLoaded, setModelLoaded] = useState<boolean>(false)
-  const [isDemoNightMode, setIsDemoNightMode] = useState<boolean>(false)
-  const [isAdvancedCamera, setIsAdvancedCamera] = useState<boolean>(false)
-  const [renderMode, setRenderMode] = useState<RenderMode>('textured-red')
-  const [currentPOI, setCurrentPOI] = useState<{ name: string; description: string } | null>(null)
   const [grayscaleAmount, setGrayscaleAmount] = useState<number>(90) // Start at 90% grayscale
   const [heroTextOpacity, setHeroTextOpacity] = useState<number>(1) // Hero text opacity based on camera direction
+
+  // Night mode is disabled - always use day mode
+  const isDemoNightMode = false
 
   useEffect(() => {
     if (!containerRef.current || !shouldLoad || shouldPause) return
@@ -68,23 +66,8 @@ export const HelsinkiViewer = ({ shouldLoad = true, shouldPause = false, scrollP
         })
 
       sceneRef.current = scene
-      
-      // Expose to window for console debugging
-      ;(window as any).helsinkiScene = scene
-      
-      // Expose POI label setter to scene
-      ;(window as any).showPOILabel = (name: string, description: string) => {
-        setCurrentPOI({ name, description })
-      }
-      ;(window as any).hidePOILabel = () => {
-        setCurrentPOI(null)
-      }
-      
-      setStatus('Loading Helsinki 3D model...')
 
-      // Animation loop with camera logging
-      let lastLogTime = 0
-      const logInterval = 2000 // Log every 2 seconds
+      setStatus('Loading Helsinki 3D model...')
 
       const animate = () => {
         if (sceneRef.current) {
@@ -92,7 +75,6 @@ export const HelsinkiViewer = ({ shouldLoad = true, shouldPause = false, scrollP
 
           // Update camera rotation for hero text positioning (every frame)
           const camera = sceneRef.current.getCamera()
-          const rotX = camera.rotation.x
 
           // Calculate hero text opacity based on Founders House viewport position
           // Hero text should only appear when Founders House is near center of screen
@@ -122,49 +104,6 @@ export const HelsinkiViewer = ({ shouldLoad = true, shouldPause = false, scrollP
           const maxDistance = Math.max(distanceFromCenterX, distanceFromCenterY)
           const opacity = isInCenter ? Math.max(0, Math.min(1, 1 - (maxDistance / threshold))) : 0
           setHeroTextOpacity(opacity)
-
-          // Log camera data periodically
-          const now = Date.now()
-          if (now - lastLogTime >= logInterval) {
-            const scene = sceneRef.current as any
-            const pos = camera.position
-            const rotXDeg = rotX * 180 / Math.PI
-            const rotY = camera.rotation.y * 180 / Math.PI
-            const rotZ = camera.rotation.z * 180 / Math.PI
-
-            console.log('📷 CAMERA:', {
-              position: {
-                x: Math.round(pos.x),
-                y: Math.round(pos.y),
-                z: Math.round(pos.z)
-              },
-              rotation: {
-                x: rotXDeg.toFixed(1) + '°',
-                y: rotY.toFixed(1) + '°',
-                z: rotZ.toFixed(1) + '°'
-              },
-              target: scene.controls?.target ? {
-                x: Math.round(scene.controls.target.x),
-                y: Math.round(scene.controls.target.y),
-                z: Math.round(scene.controls.target.z)
-              } : 'N/A',
-              height: Math.round(pos.y),
-              distance: Math.round(Math.sqrt(
-                Math.pow(pos.x - (scene.controls?.target?.x || 0), 2) +
-                Math.pow(pos.y - (scene.controls?.target?.y || 0), 2) +
-                Math.pow(pos.z - (scene.controls?.target?.z || 0), 2)
-              )),
-              heroTextDebug: {
-                viewportX: viewportX.toFixed(1) + '%',
-                viewportY: viewportY.toFixed(1) + '%',
-                distanceFromCenterX: distanceFromCenterX.toFixed(1),
-                distanceFromCenterY: distanceFromCenterY.toFixed(1),
-                opacity: opacity.toFixed(2)
-              }
-            })
-
-            lastLogTime = now
-          }
 
           animationFrameRef.current = requestAnimationFrame(animate)
         }
@@ -222,7 +161,7 @@ export const HelsinkiViewer = ({ shouldLoad = true, shouldPause = false, scrollP
 
     const canvas = containerRef.current.querySelector('canvas')
     if (canvas) {
-      canvas.style.filter = `grayscale(${grayscaleAmount}%) brightness(1.15) contrast(0.85)`
+      canvas.style.filter = `grayscale(${grayscaleAmount}%) brightness(1.38) contrast(0.85)`
     }
   }, [grayscaleAmount])
 
@@ -280,67 +219,6 @@ export const HelsinkiViewer = ({ shouldLoad = true, shouldPause = false, scrollP
     return () => clearTimeout(failsafeTimer)
   }, [loading])
 
-  const handleToggleDayNight = () => {
-    if (sceneRef.current) {
-      const newMode = !isDemoNightMode
-      setIsDemoNightMode(newMode)
-      // Call the toggle method on the scene
-      sceneRef.current.toggleDayNightMode(newMode)
-    }
-  }
-
-  const handleToggleAdvancedCamera = async () => {
-    if (!sceneRef.current) return
-    setStatus('Enabling advanced camera...')
-    const ok = await sceneRef.current.enableAdvancedCamera()
-    setIsAdvancedCamera(ok)
-    setStatus(ok ? 'Advanced camera enabled' : 'Using fallback OrbitControls')
-  }
-
-  const handleRenderModeChange = (mode: RenderMode) => {
-    setRenderMode(mode)
-    setLoading(true)
-    setTickerProgress(0)
-    setModelLoaded(false)
-    tickerStartTimeRef.current = Date.now() // Reset ticker timer
-
-    // Reload scene with new render mode
-    if (sceneRef.current && containerRef.current) {
-      // Cancel existing animation frame
-      if (animationFrameRef.current) {
-        cancelAnimationFrame(animationFrameRef.current)
-      }
-
-      sceneRef.current.dispose()
-      sceneRef.current = null
-
-      const scene = new HelsinkiScene({
-        container: containerRef.current,
-        helsinkiCenter: { lat: 60.1699, lng: 24.9384 },
-        radius: 2,
-        renderMode: mode,
-        isNightMode: isDemoNightMode,
-        onLoadProgress: (progress) => {
-          setStatus(`Loading... ${progress.toFixed(1)}%`)
-        },
-        onLoadComplete: () => {
-          setModelLoaded(true)
-          setStatus('Helsinki 3D - 2km radius')
-        },
-      })
-      sceneRef.current = scene
-
-      // Restart animation loop
-      const animate = () => {
-        if (sceneRef.current) {
-          sceneRef.current.update()
-          animationFrameRef.current = requestAnimationFrame(animate)
-        }
-      }
-      animate()
-    }
-  }
-
   const handlePOISelect = (poi: PointOfInterest) => {
     if (sceneRef.current && (sceneRef.current as any).focusPOI) {
       // Find the POI key by matching the POI id
@@ -359,7 +237,7 @@ export const HelsinkiViewer = ({ shouldLoad = true, shouldPause = false, scrollP
     <>
       <div
         ref={containerRef}
-        className={`helsinki-container ${renderMode === 'textured-red' || renderMode === 'no-texture-red' ? 'red-filter' : ''}`}
+        className="helsinki-container"
       />
 
       {/* Logo - Top Left */}
@@ -376,43 +254,12 @@ export const HelsinkiViewer = ({ shouldLoad = true, shouldPause = false, scrollP
         </div>
       )}
 
-      {/* UI Overlay - Debug controls */}
+      {/* Status overlay */}
       <div className="ui-overlay" style={{ opacity: scrollProgress >= 1 ? 1 : 0, transition: 'opacity 0.5s ease-out' }}>
-
-        {/* Debug Controls - Hidden by default, can be toggled */}
-        <div className="controls debug-controls">
-          <div className="mode-selector">
-            <label>Render Mode:</label>
-            <select value={renderMode} onChange={(e) => handleRenderModeChange(e.target.value as RenderMode)}>
-              <option value="wireframe">Wireframe</option>
-              <option value="faint-buildings">Faint Buildings</option>
-              <option value="textured">Textured</option>
-              <option value="textured-red">Textured + Red Coat</option>
-              <option value="no-texture-red">Red Coat (No Textures)</option>
-            </select>
-          </div>
-          <button onClick={handleToggleDayNight}>
-            {isDemoNightMode ? 'Day Mode' : 'Night Mode'}
-          </button>
-          <button onClick={handleToggleAdvancedCamera}>
-            {isAdvancedCamera ? 'Advanced Camera' : 'Basic Camera'}
-          </button>
-        </div>
-
         <div className="status">{status}</div>
       </div>
 
       {/* Loading overlay removed - handled by main LoadingScreen component */}
-
-      {/* POI Label Overlay */}
-      {currentPOI && (
-        <div className="poi-label">
-          <div className="poi-label-content">
-            <h2 className="poi-label-name">{currentPOI.name}</h2>
-            <p className="poi-label-description">{currentPOI.description}</p>
-          </div>
-        </div>
-      )}
 
       {/* Hero Text Overlay - "FOUNDERS HOUSE" */}
       {scrollProgress >= 1 && (
