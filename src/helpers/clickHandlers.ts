@@ -7,12 +7,13 @@ import * as THREE from 'three'
 /**
  * Setup click handler for getting POI coordinates
  * Click on any area/tile to get its coordinates for POI configuration
+ * Returns a cleanup function to remove the event listener
  */
 export function setupClickHandler(
   renderer: THREE.WebGLRenderer,
   camera: THREE.PerspectiveCamera,
   getModel: () => THREE.Group | null
-): void {
+): () => void {
   const raycaster = new THREE.Raycaster()
   const mouse = new THREE.Vector2()
 
@@ -39,6 +40,11 @@ export function setupClickHandler(
   }
 
   renderer.domElement.addEventListener('click', onClick)
+
+  // Return cleanup function
+  return () => {
+    renderer.domElement.removeEventListener('click', onClick)
+  }
 }
 
 /**

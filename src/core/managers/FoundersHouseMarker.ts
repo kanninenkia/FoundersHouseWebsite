@@ -9,9 +9,20 @@ export class FoundersHouseMarker {
   private helsinkiModel: THREE.Group | null = null
   private highlightedMeshes: Map<THREE.Mesh, THREE.Material | THREE.Material[]> = new Map()
   private searchRadius: number = 50
+  private redMaterial: THREE.MeshStandardMaterial
 
   constructor() {
-    // Constructor
+    // Create a single reusable red material
+    this.redMaterial = new THREE.MeshStandardMaterial({
+      color: 0xAD1013, // Founders House red
+      emissive: 0xAD1013,
+      emissiveIntensity: 0.3,
+      metalness: 0.3,
+      roughness: 0.7,
+      transparent: true,
+      opacity: 0.98,
+      fog: true
+    })
   }
 
   /**
@@ -32,18 +43,6 @@ export class FoundersHouseMarker {
 
     const poi = FOUNDERS_HOUSE_POI
 
-    // Create red material for highlighting
-    const redMaterial = new THREE.MeshStandardMaterial({
-      color: 0xAD1013, // Founders House red
-      emissive: 0xAD1013,
-      emissiveIntensity: 0.3,
-      metalness: 0.3,
-      roughness: 0.7,
-      transparent: true,
-      opacity: 0.98,
-      fog: true
-    })
-
     // Find all meshes near the Founders House coordinates
     this.helsinkiModel.traverse((child) => {
       if (child instanceof THREE.Mesh) {
@@ -62,8 +61,8 @@ export class FoundersHouseMarker {
           // Store original material
           this.highlightedMeshes.set(child, child.material)
 
-          // Apply red highlight
-          child.material = redMaterial
+          // Apply red highlight (reuse single material instance)
+          child.material = this.redMaterial
         }
       }
     })
@@ -98,5 +97,7 @@ export class FoundersHouseMarker {
   public dispose(): void {
     this.removeArrow()
     this.clearHighlight()
+    // Dispose the shared red material
+    this.redMaterial.dispose()
   }
 }

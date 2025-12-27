@@ -54,6 +54,10 @@ export async function loadHelsinkiModel(params: LoadParams): Promise<THREE.Group
         const model = gltf.scene
 
         // Apply rendering mode
+        // Store geometries and materials for proper disposal later
+        const edgeGeometries: THREE.EdgesGeometry[] = []
+        const edgeMaterials: THREE.LineBasicMaterial[] = []
+
         model.traverse((child) => {
           if (child instanceof THREE.Mesh && child.geometry) {
             // Detect if this mesh is a building (heuristic: vertical meshes or named objects)
@@ -101,6 +105,11 @@ export async function loadHelsinkiModel(params: LoadParams): Promise<THREE.Group
 
               const lineSegments = new THREE.LineSegments(edges, lineMaterial)
               lineSegments.frustumCulled = false
+
+              // Store for disposal
+              edgeGeometries.push(edges)
+              edgeMaterials.push(lineMaterial)
+
               if (child.parent) {
                 child.parent.add(lineSegments)
               }
@@ -108,6 +117,10 @@ export async function loadHelsinkiModel(params: LoadParams): Promise<THREE.Group
             // Non-buildings keep their original materials untouched
           }
         })
+
+        // Store disposal arrays on the model for cleanup
+        ;(model as any).__edgeGeometries = edgeGeometries
+        ;(model as any).__edgeMaterials = edgeMaterials
 
         // Compute bounding box and position model
         const box = new THREE.Box3().setFromObject(model)

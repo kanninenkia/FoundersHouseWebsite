@@ -455,19 +455,22 @@ export class HelsinkiCameraController {
     this.parallaxEaseInActive = false;
   }
 
+  // Store handler references for cleanup
+  private _wheelInteractionHandler = () => { this.userInteracting = true }
+  private _touchStartHandler = () => { this.userInteracting = true }
+  private _pointerLeaveHandler = () => { this.handlePointerUp() }
+
   private setupInteractionListeners(): void {
     // Mouse/touch events with easing
     this.domElement.addEventListener('pointerdown', this.handlePointerDown)
     this.domElement.addEventListener('pointermove', this.handlePointerMoveWithEasing)
     this.domElement.addEventListener('pointerup', this.handlePointerUp)
-    this.domElement.addEventListener('pointerleave', () => {
-      this.handlePointerUp()
-    })
+    this.domElement.addEventListener('pointerleave', this._pointerLeaveHandler)
     this.domElement.addEventListener('wheel', this.handleWheelWithEasing, { passive: true })
-    this.domElement.addEventListener('wheel', () => { this.userInteracting = true }, { passive: true })
-    
+    this.domElement.addEventListener('wheel', this._wheelInteractionHandler, { passive: true })
+
     // Also listen to touchstart for mobile
-    this.domElement.addEventListener('touchstart', () => { this.userInteracting = true }, { passive: true })
+    this.domElement.addEventListener('touchstart', this._touchStartHandler, { passive: true })
     this.domElement.addEventListener('touchend', this.handlePointerUp, { passive: true })
   }
 
@@ -597,6 +600,11 @@ export class HelsinkiCameraController {
   }
 
   public dispose() {
+    // Remove all event listeners
+    this.removeInteractionListeners()
+    this.domElement.removeEventListener('mousemove', this._handleParallaxMouseMove)
+    this.domElement.removeEventListener('mouseleave', this._handleParallaxMouseLeave)
+
     if (this.cameraControls && this.cameraControls.dispose) {
       try { this.cameraControls.dispose() } catch (e) { }
       this.cameraControls = null
@@ -605,6 +613,17 @@ export class HelsinkiCameraController {
       try { this.orbit.dispose() } catch (e) { }
       this.orbit = null
     }
+  }
+
+  private removeInteractionListeners(): void {
+    this.domElement.removeEventListener('pointerdown', this.handlePointerDown)
+    this.domElement.removeEventListener('pointermove', this.handlePointerMoveWithEasing)
+    this.domElement.removeEventListener('pointerup', this.handlePointerUp)
+    this.domElement.removeEventListener('pointerleave', this._pointerLeaveHandler)
+    this.domElement.removeEventListener('wheel', this.handleWheelWithEasing)
+    this.domElement.removeEventListener('wheel', this._wheelInteractionHandler)
+    this.domElement.removeEventListener('touchstart', this._touchStartHandler)
+    this.domElement.removeEventListener('touchend', this.handlePointerUp)
   }
 
   private _handleParallaxMouseMove = (event: MouseEvent) => {

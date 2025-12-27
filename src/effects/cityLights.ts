@@ -141,12 +141,17 @@ export function updateCityLightsFog(cityLights: THREE.Object3D, scene: THREE.Sce
 export function removeCityLights(cityLights: any): void {
   if (!cityLights) return
   try {
-    if (cityLights.geometry) cityLights.geometry.dispose()
-    const mat = cityLights.material
-    if (mat) {
-      if (Array.isArray(mat)) mat.forEach((m: any) => m.dispose())
-      else mat.dispose()
-    }
+    // City lights is a Group containing Points, need to traverse and dispose each child
+    cityLights.traverse((child: any) => {
+      if (child instanceof THREE.Points || child instanceof THREE.Mesh) {
+        if (child.geometry) child.geometry.dispose()
+        const mat = child.material
+        if (mat) {
+          if (Array.isArray(mat)) mat.forEach((m: any) => m.dispose())
+          else mat.dispose()
+        }
+      }
+    })
   } catch (err) {
     // ignore
   }

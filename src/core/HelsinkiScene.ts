@@ -61,6 +61,8 @@ export class HelsinkiScene {
   private poiHighlightManager: POIHighlightManager
   private foundersHouseMarker: FoundersHouseMarker
 
+  // Cleanup functions
+  private _cleanupClickHandler: (() => void) | null = null
 
   public revealProgress: number = 0
   public pencilStrength: number = 1.0
@@ -120,7 +122,7 @@ export class HelsinkiScene {
     this.setupInteractionListeners()
 
     // Load model
-    const modelPath = '/untitled.glb'
+    const modelPath = '/broken.glb'
     loadModel({
       modelPath: modelPath,
       scene: this.scene,
@@ -150,10 +152,10 @@ export class HelsinkiScene {
     })
 
     // Setup click handler for debugging (model accessed via getter closure)
-    setupClickHandler(this.renderer, this.camera, () => this.helsinkiModel)
+    this._cleanupClickHandler = setupClickHandler(this.renderer, this.camera, () => this.helsinkiModel)
 
     // Setup window resize handler
-    window.addEventListener('resize', this.onWindowResize.bind(this))
+    window.addEventListener('resize', this.onWindowResize)
   }
 
   private generatePerlinTexture(): THREE.DataTexture {
@@ -168,7 +170,7 @@ export class HelsinkiScene {
     return texture
   }
 
-  private onWindowResize(): void {
+  private onWindowResize = (): void => {
     handleResize(
       this.camera,
       this.renderer,
@@ -178,26 +180,33 @@ export class HelsinkiScene {
     )
   }
 
+  // Store event handler references for cleanup
+  private _handlePointerDown = (ev: PointerEvent) => {
+    if (ev.button !== 0) return
+    this.autoTourManager.recordInteraction()
+  }
+
+  private _handleTouchStart = () => {
+    this.autoTourManager.recordInteraction()
+  }
+
+  private _handleWheel = () => {
+    this.autoTourManager.recordInteraction()
+  }
+
   /**
    * Setup interaction event listeners for auto-tour
    */
   private setupInteractionListeners(): void {
-    const handleInteraction = () => {
-      this.autoTourManager.recordInteraction()
-    }
+    this.renderer.domElement.addEventListener('pointerdown', this._handlePointerDown, { passive: true })
+    this.renderer.domElement.addEventListener('touchstart', this._handleTouchStart, { passive: true })
+    this.renderer.domElement.addEventListener('wheel', this._handleWheel, { passive: true })
+  }
 
-    this.renderer.domElement.addEventListener('pointerdown', (ev: PointerEvent) => {
-      if (ev.button !== 0) return
-      handleInteraction()
-    }, { passive: true })
-
-    this.renderer.domElement.addEventListener('touchstart', () => {
-      handleInteraction()
-    }, { passive: true })
-
-    this.renderer.domElement.addEventListener('wheel', () => {
-      handleInteraction()
-    }, { passive: true })
+  private removeInteractionListeners(): void {
+    this.renderer.domElement.removeEventListener('pointerdown', this._handlePointerDown)
+    this.renderer.domElement.removeEventListener('touchstart', this._handleTouchStart)
+    this.renderer.domElement.removeEventListener('wheel', this._handleWheel)
   }
 
   private getMapBounds(): { min: THREE.Vector3; max: THREE.Vector3; radius: number } | null {
@@ -428,15 +437,61 @@ export class HelsinkiScene {
   public dispose(): void {
     this.autoTourManager.dispose()
     this.poiHighlightManager.dispose()
+    this.foundersHouseMarker.dispose()
 
-    window.removeEventListener('resize', this.onWindowResize.bind(this))
+    // Remove all event listeners
+    window.removeEventListener('resize', this.onWindowResize)
+    this.removeInteractionListeners()
+    if (this._cleanupClickHandler) {
+      this._cleanupClickHandler()
+      this._cleanupClickHandler = null
+    }
+
     this.controls.dispose()
     this.renderer.dispose()
     this.renderTarget.dispose()
     this.perlinTexture.dispose()
 
+    // Dispose post-processing
+    if (this.postProcessMaterial) {
+      this.postProcessMaterial.dispose()
+    }
+    if (this.composer) {
+      this.composer.dispose()
+    }
+
+    // Dispose helsinki model and edge geometries/materials
     if (this.helsinkiModel) {
+      // Dispose edge geometries and materials created in modelLoader
+      const edgeGeometries = (this.helsinkiModel as any).__edgeGeometries as THREE.EdgesGeometry[] | undefined
+      const edgeMaterials = (this.helsinkiModel as any).__edgeMaterials as THREE.LineBasicMaterial[] | undefined
+
+      if (edgeGeometries) {
+        edgeGeometries.forEach(geom => geom.dispose())
+      }
+      if (edgeMaterials) {
+        edgeMaterials.forEach(mat => mat.dispose())
+      }
+
       this.scene.remove(this.helsinkiModel)
+    }
+
+    // Dispose stars
+    if (this.stars) {
+      this.stars.traverse((child) => {
+        if (child instanceof THREE.Points || child instanceof THREE.Mesh) {
+          if (child.geometry) child.geometry.dispose()
+          if (child.material) {
+            if (Array.isArray(child.material)) {
+              child.material.forEach(m => m.dispose())
+            } else {
+              child.material.dispose()
+            }
+          }
+        }
+      })
+      this.scene.remove(this.stars)
+      this.stars = null
     }
 
     this.removeCityLights()

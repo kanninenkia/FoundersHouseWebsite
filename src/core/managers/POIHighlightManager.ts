@@ -10,10 +10,21 @@ export class POIHighlightManager {
   private highlightedPOI: string | null = null
   private helsinkiModel: THREE.Group | null = null
   private camera: THREE.PerspectiveCamera
+  private highlightMaterial: THREE.MeshStandardMaterial
 
   constructor(camera: THREE.PerspectiveCamera, helsinkiModel: THREE.Group | null = null) {
     this.camera = camera
     this.helsinkiModel = helsinkiModel
+
+    // Create a single reusable highlight material
+    this.highlightMaterial = new THREE.MeshStandardMaterial({
+      color: 0xAD1013,
+      emissive: 0xAD1013,
+      emissiveIntensity: 0.5,
+      metalness: 0.3,
+      roughness: 0.7,
+      fog: true
+    })
   }
 
   /**
@@ -39,16 +50,6 @@ export class POIHighlightManager {
     if (!poi) {
       return
     }
-
-    // Create red material for highlighting
-    const highlightMaterial = new THREE.MeshStandardMaterial({
-      color: 0xAD1013,
-      emissive: 0xAD1013,
-      emissiveIntensity: 0.5,
-      metalness: 0.3,
-      roughness: 0.7,
-      fog: true
-    })
 
     // Use raycasting from camera towards POI to find the building
     const raycaster = new THREE.Raycaster()
@@ -79,8 +80,8 @@ export class POIHighlightManager {
           // Store original material
           this.highlightedMeshes.set(mesh, mesh.material)
 
-          // Apply red highlight material
-          mesh.material = highlightMaterial
+          // Apply red highlight material (reuse single material instance)
+          mesh.material = this.highlightMaterial
           highlightedObjects.add(mesh)
         }
       }
@@ -116,5 +117,7 @@ export class POIHighlightManager {
    */
   public dispose(): void {
     this.clearHighlights()
+    // Dispose the shared highlight material
+    this.highlightMaterial.dispose()
   }
 }
