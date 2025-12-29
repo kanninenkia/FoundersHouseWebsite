@@ -88,12 +88,18 @@ export function configureCameraControls(controls: HelsinkiCameraController): voi
 }
 
 /**
- * Create a render target with device pixel ratio
+ * Create a render target with capped pixel ratio for memory optimization
+ * Full device pixel ratio can cause excessive memory usage on high DPI displays
  */
 export function createRenderTarget(): THREE.WebGLRenderTarget {
+  // Cap pixel ratio at 1.5 to prevent excessive memory usage
+  // On 2x displays: 2 -> 1.5 = 43% memory savings
+  // On 3x displays: 3 -> 1.5 = 75% memory savings
+  const cappedPixelRatio = Math.min(window.devicePixelRatio, 1.5)
+
   return new THREE.WebGLRenderTarget(
-    window.innerWidth * window.devicePixelRatio,
-    window.innerHeight * window.devicePixelRatio
+    window.innerWidth * cappedPixelRatio,
+    window.innerHeight * cappedPixelRatio
   )
 }
 
@@ -112,20 +118,23 @@ export function handleResize(
 
   renderer.setSize(window.innerWidth, window.innerHeight)
 
+  // Cap pixel ratio at 1.5 to prevent excessive memory usage
+  const cappedPixelRatio = Math.min(window.devicePixelRatio, 1.5)
+
   renderTarget.setSize(
-    window.innerWidth * window.devicePixelRatio,
-    window.innerHeight * window.devicePixelRatio
+    window.innerWidth * cappedPixelRatio,
+    window.innerHeight * cappedPixelRatio
   )
 
   postProcessMaterial.uniforms.uResolution.value.set(
-    window.innerWidth * window.devicePixelRatio,
-    window.innerHeight * window.devicePixelRatio
+    window.innerWidth * cappedPixelRatio,
+    window.innerHeight * cappedPixelRatio
   )
 
   if (composer) {
     composer.setSize(
-      window.innerWidth * window.devicePixelRatio,
-      window.innerHeight * window.devicePixelRatio
+      window.innerWidth * cappedPixelRatio,
+      window.innerHeight * cappedPixelRatio
     )
   }
 }

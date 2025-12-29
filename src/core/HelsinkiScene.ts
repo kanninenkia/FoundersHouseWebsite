@@ -5,7 +5,7 @@
  */
 import * as THREE from 'three'
 import HelsinkiCameraController from './HelsinkiCameraController'
-import { loadHelsinkiModel as loadModel } from '../loaders'
+import { loadDualModels } from '../loaders'
 import { setupPostProcessing, setupComposer, setupSceneLighting } from '../rendering'
 import { addCityLightsPoints, animateCityLights, removeCityLights, updateCityLightsFog, createStarfield, animateStars, setupSceneFog, updateFogColor } from '../effects'
 import { createSmoothPOIAnimation, updateSmoothPOIAnimation, interruptSmoothPOIAnimation, type SmoothPOIAnimation } from '../animation'
@@ -44,6 +44,7 @@ export class HelsinkiScene {
   private renderer: THREE.WebGLRenderer
   private controls: HelsinkiCameraController
   private helsinkiModel: THREE.Group | null = null
+  private fogTilesModel: THREE.Group | null = null
   private cityLights: THREE.Object3D | null = null
   private perlinTexture: THREE.DataTexture
   private postProcessMaterial: THREE.ShaderMaterial
@@ -121,34 +122,39 @@ export class HelsinkiScene {
     // Setup interaction event listeners
     this.setupInteractionListeners()
 
-    // Load model
-    const modelPath = '/broken.glb'
-    loadModel({
-      modelPath: modelPath,
+    // Load models (main map + fog tiles)
+    loadDualModels({
+      mainMapPath: '/map.glb',
+      fogTilesPath: '/fogtiles.glb',
       scene: this.scene,
       camera: this.camera,
       controls: this.controls,
       isNightMode: this.isNightMode,
       onLoadProgress: config.onLoadProgress,
       onLoadComplete: config.onLoadComplete,
-    }).then((model) => {
-      this.helsinkiModel = model
+    }).then((result) => {
+      this.helsinkiModel = result.mainMap
+      this.fogTilesModel = result.fogTiles
+
+      console.log('✓ Main map loaded')
+      console.log('✓ Fog tiles loaded')
 
       // (Tram logic removed)
-      this.poiHighlightManager.setModel(model)
-      this.foundersHouseMarker.setModel(model, this.camera)
+      this.poiHighlightManager.setModel(result.mainMap)
+      this.foundersHouseMarker.setModel(result.mainMap, this.camera)
 
       if (this.isNightMode) {
         try {
-          this.addCityLightsPoints(800)
+          // Reduced from 800 to 500 for memory optimization
+          this.addCityLightsPoints(500)
         } catch (e) {
           // Failed to add city lights
         }
       }
 
   // (Tram logic removed)
-    }).catch(() => {
-      // Helsinki model loading failed
+    }).catch((error) => {
+      console.error('Failed to load models:', error)
     })
 
     // Setup click handler for debugging (model accessed via getter closure)
@@ -476,6 +482,24 @@ export class HelsinkiScene {
       this.scene.remove(this.helsinkiModel)
     }
 
+    // Dispose fog tiles
+    if (this.fogTilesModel) {
+      this.fogTilesModel.traverse((child) => {
+        if (child instanceof THREE.Mesh) {
+          if (child.geometry) child.geometry.dispose()
+          if (child.material) {
+            if (Array.isArray(child.material)) {
+              child.material.forEach(m => m.dispose())
+            } else {
+              child.material.dispose()
+            }
+          }
+        }
+      })
+      this.scene.remove(this.fogTilesModel)
+      this.fogTilesModel = null
+    }
+
     // Dispose stars
     if (this.stars) {
       this.stars.traverse((child) => {
@@ -724,7 +748,8 @@ export class HelsinkiScene {
 
     if (this.isNightMode) {
       if (!this.cityLights && this.helsinkiModel) {
-        this.addCityLightsPoints(1200)
+        // Reduced from 1200 to 600 for memory optimization
+        this.addCityLightsPoints(600)
       }
       if (this.cityLights) {
         this.cityLights.visible = true

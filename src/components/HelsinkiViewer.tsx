@@ -42,6 +42,14 @@ export const HelsinkiViewer = ({ shouldLoad = true, shouldPause = false, scrollP
   useEffect(() => {
     if (!containerRef.current || !shouldLoad || shouldPause) return
 
+    // CRITICAL: Cleanup any existing scene before creating new one
+    // This prevents memory leaks during HMR (Hot Module Reload)
+    if (sceneRef.current) {
+      console.warn('Cleaning up existing scene before creating new one (HMR)')
+      sceneRef.current.dispose()
+      sceneRef.current = null
+    }
+
     // Initialize immediately - no setTimeout/requestIdleCallback
     // This ensures loading starts even in background tabs
     try {
@@ -118,13 +126,22 @@ export const HelsinkiViewer = ({ shouldLoad = true, shouldPause = false, scrollP
 
     // Cleanup
     return () => {
+      console.log('HelsinkiViewer cleanup: disposing scene and canceling animation')
 
       if (animationFrameRef.current) {
         cancelAnimationFrame(animationFrameRef.current)
+        animationFrameRef.current = 0
       }
       if (sceneRef.current) {
         sceneRef.current.dispose()
         sceneRef.current = null
+      }
+
+      // Force garbage collection hint by clearing container
+      if (containerRef.current) {
+        // Remove all canvas elements to ensure cleanup
+        const canvases = containerRef.current.querySelectorAll('canvas')
+        canvases.forEach(canvas => canvas.remove())
       }
     }
   }, [shouldLoad, shouldPause, isDemoNightMode])

@@ -41,56 +41,102 @@ export const LoadingScreen = ({ onComplete, duration, scrollProgress, onScrollPr
   const [userHasScrolled, setUserHasScrolled] = useState(false)
   const [mapLoadingState, setMapLoadingState] = useState<MapLoadingState>({ isLoaded: false, progress: 0 })
   const [loadingBarProgress, setLoadingBarProgress] = useState(0)
+  const [smoothLoadingBarProgress, setSmoothLoadingBarProgress] = useState(0)
   const [canProceedToBlur, setCanProceedToBlur] = useState(false)
+
+  // Array of loading images to cycle through (randomized)
+  const [loadingImages] = useState(() => {
+    const images = [
+      '/LoadInImage.png',
+      '/The Legends Day.png',
+      '/Wave x Maki Photo (2).png',
+      '/Wave x Maki Photo.png',
+      '/Legends Day Still 002.png',
+      '/Legends Day Still 014.png'
+    ]
+    // Shuffle array randomly
+    return images.sort(() => Math.random() - 0.5)
+  })
+
+  // Start on a random image
+  const [currentImageIndex, setCurrentImageIndex] = useState(() =>
+    Math.floor(Math.random() * 6)
+  )
+  const [previousImageIndex, setPreviousImageIndex] = useState(() =>
+    Math.floor(Math.random() * 6)
+  )
+  const [isFirstImage, setIsFirstImage] = useState(true)
 
   // Save stage to sessionStorage whenever it changes
   useEffect(() => {
     sessionStorage.setItem('animationStage', stage)
   }, [stage])
 
-  // Loading bar effect - runs for exactly 7 seconds, independent of map loading
-  // Uses timestamp-based progress to work in background tabs
+  // Cycle through images every 1 second with crossfade - using timestamp-based approach
+  useEffect(() => {
+    if (scrollProgress > 0 || stage !== 'logo-loading') return
+
+    const startTime = Date.now()
+    let lastChangeTime = startTime
+
+    const checkInterval = setInterval(() => {
+      const now = Date.now()
+      const elapsed = now - lastChangeTime
+
+      // Change image exactly every 1000ms based on timestamp
+      if (elapsed >= 1000) {
+        setIsFirstImage(false)
+        setPreviousImageIndex(currentImageIndex)
+        setCurrentImageIndex((prev) => (prev + 1) % loadingImages.length)
+        lastChangeTime = now
+      }
+    }, 16) // Check every 16ms (~60fps) for smooth timing
+
+    return () => clearInterval(checkInterval)
+  }, [scrollProgress, stage, loadingImages.length, currentImageIndex])
+
+  // Loading bar tied to actual map loading progress
   useEffect(() => {
     if (scrollProgress > 0) return
 
-    const LOADING_DURATION = 7000 // 7 seconds
-    const startTime = Date.now()
+    // Update target loading bar based on map progress
+    setLoadingBarProgress(mapLoadingState.progress)
 
-    // Use setInterval with timestamp checking instead of increment-based
-    const interval = setInterval(() => {
-      const elapsed = Date.now() - startTime
-      const progress = Math.min((elapsed / LOADING_DURATION) * 100, 100)
-
-      setLoadingBarProgress(progress)
-
-      if (progress >= 100) {
-        clearInterval(interval)
-      }
-    }, 50) // Check every 50ms - will continue even if throttled in background
-
-    // After 7 seconds, check if map is loaded
-    const checkTimer = setTimeout(() => {
-      if (mapLoadingState.isLoaded) {
-        // Map is loaded, can proceed immediately
-        setCanProceedToBlur(true)
-      } else {
-        // Map still loading, wait for it
-        // canProceedToBlur will be set to true when map finishes loading
-      }
-    }, LOADING_DURATION)
-
-    return () => {
-      clearInterval(interval)
-      clearTimeout(checkTimer)
-    }
-  }, [scrollProgress, mapLoadingState.isLoaded])
-
-  // Watch for map loading completion after 7 seconds
-  useEffect(() => {
-    if (loadingBarProgress >= 100 && mapLoadingState.isLoaded) {
+    // When map fully loads, proceed to blur
+    if (mapLoadingState.isLoaded && mapLoadingState.progress >= 100) {
       setCanProceedToBlur(true)
     }
-  }, [loadingBarProgress, mapLoadingState.isLoaded])
+  }, [scrollProgress, mapLoadingState])
+
+  // Smooth loading bar animation at 120fps
+  useEffect(() => {
+    if (scrollProgress > 0) return
+
+    let animationFrameId: number
+
+    const animate = () => {
+      setSmoothLoadingBarProgress((current) => {
+        const target = loadingBarProgress
+        const diff = target - current
+
+        // Smooth interpolation - closes gap by 20% each frame
+        if (Math.abs(diff) < 0.1) {
+          return target
+        }
+        return current + diff * 0.2
+      })
+
+      animationFrameId = requestAnimationFrame(animate)
+    }
+
+    animationFrameId = requestAnimationFrame(animate)
+
+    return () => {
+      if (animationFrameId) {
+        cancelAnimationFrame(animationFrameId)
+      }
+    }
+  }, [scrollProgress, loadingBarProgress])
 
   useEffect(() => {
     // Skip animations if returning to a saved state with scrollProgress > 0
@@ -263,10 +309,23 @@ export const LoadingScreen = ({ onComplete, duration, scrollProgress, onScrollPr
       }}
     >
       <div className="loading-content">
-        {/* Background layer: LoadInImage - Always visible during initial stages */}
+        {/* Background layer: Cycling loading images - Always visible during initial stages */}
         {showBackgroundImage && (
           <div className="loading-background-image">
-            <img src="/LoadInImage.png" alt="Founders House" />
+            {/* Previous image - fades out */}
+            <img
+              key={`prev-${previousImageIndex}`}
+              src={loadingImages[previousImageIndex]}
+              alt="Founders House"
+              className="background-image-layer background-image-previous"
+            />
+            {/* Current image - fades in on top (except first image) */}
+            <img
+              key={`curr-${currentImageIndex}`}
+              src={loadingImages[currentImageIndex]}
+              alt="Founders House"
+              className={`background-image-layer ${isFirstImage ? 'background-image-first' : 'background-image-current'}`}
+            />
           </div>
         )}
 
@@ -278,7 +337,7 @@ export const LoadingScreen = ({ onComplete, duration, scrollProgress, onScrollPr
         )}
         {showLoadingBar && (
           <div className="loading-bar-container">
-            <div className="loading-bar" style={{ width: `${loadingBarProgress}%` }} />
+            <div className="loading-bar" style={{ width: `${smoothLoadingBarProgress}%` }} />
           </div>
         )}
 

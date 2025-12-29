@@ -13,15 +13,15 @@ import { SCENE_CONFIG, OPACITY } from '../constants/designSystem'
 export function createStarfield(): THREE.Group {
   const starGroup = new THREE.Group()
 
-  // Layer 1: Background stars (lots of tiny twinkling stars)
-  const backgroundStars = createBackgroundStars(15000)
+  // Layer 1: Background stars - REDUCED for memory optimization (was 15000)
+  const backgroundStars = createBackgroundStars(8000)
   starGroup.add(backgroundStars)
 
-  // Layer 2: Milky Way (dense band of very small stars)
-  const milkyWay = createMilkyWay(8000)
+  // Layer 2: Milky Way - REDUCED for memory optimization (was 8000)
+  const milkyWay = createMilkyWay(4000)
   starGroup.add(milkyWay)
 
-  // Layer 3: Prominent stars (larger, brighter individual stars)
+  // Layer 3: Prominent stars - kept small count (was 500)
   const prominentStars = createProminentStars(500)
   starGroup.add(prominentStars)
 
