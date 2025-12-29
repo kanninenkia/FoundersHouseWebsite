@@ -1,5 +1,183 @@
 @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;600;700&display=swap');
 
+.text-pushed-expand {
+  animation: textPushedExpand 1s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@keyframes textPushedExpand {
+  0% {
+    transform: translateY(-22vh);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-35vh);
+    opacity: 1;
+  }
+}
+
+.text2-move-up {
+  animation: text2MoveUpWithMap 1.2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@keyframes text2MoveUpWithMap {
+  0% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-40vh);
+    opacity: 1;
+  }
+}
+
+.text-page.slide-up-exit {
+  animation: textPageSlideUpExit 1.2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@keyframes textPageSlideUpExit {
+  0% {
+    transform: translateY(0) scale(1);
+  }
+  100% {
+    transform: translateY(-5%) scale(1.05);
+  }
+}
+
+.map-container.expand {
+  position: fixed;
+  top: 40vh;
+  left: 50%;
+  width: 90vw;
+  height: 100vh;
+  background: transparent;
+  z-index: 2;
+  opacity: 1;
+  animation: mapExpandToFull 1.2s cubic-bezier(.4,.25,0,1) forwards;
+  will-change: top, left, width, height, transform;
+  overflow: hidden;
+  transform: translateX(-50%);
+  transition: none;
+}
+
+@keyframes mapExpandToFull {
+  0% {
+    top: 40vh;
+    left: 50%;
+    width: 90vw;
+    height: 100vh;
+    transform: translateX(-50%);
+  }
+  100% {
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    transform: none;
+  }
+}
+.text-page .corner-label.fade-in-persist {
+  opacity: 1;
+  animation: none;
+}
+@keyframes mapSlideInFromBottom {
+  0% {
+    top: 100vh;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    transform: none;
+  }
+  100% {
+    top: 40vh;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    transform: none;
+  }
+}
+
+
+.map-container.slide-in {
+  position: fixed;
+  top: 100vh;
+  left: 50%;
+  width: 90vw;
+  height: 100vh;
+  background: transparent;
+  z-index: 2;
+  opacity: 1;
+  animation: mapSlideInToForty 1.8s cubic-bezier(0.3, 0.43, 0, 1) forwards;
+  will-change: top, left, width, transform;
+  overflow: hidden;
+  transform: translateX(-50%);
+  transition: none;
+}
+
+@keyframes mapSlideInToForty {
+  0% {
+    top: 100vh;
+    left: 50%;
+    width: 90vw;
+    height: 100vh;
+    transform: translateX(-50%);
+  }
+  100% {
+    top: 40vh;
+    left: 50%;
+    width: 90vw;
+    height: 100vh;
+    transform: translateX(-50%);
+  }
+}
+.fade-up-text {
+  display: inline-block;
+  animation: fadeUpIn 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  opacity: 0;
+}
+
+.fade-up-text.fade-up-out {
+  animation: fadeUpOut 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes fadeUpOut {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+}
+.fade-up-wrapper {
+  overflow: hidden;
+  display: block;
+  height: 80px;
+}
+
+.fade-in-text {
+  display: inline-block;
+  animation: fadeInEaseOut 2.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  opacity: 0;
+}
+
+.fade-up-text {
+  display: inline-block;
+  animation: fadeUpIn 2.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  opacity: 0;
+}
+
+@keyframes fadeUpIn {
+  from {
+    opacity: 0;
+    transform: translateY(40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .loading-screen {
   position: fixed;
   inset: 0;
@@ -29,6 +207,15 @@
   z-index: 1;
   margin: 0;
   padding: 0;
+  /* Ultimate fallback - show LoadInImage as CSS background while React/images load */
+  background: url('/LoadInImage.png') center/cover no-repeat;
+}
+
+.loading-background-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }
 
 .background-image-layer {
@@ -53,7 +240,7 @@
 
 .background-image-current {
   z-index: 2;
-  animation: crossfadeIn 1s ease-in-out;
+  animation: crossfadeIn 0.6s ease-in-out;
 }
 
 @keyframes crossfadeIn {
@@ -90,15 +277,15 @@
 .loading-logo {
   position: relative;
   z-index: 2;
-  transition: filter 2.5s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: all 4.5s cubic-bezier(0.23, 0.26, 0, 1);
 }
 
 .loading-logo.blur-out {
-  filter: blur(12px);
+  filter: blur(15px);
+  opacity: 0;
 }
 
 .loading-logo img {
-  height: 120px;
   width: auto;
   display: block;
 }
@@ -108,7 +295,7 @@
   bottom: 80px;
   left: 50%;
   transform: translateX(-50%);
-  width: 380px;
+  width: 45%;
   max-width: 90vw;
   height: 2px;
   background: rgba(255, 255, 255, 0.3);
@@ -141,6 +328,7 @@
   position: absolute;
   background: #590D0F; /* Dark red */
   opacity: 0;
+  box-sizing: border-box;
 }
 
 .block.pixel-reveal {
@@ -207,91 +395,34 @@
 
 .text-page::after {
   right: 1.5rem;
-  transform-origin: top right;
-}
-
-/* Horizontal lines - expand from corners to meet in center */
-.text-page.lines-connect::before {
-  opacity: 1;
-  animation: expandHorizontalLeft 2s ease-out forwards;
-  background: #FFFFFF;
-  height: 1px;
-  bottom: 1.5rem;
-}
-
-.text-page.lines-connect::after {
-  opacity: 1;
-  animation: expandHorizontalRight 2s ease-out forwards;
+  animation: fadeInCornerElements 0.2s ease-out forwards;
   background: #FFFFFF;
   height: 1px;
   bottom: 1.5rem;
 }
 
 /* Vertical drop lines from original corner positions */
-.vertical-line-left {
-  position: fixed;
-  left: 1.5rem;
-  top: calc(100vh - 1.5rem);
-  width: 1px;
-  height: 0;
-  background: #FFFFFF;
-  z-index: 3;
-  animation: dropVerticalLine 2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-
-.vertical-line-right {
-  position: fixed;
-  right: 1.5rem;
-  top: calc(100vh - 1.5rem);
-  width: 1px;
-  height: 0;
-  background: #FFFFFF;
-  z-index: 3;
-  animation: dropVerticalLine 2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-
-/* Map container - starts hidden, fades into box, then slides up */
 .map-container {
   position: fixed;
-  left: 50%;
-  bottom: 0;
-  width: calc(100vw - 3rem); /* Full width minus margins */
-  height: 1.5rem; /* Height of the box formed by lines */
+  left: 0;
+  top: 0;
+  width: 100vw;
+  height: 100vh;
   background: #000000;
   z-index: 2;
-  opacity: 0;
-  transform: translateX(-50%);
+  opacity: 1;
   overflow: hidden;
-  /* GPU acceleration optimizations */
-  will-change: transform, opacity, height, width;
-  transform-origin: center bottom;
+  will-change: top;
+  transform: none;
   backface-visibility: hidden;
   -webkit-font-smoothing: antialiased;
 }
 
-/* Step 1: Fade into the box when lines connect */
-.map-container.show-in-box {
-  animation: fadeIntoBox 1s ease-out forwards;
-}
-
-/* Step 2: Slide up animations - smooth ease out */
-.map-container.sliding-up {
-  animation: slideMapUp 2.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-
-
-.vertical-line-left.sliding-up,
-.vertical-line-right.sliding-up {
-  animation: slideLineUp 3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-
 /* Text gets pushed by the map - v2 higher specificity */
-.text-page .text-centered.text-pushed-by-box {
-  animation: getPushedByBox 2.5s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
-  /* GPU acceleration for smooth animation */
+.text-centered.align-left.text-pushed-by-box {
+  transform: translateY(calc(-22vh));
+  transition: transform 1.4s cubic-bezier(0.3, 0.43, 0, 1);
   will-change: transform, opacity;
-  /* Don't set transform here - let animation control it */
-  animation-fill-mode: forwards !important;
 }
 
 /* Override animation when scrolling */
@@ -311,21 +442,22 @@
   white-space: nowrap;
   text-align: center;
   flex-wrap: wrap;
-}
+    transition:
+      width 1s cubic-bezier(0.4, 0, 0.2, 1),
+      left 1s cubic-bezier(0.4, 0, 0.2, 1),
+      top 1s cubic-bezier(0.4, 0, 0.2, 1),
+      height 1s cubic-bezier(0.4, 0, 0.2, 1),
+      transform 1s cubic-bezier(0.4, 0, 0.2, 1);
+  }
 
-/* Bottom-right text positioning - for second text screen */
-.text-bottom-right {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5em;
-  line-height: 1;
-  animation: textFadeIn 0.6s ease-out 0.2s forwards;
-  opacity: 0;
-  white-space: nowrap;
-  text-align: center;
-  flex-wrap: wrap;
+  /* Step 1.5: Pause at halfway (50% height from top) */
+  .map-container.halfway {
+    top: 40vh;
+    left: 50%;
+    width: 90vw;
+    height: 50vh;
+    transform: translateX(-50%);
+    /* transition matches .map-container for smoothness */
   margin-top: 1rem;
 }
 
@@ -337,12 +469,13 @@
   gap: 0.2em;
   text-align: center;
   opacity: 1;
+  overflow: hidden;
 }
 
 /* Fade-in animation for text with ease-out timing */
 .fade-in-text {
   display: inline-block;
-  animation: fadeInEaseOut 1.2s ease-out forwards;
+  animation: fadeInEaseOut 3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   opacity: 0;
 }
 
@@ -350,14 +483,13 @@
   from {
     opacity: 0;
   }
-  to {
-    opacity: 1;
+  0% {
+    top: 40vh;
+    left: 50%;
+    width: 90vw;
+    height: 100vh;
+    transform: translateX(-50%);
   }
-}
-
-.text-page .text-centered.align-left {
-  align-items: flex-start;
-  text-align: left;
 }
 
 .text-page .text-centered div {
@@ -365,7 +497,7 @@
   font-weight: 700;
   font-size: clamp(2.5rem, 6vw, 5rem);
   color: #FFFFFF;
-  letter-spacing: 0.05em;
+  letter-spacing: -0.02em;
   text-transform: uppercase;
   line-height: 1;
   white-space: nowrap;
@@ -431,7 +563,11 @@
   letter-spacing: 0.1em;
   text-transform: uppercase;
   opacity: 0;
-  animation: fadeInCornerElements 0.2s ease-out forwards;
+}
+
+.text-page .corner-label.fade-in {
+  animation: fadeInCornerElements 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation-delay: 0.4s;
 }
 
 .text-page .corner-label.top-left {
@@ -537,7 +673,7 @@
 /* Optimize animation for performance */
 @media (prefers-reduced-motion: no-preference) {
   .map-container.sliding-up {
-    animation-timing-function: cubic-bezier(0.25, 0.1, 0.25, 1); /* Smoother easing */
+    animation-timing-function: cubic-bezier(0.11, 0.43, 0, 1); /* Smoother easing */
   }
 }
 
@@ -572,25 +708,16 @@
 }
 
 /* Fade into the box at bottom */
-@keyframes fadeIntoBox {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 0.7;
-  }
-}
+
 
 /* Slide map up from box to 67vh - smooth continuous growth */
 @keyframes slideMapUp {
   0% {
     height: 1.5rem;
-    width: calc(100vw - 3rem);
     opacity: 0.7;
   }
   100% {
     height: 67vh;
-    width: 80vw;
     opacity: 0.9;
   }
 }

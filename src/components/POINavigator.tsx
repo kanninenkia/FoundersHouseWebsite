@@ -40,6 +40,17 @@ export const POINavigator = ({ onPOISelect, initialPOI = 'FOUNDERS_HOUSE' }: POI
 
       {/* Vector path component - peaks at the highlighted POI */}
       <VectorPath selectedIndex={selectedIndex} totalItems={poiList.length} />
+
+      {/* Gradual blur overlay */}
+      <div className="gradient-blur">
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+        <div className="gradient-blur-overlay"></div>
+      </div>
     </div>
   )
 }

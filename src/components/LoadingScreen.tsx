@@ -14,9 +14,12 @@ interface MapLoadingState {
   progress: number
 }
 
-// Animated text component with fade-in effect
-const AnimatedText = ({ text }: { text: string; duration?: number }) => {
-  return <span className="fade-in-text">{text}</span>
+// Animated text component with fade-in or fade-up effect and optional fade-out (Jason's version)
+const AnimatedText = ({ text, fadeUp = false, fadeOut = false }: { text: string; fadeUp?: boolean; fadeOut?: boolean; duration?: number }) => {
+  let className = "fade-in-text";
+  if (fadeUp) className = "fade-up-text";
+  if (fadeUp && fadeOut) className += " fade-up-out";
+  return <span className={className}>{text}</span>;
 }
 
 interface Block {
@@ -28,43 +31,39 @@ interface Block {
   delay: number
 }
 
-type Stage = 'logo-loading' | 'logo-blur' | 'pixel-out-to-text1' | 'text1' | 'text2' | 'lines-connect' | 'slide-up-start' | 'complete'
+// Jason's stages: map-slide-in and map-expand instead of lines-connect and slide-up-start
+type Stage = 'logo-loading' | 'logo-blur' | 'pixel-out-to-text1' | 'text1' | 'text2' | 'map-slide-in' | 'map-expand' | 'complete'
 
-export const LoadingScreen = ({ onComplete, duration, scrollProgress, onScrollProgressChange }: LoadingScreenProps) => {
+export const LoadingScreen = ({ onComplete, duration, scrollProgress }: LoadingScreenProps) => {
   const [blocks, setBlocks] = useState<Block[]>([])
-  // Persist stage across tab switches - if user is at scrollProgress > 0, they're already at slide-up-start
+  // Persist stage across tab switches
   const [stage, setStage] = useState<Stage>(() => {
     const saved = sessionStorage.getItem('animationStage')
-    if (saved && scrollProgress > 0) return saved as Stage
-    return 'logo-loading'
+    return saved ? (saved as Stage) : 'logo-loading'
   })
-  const [userHasScrolled, setUserHasScrolled] = useState(false)
   const [mapLoadingState, setMapLoadingState] = useState<MapLoadingState>({ isLoaded: false, progress: 0 })
   const [loadingBarProgress, setLoadingBarProgress] = useState(0)
   const [smoothLoadingBarProgress, setSmoothLoadingBarProgress] = useState(0)
   const [canProceedToBlur, setCanProceedToBlur] = useState(false)
 
-  // Array of loading images to cycle through (randomized)
+  // YOUR IMAGE CYCLING - Keep all 6 images
+  // LoadInImage.png is ALWAYS first (index 0) so it can be preloaded in HTML
   const [loadingImages] = useState(() => {
     const images = [
-      '/LoadInImage.png',
+      '/LoadInImage.png', // ALWAYS FIRST - preloaded in index.html
       '/The Legends Day.png',
       '/Wave x Maki Photo (2).png',
       '/Wave x Maki Photo.png',
       '/Legends Day Still 002.png',
       '/Legends Day Still 014.png'
     ]
-    // Shuffle array randomly
-    return images.sort(() => Math.random() - 0.5)
+    // Don't shuffle - keep LoadInImage.png at index 0
+    return images
   })
 
-  // Start on a random image
-  const [currentImageIndex, setCurrentImageIndex] = useState(() =>
-    Math.floor(Math.random() * 6)
-  )
-  const [previousImageIndex, setPreviousImageIndex] = useState(() =>
-    Math.floor(Math.random() * 6)
-  )
+  // ALWAYS start with LoadInImage.png (index 0) for instant display
+  const [currentImageIndex, setCurrentImageIndex] = useState(0)
+  const [previousImageIndex, setPreviousImageIndex] = useState(0)
   const [isFirstImage, setIsFirstImage] = useState(true)
 
   // Save stage to sessionStorage whenever it changes
@@ -72,7 +71,7 @@ export const LoadingScreen = ({ onComplete, duration, scrollProgress, onScrollPr
     sessionStorage.setItem('animationStage', stage)
   }, [stage])
 
-  // Cycle through images every 1 second with crossfade - using timestamp-based approach
+  // YOUR IMAGE CYCLING LOGIC - Cycle through images every 1 second with crossfade
   useEffect(() => {
     if (scrollProgress > 0 || stage !== 'logo-loading') return
 
@@ -83,8 +82,8 @@ export const LoadingScreen = ({ onComplete, duration, scrollProgress, onScrollPr
       const now = Date.now()
       const elapsed = now - lastChangeTime
 
-      // Change image exactly every 1000ms based on timestamp
-      if (elapsed >= 1000) {
+      // Change image exactly every 600ms based on timestamp
+      if (elapsed >= 600) {
         setIsFirstImage(false)
         setPreviousImageIndex(currentImageIndex)
         setCurrentImageIndex((prev) => (prev + 1) % loadingImages.length)
@@ -139,28 +138,26 @@ export const LoadingScreen = ({ onComplete, duration, scrollProgress, onScrollPr
   }, [scrollProgress, loadingBarProgress])
 
   useEffect(() => {
-    // Skip animations if returning to a saved state with scrollProgress > 0
-    if (scrollProgress > 0) {
-      return
-    }
-
     // Generate random blocks with natural dissolve timing
     const generatedBlocks: Block[] = []
-    const cols = 24 // More columns for finer pixelation (24 blocks wide)
-    const rows = 16 // 24x16 grid maintains aspect ratio
+    // JASON'S GRID SIZE: 18x10 (reduced from your 24x16)
+    const cols = 18 // Reduced columns for cleaner pixelation
+    const rows = 10 // Reduced rows
     const blockWidth = 100 / cols
     const blockHeight = 100 / rows
 
-    // Create blocks with random appearance order
+    // Create blocks with edge-filling logic (Jason's overlap approach)
     const blockPositions: Block[] = []
     for (let i = 0; i < cols; i++) {
       for (let j = 0; j < rows; j++) {
+        // Overlap amount in percent
+        const overlap = 0.15;
         blockPositions.push({
           id: i * rows + j,
           x: i * blockWidth,
           y: j * blockHeight,
-          width: blockWidth,
-          height: blockHeight,
+          width: i === cols - 1 ? 100 - i * blockWidth : blockWidth + overlap,
+          height: j === rows - 1 ? 100 - j * blockHeight : blockHeight + overlap,
           delay: 0
         })
       }
@@ -178,18 +175,14 @@ export const LoadingScreen = ({ onComplete, duration, scrollProgress, onScrollPr
 
     setBlocks(generatedBlocks)
 
-    // No timers here - stages are controlled by canProceedToBlur
-    // All stage transitions happen in a separate useEffect watching canProceedToBlur
-
     return () => {
       // No timers to clean up
     }
   }, [duration, onComplete])
 
-  // Stage transitions triggered after loading completes
-  // Uses timestamp-based checking with setInterval to work in background tabs
+  // JASON'S STAGE TRANSITIONS - map-slide-in and map-expand timing
   useEffect(() => {
-    if (!canProceedToBlur || scrollProgress > 0) return
+    if (!canProceedToBlur) return
 
     // Record start time for time-based stage transitions
     const startTime = Date.now()
@@ -202,14 +195,16 @@ export const LoadingScreen = ({ onComplete, duration, scrollProgress, onScrollPr
         setStage('logo-blur')
       } else if (elapsed >= 1300 && elapsed < 2800) {
         setStage('pixel-out-to-text1')
-      } else if (elapsed >= 2800 && elapsed < 6300) {
+      } else if (elapsed >= 2800 && elapsed < 6800) {
         setStage('text1')
-      } else if (elapsed >= 6300 && elapsed < 8300) {
+      } else if (elapsed >= 6800 && elapsed < 9000) {
         setStage('text2')
-      } else if (elapsed >= 8300 && elapsed < 11100) {
-        setStage('lines-connect')
-      } else if (elapsed >= 11100) {
-        setStage('slide-up-start')
+      } else if (elapsed >= 9000 && elapsed < 9500) {
+        setStage('map-slide-in')
+      } else if (elapsed >= 11500 && elapsed < 13000) {
+        setStage('map-expand')
+      } else if (elapsed >= 13000) {
+        setStage('complete')
         clearInterval(checkInterval) // Stop checking once we reach final stage
       }
     }, 50) // Check every 50ms for smooth transitions
@@ -219,120 +214,113 @@ export const LoadingScreen = ({ onComplete, duration, scrollProgress, onScrollPr
     }
   }, [canProceedToBlur, scrollProgress])
 
-  // Handle scroll to expand map to full screen
-  useEffect(() => {
-    if (stage !== 'slide-up-start') return
-
-    const handleWheel = (e: WheelEvent) => {
-      e.preventDefault()
-
-      // Mark that user has scrolled (cancels auto-scroll)
-      setUserHasScrolled(true)
-
-      // Once scrollProgress reaches 1, lock it there (no unscrolling)
-      if (scrollProgress >= 1 && e.deltaY < 0) {
-        return // Prevent scrolling back up
-      }
-
-      const delta = e.deltaY * 0.002 // Smooth scroll sensitivity
-      const next = Math.min(Math.max(scrollProgress + delta, 0), 1) // Clamp between 0 and 1
-      onScrollProgressChange(next)
-    }
-
-    window.addEventListener('wheel', handleWheel, { passive: false })
-
-    return () => {
-      window.removeEventListener('wheel', handleWheel)
-    }
-  }, [stage, scrollProgress, onScrollProgressChange])
-
-  // Auto-scroll timer - starts after slide-up animation reaches 67vh (3s animation completes)
-  useEffect(() => {
-    if (stage !== 'slide-up-start' || userHasScrolled) return
-
-    // Wait for slide-up animation to complete (3s), then start 3s timer
-    const autoScrollTimer = setTimeout(() => {
-      if (scrollProgress < 1 && !userHasScrolled) {
-        // Smoothly animate to 100% - slower, more gentle transition
-        const startProgress = scrollProgress
-        const duration = 2500 // 2.5 second animation (slower)
-        const startTime = Date.now()
-
-        const animate = () => {
-          const elapsed = Date.now() - startTime
-          const progress = Math.min(elapsed / duration, 1)
-
-          // Easing function (ease-in-out for smoother feel)
-          const eased = progress < 0.5
-            ? 2 * progress * progress
-            : 1 - Math.pow(-2 * progress + 2, 2) / 2
-          const newProgress = startProgress + (1 - startProgress) * eased
-
-          onScrollProgressChange(newProgress)
-
-          if (progress < 1) {
-            requestAnimationFrame(animate)
-          }
-        }
-
-        animate()
-      }
-    }, 3000 + 3000) // 3s for slide-up animation + 3s wait time
-
-    return () => clearTimeout(autoScrollTimer)
-  }, [stage, scrollProgress, onScrollProgressChange, userHasScrolled])
-
   const showLogo = stage === 'logo-loading' || stage === 'logo-blur' || stage === 'pixel-out-to-text1'
   const showLoadingBar = stage === 'logo-loading'
   const showBackgroundImage = stage === 'logo-loading' || stage === 'logo-blur' || stage === 'pixel-out-to-text1'
   const showPixelTransition = stage === 'pixel-out-to-text1'
-  const showTextPage = stage === 'text1' || stage === 'text2' || stage === 'lines-connect' || stage === 'slide-up-start'
-  const showText1 = stage === 'text1'
-  const showText2 = stage === 'text2' || stage === 'lines-connect' || stage === 'slide-up-start'
+  // JASON'S DELAYED TEXT1 APPEARANCE
+  const [showText1Delayed, setShowText1Delayed] = useState(false)
+  const showText1 = stage === 'text1' && showText1Delayed
+  const [fadeOutText1, setFadeOutText1] = useState(false)
   const shouldBlurLogo = stage === 'logo-blur' || stage === 'pixel-out-to-text1'
-  const shouldConnectLines = stage === 'lines-connect' || stage === 'slide-up-start'
-  const shouldShowMapInBox = stage === 'lines-connect' || stage === 'slide-up-start'
-  const shouldSlideUp = stage === 'slide-up-start'
   // Start loading map immediately at page launch (all stages)
   const shouldLoadMap = true
-  // NEVER pause map loading - even in background tabs
-  // This ensures the map loads regardless of tab visibility or animation stage
   const shouldPauseMapLoading = false
+
+  // JASON'S TEXT DELAY AND FADE-OUT LOGIC
+  useEffect(() => {
+    let showTimeout: ReturnType<typeof setTimeout> | undefined
+    let fadeOutTimeout: ReturnType<typeof setTimeout> | undefined
+    if (stage === 'text1') {
+      showTimeout = setTimeout(() => setShowText1Delayed(true), 300)
+      // Fade out text1 just before switching to text2
+      fadeOutTimeout = setTimeout(() => setFadeOutText1(true), 3400)
+    } else {
+      setShowText1Delayed(false)
+      setFadeOutText1(false)
+    }
+    return () => {
+      if (showTimeout) clearTimeout(showTimeout)
+      if (fadeOutTimeout) clearTimeout(fadeOutTimeout)
+    }
+  }, [stage])
+
+  // Debug logging
+  console.log('[LoadingScreen] Render:', {
+    stage,
+    shouldLoadMap,
+    shouldPauseMapLoading,
+    scrollProgress
+  })
 
   return (
     <div
       className="loading-screen"
       style={{
-        pointerEvents: scrollProgress >= 1 ? 'none' : 'auto',
-        zIndex: scrollProgress >= 1 ? 1 : 10000,
+        pointerEvents: 'auto',
+        zIndex: 10000,
         background: 'transparent'
       }}
     >
       <div className="loading-content">
-        {/* Background layer: Cycling loading images - Always visible during initial stages */}
+        {/* Persistent dark red background layer */}
+        <div className={`loading-text text-page${stage === 'map-slide-in' ? ' text-pushed-by-box' : ''}`} style={{ pointerEvents: 'none', zIndex: 0, position: 'fixed', inset: 0 }}>
+          {/* Corner labels absolutely positioned, not wrapped, so they stay in corners */}
+          {(stage === 'text1' || stage === 'text2' || stage === 'map-slide-in' || stage === 'map-expand') && <>
+            <span
+              className={`corner-label top-left${stage === 'text1' ? ' fade-in' : ''}${stage !== 'text1' ? ' fade-in-persist' : ''}`}
+            >FOUNDERS HOUSE</span>
+            <span
+              className={`corner-label top-right${stage === 'text1' ? ' fade-in' : ''}${stage !== 'text1' ? ' fade-in-persist' : ''}`}
+            >HELSINKI, FINLAND</span>
+          </>}
+          {/* Text content in its own container for independent animation */}
+          <div className={`text-centered align-left${stage === 'map-slide-in' ? ' text-pushed-by-box' : ''}${stage === 'map-expand' ? ' text-pushed-expand' : ''}`} style={{ opacity: (stage === 'text1' || stage === 'text2' || stage === 'map-slide-in' || stage === 'map-expand' || stage === 'complete') ? 1 : 0 }}>
+            {/* Always render both text1 and text2, but control their visibility with stage */}
+            <div style={{ display: stage === 'text1' && showText1 ? 'block' : 'none' }}>
+              <div className="fade-up-wrapper"><AnimatedText text="FOR THE NEXT" fadeUp={true} fadeOut={fadeOutText1} /></div>
+              <div className="fade-up-wrapper"><AnimatedText text="FOUNDER GENERATION" fadeUp={true} fadeOut={fadeOutText1} /></div>
+            </div>
+            <div
+              style={{ display: (stage === 'text2' || stage === 'map-slide-in' || stage === 'map-expand' || stage === 'complete') ? 'block' : 'none' }}
+            >
+              <div className="fade-up-wrapper"><AnimatedText text="WHERE BUILDERS CONVERGE," fadeUp /></div>
+              <div className="fade-up-wrapper"><AnimatedText text="WHERE POTENTIAL MULTIPLIES" fadeUp /></div>
+            </div>
+          </div>
+        </div>
+
+        {/* Background layer: YOUR CYCLING LOADING IMAGES WITH CROSSFADE - Always visible during initial stages */}
         {showBackgroundImage && (
           <div className="loading-background-image">
-            {/* Previous image - fades out */}
-            <img
-              key={`prev-${previousImageIndex}`}
-              src={loadingImages[previousImageIndex]}
-              alt="Founders House"
-              className="background-image-layer background-image-previous"
-            />
-            {/* Current image - fades in on top (except first image) */}
+            {/* Previous image - stays visible underneath (only show after first transition) */}
+            {!isFirstImage && (
+              <img
+                key={`prev-${previousImageIndex}`}
+                src={loadingImages[previousImageIndex]}
+                alt="Founders House"
+                className="background-image-layer background-image-previous"
+              />
+            )}
+            {/* Current image - fades in on top (except first image which appears immediately) */}
             <img
               key={`curr-${currentImageIndex}`}
               src={loadingImages[currentImageIndex]}
               alt="Founders House"
               className={`background-image-layer ${isFirstImage ? 'background-image-first' : 'background-image-current'}`}
+              loading="eager"
+              fetchPriority="high"
             />
           </div>
         )}
 
         {/* Stage 1 & 2: Logo + Loading Bar (on top of background) */}
         {showLogo && (
-          <div className={`loading-logo ${shouldBlurLogo ? 'blur-out' : ''}`}>
-            <img src="/fhlogo_horizontal.png" alt="Founders House" />
+          <div
+            className={`loading-logo ${shouldBlurLogo ? 'blur-out' : ''}`}
+            style={{ height: '76px', width: 'auto' }}
+          >
+            <img src="/fhlogo_horizontal.png" alt="Founders House" style={{ height: '100%', width: 'auto', display: 'block' }} />
           </div>
         )}
         {showLoadingBar && (
@@ -360,113 +348,31 @@ export const LoadingScreen = ({ onComplete, duration, scrollProgress, onScrollPr
           </div>
         )}
 
-        {/* Single persistent orange text page - content changes but page stays */}
-        {showTextPage && scrollProgress < 1 && (
-          <div
-            className={`loading-text text-page ${shouldConnectLines ? 'lines-connect' : ''}`}
-            style={{
-              pointerEvents: 'none'
-            }}
-          >
-            {/* Logo and Hamburger - Hidden on loading screen, will show on map view instead */}
-
-            <span
-              className="corner-label top-left"
-              style={{
-                transform: shouldSlideUp ? `translateY(-${scrollProgress * 100}vh)` : undefined,
-                opacity: shouldSlideUp ? 1 - scrollProgress : undefined,
-                transition: 'none'
-              }}
-            >
-              FOUNDERS HOUSE
-            </span>
-            <span
-              className="corner-label top-right"
-              style={{
-                transform: shouldSlideUp ? `translateY(-${scrollProgress * 100}vh)` : undefined,
-                opacity: shouldSlideUp ? 1 - scrollProgress : undefined,
-                transition: 'none'
-              }}
-            >
-              HELSINKI, FINLAND
-            </span>
-
-            {/* Vertical drop lines */}
-            {shouldConnectLines && scrollProgress < 1 && (
-              <>
-                <div className={`vertical-line-left ${shouldSlideUp ? 'sliding-up' : ''}`}></div>
-                <div className={`vertical-line-right ${shouldSlideUp ? 'sliding-up' : ''}`}></div>
-              </>
-            )}
-
-            {/* Text content - switches from text1 to text2 seamlessly */}
-            <div
-              className={`text-centered align-left ${shouldSlideUp ? 'text-pushed-by-box' : ''}`}
-              data-scrolling={shouldSlideUp && scrollProgress > 0 ? 'true' : 'false'}
-              style={
-                shouldSlideUp && scrollProgress > 0
-                  ? {
-                      // Text starts at -25vh (from animation), moves up with map's top edge
-                      // Map top moves from 33vh to 0vh (moves up 33vh total)
-                      // Text should move from -25vh to -58vh to stay with map
-                      transform: `translateY(${-25 - scrollProgress * 33}vh) translateZ(0)`,
-                      // Fade from 0.8 to 0 as scroll progresses from 0 to 1
-                      opacity: Math.max(0, 0.8 - scrollProgress * 0.8),
-                      visibility: scrollProgress >= 1 ? 'hidden' : 'visible'
-                    }
-                  : shouldSlideUp
-                  ? {
-                      // During animation, let CSS handle it, but hide when animation completes
-                      animationFillMode: 'forwards'
-                    }
-                  : undefined
-              }
-            >
-              {showText1 && (
-                <>
-                  <div><AnimatedText text="FOR THE NEXT" /></div>
-                  <div><AnimatedText text="FOUNDER GENERATION" /></div>
-                </>
-              )}
-              {showText2 && (
-                <>
-                  <div><AnimatedText text="Where builders converge," /></div>
-                  <div><AnimatedText text="Where potential multiplies" /></div>
-                </>
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* Map container - fades into box when lines connect, then slides up */}
-        {shouldLoadMap && (
-          <div
-            className={`map-container ${shouldShowMapInBox ? 'show-in-box' : ''} ${shouldSlideUp ? 'sliding-up' : ''}`}
-            style={{
-              ...(shouldSlideUp && scrollProgress > 0
-                ? {
-                    height: `${67 + scrollProgress * 33}vh`,
-                    width: `${80 + scrollProgress * 20}vw`,
-                    borderRadius: `${8 - scrollProgress * 8}px`,
-                    animation: 'none',
-                    transform: `translateX(-50%) translateY(0) scale(1)`,
-                    opacity: 0.8 + scrollProgress * 0.2,
-                    zIndex: scrollProgress >= 1 ? 10001 : 2
-                  }
-                : {}),
-              // Hide until lines connect
-              visibility: shouldShowMapInBox ? 'visible' : 'hidden',
-              pointerEvents: shouldShowMapInBox ? 'auto' : 'none'
-            }}
-          >
-            <HelsinkiViewer
-              shouldLoad={shouldLoadMap}
-              shouldPause={shouldPauseMapLoading}
-              scrollProgress={scrollProgress}
-              onMapLoadingChange={setMapLoadingState}
-            />
-          </div>
-        )}
+        {/* Always mount HelsinkiViewer so it can trigger loading state */}
+        <div
+          className={`map-container${stage === 'map-slide-in' ? ' slide-in' : ''}${stage === 'map-expand' ? ' expand' : ''}`}
+          style={{
+            visibility: (stage === 'map-slide-in' || stage === 'map-expand' || stage === 'complete') ? 'visible' : 'hidden',
+            pointerEvents: (stage === 'map-slide-in' || stage === 'map-expand' || stage === 'complete') ? 'auto' : 'none',
+            position: 'fixed',
+            left: 0,
+            top: 0,
+            width: '100vw',
+            height: '100vh',
+            zIndex: 2,
+            background: 'transparent',
+            opacity: 1,
+            overflow: 'hidden',
+            transition: 'none',
+          }}
+        >
+          <HelsinkiViewer
+            shouldLoad={true}
+            shouldPause={false}
+            onMapLoadingChange={setMapLoadingState}
+            scrollProgress={(stage === 'map-expand' || stage === 'complete') ? 1 : 0}
+          />
+        </div>
       </div>
     </div>
   )
