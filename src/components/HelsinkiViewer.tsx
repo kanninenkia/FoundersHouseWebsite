@@ -33,7 +33,7 @@ export const HelsinkiViewer = ({ shouldLoad = true, shouldPause = false, scrollP
   const [loading, setLoading] = useState<boolean>(true)
   const [tickerProgress, setTickerProgress] = useState<number>(0)
   const [modelLoaded, setModelLoaded] = useState<boolean>(false)
-  const [grayscaleAmount, setGrayscaleAmount] = useState<number>(90) // Start at 90% grayscale
+  const [grayscaleAmount, setGrayscaleAmount] = useState<number>(75) // BRIGHTNESS: Moderate grayscale 75% (was 90% too dark, 60% too bright)
   const [heroTextOpacity, setHeroTextOpacity] = useState<number>(1) // Hero text opacity based on camera direction
 
   // Night mode is disabled - always use day mode
@@ -161,9 +161,9 @@ export const HelsinkiViewer = ({ shouldLoad = true, shouldPause = false, scrollP
       setGrayscaleAmount(prev => {
         // Scroll down (positive deltaY) = reduce grayscale
         // Scroll up (negative deltaY) = increase grayscale
-        // 90% / 400 scrolls = 0.225% per scroll tick
+        // BRIGHTNESS: Max changed to 75% to match new starting point
         const change = event.deltaY > 0 ? -0.3 : 0.3
-        const newAmount = Math.max(0, Math.min(90, prev + change))
+        const newAmount = Math.max(0, Math.min(75, prev + change))
         return newAmount
       })
     }
@@ -178,7 +178,7 @@ export const HelsinkiViewer = ({ shouldLoad = true, shouldPause = false, scrollP
 
     const canvas = containerRef.current.querySelector('canvas')
     if (canvas) {
-      canvas.style.filter = `grayscale(${grayscaleAmount}%) brightness(1.38) contrast(0.85)`
+      canvas.style.filter = `grayscale(${grayscaleAmount}%) brightness(1.50) contrast(0.88)` // BRIGHTNESS: Moderate 1.50 (was 1.38 too dark, 1.65 too bright)
     }
   }, [grayscaleAmount])
 

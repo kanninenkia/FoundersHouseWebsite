@@ -78,11 +78,11 @@ export const SCENE_CONFIG = {
   lighting: {
     ambient: {
       color: 0xffffff,
-      intensity: 1.0, // Increased for better overall illumination
+      intensity: 1.3, // BRIGHTNESS: Moderate increase from 1.0 -> 1.3 (was 1.8, too bright)
     },
     directional: {
       color: 0xffffff,
-      intensity: 1.2, // Increased for better definition
+      intensity: 1.4, // BRIGHTNESS: Moderate increase from 1.2 -> 1.4 (was 1.8, too bright)
       position: { x: 500, y: 1000, z: 500 }, // Higher sun position for better lighting angle
       shadow: {
         left: -10000,
@@ -93,8 +93,8 @@ export const SCENE_CONFIG = {
     },
     hemisphere: {
       skyColor: 0xffffff,
-      groundColor: 0x888888, // Lighter ground color for less harsh contrast
-      intensity: 0.6, // Increased for softer fill light
+      groundColor: 0x999999, // BRIGHTNESS: Moderate ground color (was 0xbbbbbb, too bright)
+      intensity: 0.7, // BRIGHTNESS: Moderate increase from 0.6 -> 0.7 (was 0.9, too bright)
     },
   },
   stars: {

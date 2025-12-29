@@ -26,9 +26,10 @@
   opacity: 1 !important;
 }
 
-/* Apply full grayscale filter - NOTE: This gets overridden by inline style in HelsinkiViewer.tsx */
+/* Apply grayscale filter - NOTE: This gets overridden by inline style in HelsinkiViewer.tsx */
+/* BRIGHTNESS: Moderate values - grayscale 75%, brightness 1.50, contrast 0.88 */
 .helsinki-container canvas {
-  filter: grayscale(90%) brightness(1.38) contrast(0.85);
+  filter: grayscale(95%) brightness(1.50) contrast(0.88);
 }
 
 /* Bottom viewport blur - subtle focus effect like mockup */
