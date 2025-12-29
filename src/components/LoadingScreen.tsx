@@ -36,42 +36,33 @@ type Stage = 'logo-loading' | 'logo-blur' | 'pixel-out-to-text1' | 'text1' | 'te
 
 export const LoadingScreen = ({ onComplete, duration, scrollProgress }: LoadingScreenProps) => {
   const [blocks, setBlocks] = useState<Block[]>([])
-  // Persist stage across tab switches
-  const [stage, setStage] = useState<Stage>(() => {
-    const saved = sessionStorage.getItem('animationStage')
-    return saved ? (saved as Stage) : 'logo-loading'
-  })
+  // Always start fresh on page load - don't persist animation stage
+  const [stage, setStage] = useState<Stage>('logo-loading')
   const [mapLoadingState, setMapLoadingState] = useState<MapLoadingState>({ isLoaded: false, progress: 0 })
   const [loadingBarProgress, setLoadingBarProgress] = useState(0)
   const [smoothLoadingBarProgress, setSmoothLoadingBarProgress] = useState(0)
   const [canProceedToBlur, setCanProceedToBlur] = useState(false)
 
-  // YOUR IMAGE CYCLING - Keep all 6 images
-  // LoadInImage.png is ALWAYS first (index 0) so it can be preloaded in HTML
+  // YOUR IMAGE CYCLING - All images now optimized as WebP
   const [loadingImages] = useState(() => {
     const images = [
-      '/LoadInImage.png', // ALWAYS FIRST - preloaded in index.html
-      '/The Legends Day.png',
-      '/Wave x Maki Photo (2).png',
-      '/Wave x Maki Photo.png',
-      '/Legends Day Still 002.png',
-      '/Legends Day Still 014.png'
+      '/LoadInImage-min.webp',
+      '/The Legends Day.webp',
+      '/Wave x Maki Photo (2).webp',
+      '/Wave x Maki Photo.webp',
+      '/Legends Day Still 002.webp',
+      '/Legends Day Still 014.webp'
     ]
-    // Don't shuffle - keep LoadInImage.png at index 0
-    return images
+    // Shuffle for variety since all images are now optimized
+    return images.sort(() => Math.random() - 0.5)
   })
 
-  // ALWAYS start with LoadInImage.png (index 0) for instant display
+  // Start with first image from shuffled array
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
   const [previousImageIndex, setPreviousImageIndex] = useState(0)
   const [isFirstImage, setIsFirstImage] = useState(true)
 
-  // Save stage to sessionStorage whenever it changes
-  useEffect(() => {
-    sessionStorage.setItem('animationStage', stage)
-  }, [stage])
-
-  // YOUR IMAGE CYCLING LOGIC - Cycle through images every 1 second with crossfade
+  // YOUR IMAGE CYCLING LOGIC - Cycle through images every 600ms with crossfade
   useEffect(() => {
     if (scrollProgress > 0 || stage !== 'logo-loading') return
 
