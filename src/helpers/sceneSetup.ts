@@ -121,6 +121,10 @@ export function handleResize(
   // Cap pixel ratio at 1.5 to prevent excessive memory usage
   const cappedPixelRatio = Math.min(window.devicePixelRatio, 1.5)
 
+  // CRITICAL: Dispose old texture before resizing to prevent memory leak
+  // Without this, each resize orphans the old texture in VRAM (10-20 MB each)
+  renderTarget.dispose()
+
   renderTarget.setSize(
     window.innerWidth * cappedPixelRatio,
     window.innerHeight * cappedPixelRatio

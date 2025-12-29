@@ -7,29 +7,11 @@ import { CITY_LIGHTS } from '../constants/designSystem'
 import {
   sampleLightPositions,
   initializeFlickerStates,
-  createPointLights,
-  createInstancedLights
+  createPointLights
 } from './lightSamplers'
 
 export { createLightSprite } from './lightSprite'
-
-/**
- * Add city lights using instanced meshes
- */
-export function addCityLights(
-  helsinkiModel: THREE.Group | null,
-  count = 1000,
-  color: number | string = CITY_LIGHTS.color,
-  size = 6
-): THREE.InstancedMesh | null {
-  if (!helsinkiModel) return null
-
-  const inst = createInstancedLights(helsinkiModel, count, color, size)
-  if (inst) {
-    helsinkiModel.add(inst)
-  }
-  return inst
-}
+export { disposeCachedLightSprite } from './lightSamplers'
 
 /**
  * Add city lights using point-based rendering with custom shaders

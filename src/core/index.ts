@@ -13,8 +13,4 @@ export {
 } from './managers'
 
 // Re-export camera utilities
-export {
-  BoundaryEasing,
-  DragControls,
-  CameraInteractionListeners
-} from './camera'
+export { easeOutQuart } from './camera'

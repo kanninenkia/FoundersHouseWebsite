@@ -20,13 +20,3 @@ export function isNightInHelsinki(): boolean {
   return hour >= TIME_CONFIG.dayEnd || hour < TIME_CONFIG.dayStart
 }
 
-/**
- * Get current hour in Helsinki timezone
- */
-export function getHelsinkiHour(): number {
-  const now = new Date()
-  const helsinkiTime = new Date(
-    now.toLocaleString('en-US', { timeZone: TIME_CONFIG.timezone })
-  )
-  return helsinkiTime.getHours()
-}

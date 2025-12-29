@@ -44,7 +44,7 @@ export interface CameraConfig {
  * @param azimuthDeg - Horizontal angle in degrees (0° = east, 90° = north, etc.)
  * @param elevationDeg - Vertical angle in degrees (positive = above target)
  */
-export function polarToCartesian(
+function polarToCartesian(
   target: THREE.Vector3,
   distance: number,
   azimuthDeg: number,
@@ -52,33 +52,33 @@ export function polarToCartesian(
 ): THREE.Vector3 {
   const azimuthRad = THREE.MathUtils.degToRad(azimuthDeg)
   const elevationRad = THREE.MathUtils.degToRad(elevationDeg)
-  
+
   // Calculate position in spherical coordinates
   const horizontalDistance = distance * Math.cos(elevationRad)
   const x = target.x + horizontalDistance * Math.cos(azimuthRad)
   const z = target.z + horizontalDistance * Math.sin(azimuthRad)
   const y = target.y + distance * Math.sin(elevationRad)
-  
+
   return new THREE.Vector3(x, y, z)
 }
 
 /**
  * Calculate polar coordinates from camera position and target
  */
-export function cartesianToPolar(
+function cartesianToPolar(
   cameraPos: THREE.Vector3,
   target: THREE.Vector3
 ): { distance: number; azimuthDeg: number; elevationDeg: number } {
   const dx = cameraPos.x - target.x
   const dy = cameraPos.y - target.y
   const dz = cameraPos.z - target.z
-  
+
   const distance = Math.sqrt(dx * dx + dy * dy + dz * dz)
   const horizontalDistance = Math.sqrt(dx * dx + dz * dz)
-  
+
   const azimuthRad = Math.atan2(dz, dx)
   const elevationRad = Math.atan2(dy, horizontalDistance)
-  
+
   return {
     distance,
     azimuthDeg: THREE.MathUtils.radToDeg(azimuthRad),

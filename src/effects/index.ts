@@ -10,11 +10,11 @@ export {
 
 export {
   createLightSprite,
-  addCityLights,
   addCityLightsPoints,
   animateCityLights,
   updateCityLightsFog,
-  removeCityLights
+  removeCityLights,
+  disposeCachedLightSprite
 } from './cityLights'
 
 export {

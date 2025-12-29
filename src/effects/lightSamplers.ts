@@ -15,6 +15,34 @@ import {
 } from './shaders/cityLightShaders'
 
 /**
+ * MEMORY OPTIMIZATION: Cache the light sprite texture globally
+ * Creating a new 64x64 texture for every light set wastes 16-32 KB per creation
+ * With day/night toggling, this can leak 160+ KB over multiple sessions
+ */
+let cachedLightSprite: THREE.CanvasTexture | null = null
+
+/**
+ * Get or create the cached light sprite texture
+ * Reuses the same texture instance to save memory
+ */
+function getCachedLightSprite(color: number | string): THREE.CanvasTexture {
+  if (!cachedLightSprite) {
+    cachedLightSprite = createLightSprite(color)
+  }
+  return cachedLightSprite
+}
+
+/**
+ * Dispose the cached sprite (call on scene cleanup)
+ */
+export function disposeCachedLightSprite(): void {
+  if (cachedLightSprite) {
+    cachedLightSprite.dispose()
+    cachedLightSprite = null
+  }
+}
+
+/**
  * Sample positions on mesh surfaces for light placement
  */
 export function sampleLightPositions(
@@ -113,13 +141,19 @@ export function createPointLights(
   flickerDurations: Float32Array,
   color: number | string = CITY_LIGHTS.color
 ): { corePoints: THREE.Points; glowPoints: THREE.Points } {
-  const sprite = createLightSprite(color)
+  // Use cached sprite texture to save memory (16 KB saved per call)
+  const sprite = getCachedLightSprite(color)
+
+  // MEMORY OPTIMIZATION: Create shared buffer attributes to avoid duplication
+  // Without sharing, we'd waste ~20 KB per light set (positions + flicker states duplicated)
+  const sharedPositionAttr = new THREE.Float32BufferAttribute(positions, 3)
+  const sharedFlickerAttr = new THREE.Float32BufferAttribute(flickerStates, 1)
 
   // Core lights geometry
   const coreGeom = new THREE.BufferGeometry()
-  coreGeom.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3))
+  coreGeom.setAttribute('position', sharedPositionAttr)
   coreGeom.setAttribute('customColor', new THREE.Float32BufferAttribute(colors, 3))
-  coreGeom.setAttribute('flickerState', new THREE.Float32BufferAttribute(flickerStates, 1))
+  coreGeom.setAttribute('flickerState', sharedFlickerAttr)
 
   const coreMaterial = new THREE.ShaderMaterial({
     uniforms: {
@@ -142,10 +176,10 @@ export function createPointLights(
   corePoints.userData.nextFlickerTimes = nextFlickerTimes
   corePoints.userData.flickerDurations = flickerDurations
 
-  // Glow layer
+  // Glow layer - SHARE position and flicker attributes with core layer
   const glowGeom = new THREE.BufferGeometry()
-  glowGeom.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3))
-  glowGeom.setAttribute('flickerState', new THREE.Float32BufferAttribute(flickerStates, 1))
+  glowGeom.setAttribute('position', sharedPositionAttr)
+  glowGeom.setAttribute('flickerState', sharedFlickerAttr)
 
   const avgColor = new THREE.Color(color as any)
   const glowMaterial = new THREE.ShaderMaterial({

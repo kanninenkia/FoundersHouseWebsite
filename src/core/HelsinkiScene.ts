@@ -7,7 +7,7 @@ import * as THREE from 'three'
 import HelsinkiCameraController from './HelsinkiCameraController'
 import { loadDualModels } from '../loaders'
 import { setupPostProcessing, setupComposer, setupSceneLighting } from '../rendering'
-import { addCityLightsPoints, animateCityLights, removeCityLights, updateCityLightsFog, createStarfield, animateStars, setupSceneFog, updateFogColor } from '../effects'
+import { addCityLightsPoints, animateCityLights, removeCityLights, updateCityLightsFog, createStarfield, animateStars, setupSceneFog, updateFogColor, disposeCachedLightSprite } from '../effects'
 import { createSmoothPOIAnimation, updateSmoothPOIAnimation, interruptSmoothPOIAnimation, type SmoothPOIAnimation } from '../animation'
 import {
   PerlinNoiseGenerator,
@@ -145,8 +145,9 @@ export class HelsinkiScene {
 
       if (this.isNightMode) {
         try {
-          // Reduced from 800 to 500 for memory optimization
-          this.addCityLightsPoints(500)
+          // MEMORY: Reduced from 800 -> 500 -> 400 for better memory usage
+          // 400 lights = ~17 KB (positions + colors + flicker state)
+          this.addCityLightsPoints(400)
         } catch (e) {
           // Failed to add city lights
         }
@@ -519,6 +520,10 @@ export class HelsinkiScene {
     }
 
     this.removeCityLights()
+
+    // MEMORY: Dispose cached light sprite texture
+    disposeCachedLightSprite()
+
     this.container.removeChild(this.renderer.domElement)
   }
 
@@ -748,8 +753,9 @@ export class HelsinkiScene {
 
     if (this.isNightMode) {
       if (!this.cityLights && this.helsinkiModel) {
-        // Reduced from 1200 to 600 for memory optimization
-        this.addCityLightsPoints(600)
+        // MEMORY: Reduced from 1200 -> 600 -> 450 for better memory usage
+        // 450 lights = ~19 KB (positions + colors + flicker state)
+        this.addCityLightsPoints(450)
       }
       if (this.cityLights) {
         this.cityLights.visible = true
