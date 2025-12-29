@@ -35,6 +35,40 @@ export const HelsinkiViewer = ({ shouldLoad = true, shouldPause = false, scrollP
   const [modelLoaded, setModelLoaded] = useState<boolean>(false)
   const [grayscaleAmount, setGrayscaleAmount] = useState<number>(75) // BRIGHTNESS: Moderate grayscale 75% (was 90% too dark, 60% too bright)
   const [heroTextOpacity, setHeroTextOpacity] = useState<number>(1) // Hero text opacity based on camera direction
+  // New staged fade-in states
+  const [showHeroText, setShowHeroText] = useState(false)
+  const [showUI, setShowUI] = useState(false)
+  const fadeTimers = useRef<{ hero?: NodeJS.Timeout; ui?: NodeJS.Timeout }>({})
+  // Staged fade-in logic for hero text and UI after map expands
+  useEffect(() => {
+    // Only trigger when scrollProgress transitions to 1
+    if (scrollProgress >= 1) {
+      // Reset states in case of repeated triggers
+      setShowHeroText(false)
+      setShowUI(false)
+      // Clear any previous timers
+      if (fadeTimers.current.hero) clearTimeout(fadeTimers.current.hero)
+      if (fadeTimers.current.ui) clearTimeout(fadeTimers.current.ui)
+      // Hero text after 1s
+      fadeTimers.current.hero = setTimeout(() => {
+        setShowHeroText(true)
+      }, 1000)
+      // UI after 2.2s (1s + 1.2s)
+      fadeTimers.current.ui = setTimeout(() => {
+        setShowUI(true)
+      }, 2200)
+    } else {
+      // If user scrolls back, hide all and clear timers
+      setShowHeroText(false)
+      setShowUI(false)
+      if (fadeTimers.current.hero) clearTimeout(fadeTimers.current.hero)
+      if (fadeTimers.current.ui) clearTimeout(fadeTimers.current.ui)
+    }
+    return () => {
+      if (fadeTimers.current.hero) clearTimeout(fadeTimers.current.hero)
+      if (fadeTimers.current.ui) clearTimeout(fadeTimers.current.ui)
+    }
+  }, [scrollProgress])
 
   // Night mode is disabled - always use day mode
   const isDemoNightMode = false
@@ -257,54 +291,65 @@ export const HelsinkiViewer = ({ shouldLoad = true, shouldPause = false, scrollP
         className="helsinki-container"
       />
 
+
       {/* Logo - Top Left */}
-      {scrollProgress >= 1 && (
-        <div className="logo-container">
-          <img src="/logo.svg" alt="Founders House Logo" className="cube-logo" />
-        </div>
-      )}
+      <div
+        className="logo-container"
+        style={{
+          opacity: showUI ? 1 : 0,
+          transition: 'opacity 0.5s ease',
+          pointerEvents: 'none',
+        }}
+      >
+        <img src="/logo.svg" alt="Founders House Logo" className="cube-logo" />
+      </div>
 
       {/* Hamburger Menu - Top Right */}
-      {scrollProgress >= 1 && (
-        <div className="hamburger-menu">
-          <img src="/hamburger.svg" alt="Menu" className="hamburger-icon" />
-        </div>
-      )}
+      <div
+        className="hamburger-menu"
+        style={{
+          opacity: showUI ? 1 : 0,
+          transition: 'opacity 0.5s ease',
+          pointerEvents: 'none',
+        }}
+      >
+        <img src="/hamburger.svg" alt="Menu" className="hamburger-icon" />
+      </div>
 
       {/* Status overlay */}
-      <div className="ui-overlay" style={{ opacity: scrollProgress >= 1 ? 1 : 0, transition: 'opacity 0.5s ease-out' }}>
+      <div
+        className="ui-overlay"
+        style={{
+          opacity: showUI ? 1 : 0,
+          transition: 'opacity 0.5s ease',
+          pointerEvents: 'none',
+        }}
+      >
         <div className="status">{status}</div>
       </div>
 
-      {/* Loading overlay removed - handled by main LoadingScreen component */}
-
       {/* Hero Text Overlay - "FOUNDERS HOUSE" */}
-      {scrollProgress >= 1 && (
-        <div
-          className="hero-text-container"
-          style={{
-            // Simpler positioning - just use fixed offset for now
-            // Camera tracking causes text to go off-screen
-            transform: `translateY(0vh)`,
-            opacity: heroTextOpacity,
-            transition: 'opacity 0.3s ease-out'
-          }}
-        >
-          <div className="hero-text-wrapper">
-            <div className="hero-subtext-row">
-              <p className="hero-subtext hero-subtext-left">Built for the obsessed.</p>
-              <p className="hero-subtext hero-subtext-right">Built for the exceptional.</p>
-            </div>
-            <h1 className="hero-title">
-              <span className="hero-title-founders">FOUNDERS</span> <span className="hero-title-house">HOUSE</span>
-            </h1>
+      <div
+        className="hero-text-container"
+        style={{
+          opacity: showHeroText ? heroTextOpacity : 0,
+          transition: 'opacity 0.7s cubic-bezier(0.4,0,0.2,1)',
+          pointerEvents: 'none',
+        }}
+      >
+        <div className="hero-text-wrapper">
+          <div className="hero-subtext-row">
+            <p className="hero-subtext hero-subtext-left">Built for the obsessed.</p>
+            <p className="hero-subtext hero-subtext-right">Built for the exceptional.</p>
           </div>
+          <h1 className="hero-title">
+            <span className="hero-title-founders">FOUNDERS</span> <span className="hero-title-house">HOUSE</span>
+          </h1>
         </div>
-      )}
-
+      </div>
 
       {/* POI Navigator - Bottom navigation bar */}
-      {scrollProgress >= 1 && (
+      {showUI && (
         <POINavigator onPOISelect={handlePOISelect} initialPOI="FOUNDERS_HOUSE" />
       )}
 
