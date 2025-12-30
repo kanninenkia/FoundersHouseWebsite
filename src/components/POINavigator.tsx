@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
+import { motion, useMotionValue, useSpring, useTransform, AnimatePresence } from 'framer-motion'
 import { POINTS_OF_INTEREST, type PointOfInterest } from '../constants/poi'
 import './POINavigator.css'
 
@@ -10,6 +11,8 @@ interface POINavigatorProps {
 export const POINavigator = ({ onPOISelect, initialPOI = 'FOUNDERS_HOUSE' }: POINavigatorProps) => {
   const [selectedPOI, setSelectedPOI] = useState<string>(initialPOI)
   const [focusedIndex, setFocusedIndex] = useState(5) // Start at Founders House (center)
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null)
+  const [isInitialAnimationComplete, setIsInitialAnimationComplete] = useState(false)
 
   // Convert POI object to array for easier mapping
   const poiList = Object.entries(POINTS_OF_INTEREST).map(([key, poi]) => ({
@@ -71,61 +74,73 @@ export const POINavigator = ({ onPOISelect, initialPOI = 'FOUNDERS_HOUSE' }: POI
   // Calculate expansion offset from center (Founders House is center at index 5)
   const centerIndex = 5 // FOUNDERS_HOUSE position
 
-  const getStaggerDelay = (index: number): number => {
-    // Founders House appears first (0ms delay)
-    // All other POIs expand simultaneously after Founders House (200ms delay)
-    return index === centerIndex ? 0 : 200
-  }
-
-  const getPullDistance = (index: number): string => {
-    if (index === centerIndex) return '0px' // Founders House doesn't move
-
-    // Items are placed by CSS Grid in their natural positions
-    // We need them to START at center, then animate OUT to their natural position
-    // Animation goes: translateX(pull-distance) at 0% -> translateX(0) at 100%
+  const getInitialX = (index: number): number => {
+    if (index === centerIndex) return 0
 
     const distanceFromCenter = Math.abs(index - centerIndex)
-
-    // Each grid item is roughly separated by button width + gap
     const pixelsPerStep = 120
     const totalDistance = distanceFromCenter * pixelsPerStep
 
-    // Items on LEFT of center (index < 5):
-    // Natural position is LEFT of center, so to start at center they need translateX(+distance)
-    // Items on RIGHT of center (index > 5):
-    // Natural position is RIGHT of center, so to start at center they need translateX(-distance)
+    // Items on LEFT start to the right (positive), items on RIGHT start to the left (negative)
     const direction = index < centerIndex ? 1 : -1
-
-    return `${direction * totalDistance}px`
+    return direction * totalDistance
   }
 
   return (
-    <div className="poi-navigator" role="navigation" aria-label="Points of interest">
+    <motion.div
+      className="poi-navigator"
+      role="navigation"
+      aria-label="Points of interest"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.6 }}
+    >
       <div className="poi-list" role="tablist">
-        {poiList.map((poi, index) => (
-          <button
-            key={poi.key}
-            className={`poi-item poi-item-stagger ${selectedPOI === poi.key ? 'active' : ''} ${index === focusedIndex ? 'keyboard-focused' : ''}`}
-            onClick={() => handlePOIClick(poi.key, poi)}
-            role="tab"
-            aria-selected={selectedPOI === poi.key}
-            aria-label={`Point of interest: ${poi.name}`}
-            tabIndex={0}
-            style={{
-              animationDelay: `${getStaggerDelay(index)}ms`,
-              '--pull-distance': getPullDistance(index)
-            } as React.CSSProperties}
-          >
-            {poi.name.toUpperCase()}
-          </button>
-        ))}
+        {poiList.map((poi, index) => {
+          const isActive = selectedPOI === poi.key
+          const isFocused = index === focusedIndex
+          const isHovered = hoveredIndex === index
+          const isCenter = index === centerIndex
+
+          return (
+            <POIButton
+              key={poi.key}
+              poi={poi}
+              index={index}
+              isActive={isActive}
+              isFocused={isFocused}
+              isHovered={isHovered}
+              isCenter={isCenter}
+              hoveredIndex={hoveredIndex}
+              centerIndex={centerIndex}
+              initialX={getInitialX(index)}
+              onClick={() => handlePOIClick(poi.key, poi)}
+              onHoverStart={() => setHoveredIndex(index)}
+              onHoverEnd={() => setHoveredIndex(null)}
+              onAnimationComplete={() => {
+                if (!isInitialAnimationComplete) {
+                  setIsInitialAnimationComplete(true)
+                }
+              }}
+            />
+          )
+        })}
       </div>
 
       {/* Vector path component - peaks at the highlighted POI */}
-      <VectorPath selectedIndex={selectedIndex} totalItems={poiList.length} />
+      <VectorPath
+        selectedIndex={selectedIndex}
+        totalItems={poiList.length}
+        isReady={isInitialAnimationComplete}
+      />
 
       {/* Gradual blur overlay */}
-      <div className="gradient-blur">
+      <motion.div
+        className="gradient-blur"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.3, duration: 0.5 }}
+      >
         <div></div>
         <div></div>
         <div></div>
@@ -133,21 +148,138 @@ export const POINavigator = ({ onPOISelect, initialPOI = 'FOUNDERS_HOUSE' }: POI
         <div></div>
         <div></div>
         <div className="gradient-blur-overlay"></div>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
+  )
+}
+
+interface POIButtonProps {
+  poi: { key: string; name: string }
+  index: number
+  isActive: boolean
+  isFocused: boolean
+  isHovered: boolean
+  isCenter: boolean
+  hoveredIndex: number | null
+  centerIndex: number
+  initialX: number
+  onClick: () => void
+  onHoverStart: () => void
+  onHoverEnd: () => void
+  onAnimationComplete: () => void
+}
+
+const POIButton = ({
+  poi,
+  index,
+  isActive,
+  isFocused,
+  isHovered,
+  isCenter,
+  hoveredIndex,
+  centerIndex,
+  initialX,
+  onClick,
+  onHoverStart,
+  onHoverEnd,
+  onAnimationComplete
+}: POIButtonProps) => {
+  const buttonRef = useRef<HTMLButtonElement>(null)
+
+  // Magnetic cursor effect
+  const mouseX = useMotionValue(0)
+  const mouseY = useMotionValue(0)
+
+  // Spring physics for smooth magnetic pull
+  const springConfig = { damping: 20, stiffness: 300 }
+  const x = useSpring(mouseX, springConfig)
+  const y = useSpring(mouseY, springConfig)
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLButtonElement>) => {
+    if (!buttonRef.current) return
+    const rect = buttonRef.current.getBoundingClientRect()
+    const centerX = rect.left + rect.width / 2
+    const centerY = rect.top + rect.height / 2
+
+    // Calculate distance from button center
+    const distanceX = e.clientX - centerX
+    const distanceY = e.clientY - centerY
+
+    // Magnetic pull (max 8px)
+    mouseX.set(distanceX * 0.15)
+    mouseY.set(distanceY * 0.15)
+  }
+
+  const handleMouseLeave = () => {
+    mouseX.set(0)
+    mouseY.set(0)
+    onHoverEnd()
+  }
+
+  // Delay calculation for initial expand animation
+  const delay = isCenter ? 0 : 0.2
+
+  return (
+    <motion.button
+      ref={buttonRef}
+      className={`poi-item ${isActive ? 'active' : ''} ${isFocused ? 'keyboard-focused' : ''}`}
+      onClick={onClick}
+      onMouseMove={handleMouseMove}
+      onMouseEnter={onHoverStart}
+      onMouseLeave={handleMouseLeave}
+      role="tab"
+      aria-selected={isActive}
+      aria-label={`Point of interest: ${poi.name}`}
+      tabIndex={0}
+      initial={{
+        opacity: 0,
+        x: initialX,
+        scale: 0.4
+      }}
+      animate={{
+        opacity: isActive ? 1 : 0.6,
+        x: 0,
+        scale: 1
+      }}
+      transition={{
+        opacity: { duration: 1.2, delay, ease: [0.22, 1, 0.36, 1] },
+        x: { duration: 1.2, delay, ease: [0.22, 1, 0.36, 1] },
+        scale: { duration: 1.2, delay, ease: [0.22, 1, 0.36, 1] }
+      }}
+      whileHover={{
+        scale: 1.05,
+        y: -2,
+        transition: { duration: 0.2 }
+      }}
+      whileTap={{
+        scale: 0.95,
+        transition: { duration: 0.1 }
+      }}
+      onAnimationComplete={onAnimationComplete}
+      style={{
+        x,
+        y,
+        cursor: 'pointer'
+      }}
+    >
+      {poi.name.toUpperCase()}
+    </motion.button>
   )
 }
 
 interface VectorPathProps {
   selectedIndex: number
   totalItems: number
+  isReady: boolean
 }
 
-const VectorPath = ({ selectedIndex, totalItems }: VectorPathProps) => {
+const VectorPath = ({ selectedIndex, totalItems, isReady }: VectorPathProps) => {
   const [path, setPath] = useState<string>('')
   const svgRef = useRef<SVGSVGElement>(null)
 
   useEffect(() => {
+    if (!isReady) return // Don't calculate until buttons are done animating
+
     const updatePath = () => {
       const buttons = document.querySelectorAll('.poi-item')
       const svg = svgRef.current
@@ -186,31 +318,43 @@ const VectorPath = ({ selectedIndex, totalItems }: VectorPathProps) => {
       setPath(pathData.trim().replace(/\s+/g, ' '))
     }
 
-    // Delay to ensure CSS has been applied before calculating positions
-    const timeoutId = setTimeout(updatePath, 50)
+    // Run immediately when ready
     updatePath()
+
     window.addEventListener('resize', updatePath)
     return () => {
-      clearTimeout(timeoutId)
       window.removeEventListener('resize', updatePath)
     }
-  }, [selectedIndex, totalItems])
+  }, [selectedIndex, totalItems, isReady])
 
   return (
-    <svg
+    <motion.svg
       ref={svgRef}
       className="vector-path"
       viewBox="0 0 398 23"
       preserveAspectRatio="none"
       xmlns="http://www.w3.org/2000/svg"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: isReady ? 1 : 0 }}
+      transition={{
+        duration: 0.6,
+        ease: [0.22, 1, 0.36, 1]
+      }}
     >
-      <path
+      <motion.path
         d={path}
         fill="none"
         stroke="white"
         strokeWidth="1"
+        initial={{ pathLength: 0 }}
+        animate={{ pathLength: isReady ? 1 : 0 }}
+        transition={{
+          delay: 0.2,
+          duration: 0.8,
+          ease: [0.22, 1, 0.36, 1]
+        }}
       />
-    </svg>
+    </motion.svg>
   )
 }
 

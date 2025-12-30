@@ -128,53 +128,18 @@
   font-weight: 500;
   letter-spacing: 0.05em;
   color: #FFF8F2;
-  opacity: 0.6;
   background: none;
   border: none;
   cursor: pointer;
   padding: 0.5rem 1rem;
-  transition: opacity 0.3s ease, transform 0.3s ease;
   white-space: nowrap;
   position: relative;
   z-index: 101;
   flex-shrink: 0;
+  /* All transitions handled by Framer Motion */
 }
 
-/* Expand-from-center animation - all items start stacked at center, then pull outward */
-.poi-item-stagger {
-  opacity: 0;
-  animation: poiPullFromCenter 1.2s cubic-bezier(0.22, 1, 0.36, 1) forwards;
-}
-
-@keyframes poiPullFromCenter {
-  0% {
-    opacity: 0;
-    transform: translateX(var(--pull-distance)) scale(0.4);
-  }
-  30% {
-    opacity: 1;
-  }
-  100% {
-    opacity: 0.6;
-    transform: translateX(0) scale(1);
-  }
-}
-
-/* Active state (Founders House) - fades up, no pull */
-.poi-item-stagger.active {
-  animation: poiFadeUp 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-}
-
-@keyframes poiFadeUp {
-  0% {
-    opacity: 0;
-    transform: translateY(12px) scale(0.95);
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-}
+/* Framer Motion handles all animations now - keeping this for reference */
 
 /* Removed - POI items now appear clean above global noise overlay */
 
@@ -206,7 +171,7 @@
   border-radius: 4px;
 }
 
-/* Vector path styling - expands with POI buttons */
+/* Vector path styling - Framer Motion handles animations */
 .vector-path {
   position: absolute;
   bottom: -5px; /* Show more of the peak */
@@ -214,28 +179,10 @@
   width: 100%; /* Spans full width to support all POIs */
   height: 23px; /* Match poiVector.svg height */
   pointer-events: none;
-  z-index: 99;
-  opacity: 0;
-  animation: vectorPathReveal 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-  animation-delay: 100ms; /* Slight delay after Founders House appears */
-}
-
-@keyframes vectorPathReveal {
-  0% {
-    opacity: 0;
-    transform: scaleX(0.2);
-  }
-  60% {
-    opacity: 1;
-  }
-  100% {
-    opacity: 1;
-    transform: scaleX(1);
-  }
+  z-index: 100; /* Above poi-list but below buttons */
 }
 
 .vector-path path {
-  transition: d 0.6s cubic-bezier(0.4, 0, 0.2, 1);
   filter: drop-shadow(0 0 8px rgba(255, 248, 242, 0.3));
 }
 

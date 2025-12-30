@@ -46,6 +46,31 @@ export const HelsinkiViewer = ({ shouldLoad = true, shouldPause = false, scrollP
   // Idle detection state
   const lastInteractionTime = useRef<number>(Date.now())
   const initialLoadTime = useRef<number>(Date.now())
+
+  // Dragging state for cursor
+  const [isDragging, setIsDragging] = useState(false)
+  const [cursorPosition, setCursorPosition] = useState({ x: 0, y: 0 })
+
+  // Track dragging and cursor position for indicator
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      setCursorPosition({ x: e.clientX, y: e.clientY })
+    }
+
+    const handleMouseDown = () => setIsDragging(true)
+    const handleMouseUp = () => setIsDragging(false)
+
+    window.addEventListener('mousemove', handleMouseMove)
+    window.addEventListener('mousedown', handleMouseDown)
+    window.addEventListener('mouseup', handleMouseUp)
+
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove)
+      window.removeEventListener('mousedown', handleMouseDown)
+      window.removeEventListener('mouseup', handleMouseUp)
+    }
+  }, [])
+
   // Staged fade-in logic for hero text and UI after map expands
   useEffect(() => {
     // Only trigger when scrollProgress transitions to 1
@@ -460,6 +485,30 @@ export const HelsinkiViewer = ({ shouldLoad = true, shouldPause = false, scrollP
       {showUI && (
         <div className="poi-navigator-wrapper">
           <POINavigator onPOISelect={handlePOISelect} initialPOI="FOUNDERS_HOUSE" />
+        </div>
+      )}
+
+      {/* Drag cursor indicator - shows "EXPLORE" when dragging */}
+      {isDragging && scrollProgress >= 1 && (
+        <div
+          className="drag-cursor-indicator"
+          style={{
+            left: `${cursorPosition.x}px`,
+            top: `${cursorPosition.y}px`,
+          }}
+        >
+          <svg viewBox="0 0 50 50" className="cursor-circle">
+            <circle
+              cx="25"
+              cy="25"
+              r="20"
+              fill="none"
+              stroke="#D82E11"
+              strokeWidth="1"
+              opacity="0.3"
+            />
+          </svg>
+          <div className="cursor-label">EXPLORE</div>
         </div>
       )}
 
