@@ -104,60 +104,45 @@ export const LoadingScreen = ({ onComplete, duration, scrollProgress }: LoadingS
     return () => window.removeEventListener('keydown', handleKeyPress)
   }, [showSkipButton, stage])
 
-  // YOUR IMAGE CYCLING LOGIC - Cycle through images every 600ms with crossfade
+  // TIME-BASED IMAGE CYCLING - Predictable, smooth, 600ms per image
   useEffect(() => {
     if (scrollProgress > 0 || stage !== 'logo-loading') return
 
     const startTime = Date.now()
-    let lastChangeTime = startTime
+    let lastIndex = 0
 
-    const checkInterval = setInterval(() => {
-      const now = Date.now()
-      const elapsed = now - lastChangeTime
+    const interval = setInterval(() => {
+      const elapsed = Date.now() - startTime
+      const imageIndex = Math.floor(elapsed / 600) % loadingImages.length
 
-      // Change image exactly every 600ms based on timestamp
-      if (elapsed >= 600) {
+      // Only update if index actually changed
+      if (imageIndex !== lastIndex) {
+        lastIndex = imageIndex
         setIsFirstImage(false)
-        setPreviousImageIndex(currentImageIndex)
-        setCurrentImageIndex((prev) => (prev + 1) % loadingImages.length)
-        lastChangeTime = now
+        setPreviousImageIndex((prev) => imageIndex === 0 ? loadingImages.length - 1 : imageIndex - 1)
+        setCurrentImageIndex(imageIndex)
       }
-    }, 16) // Check every 16ms (~60fps) for smooth timing
+    }, 50) // Check every 50ms (more than enough for 600ms transitions)
 
-    return () => clearInterval(checkInterval)
-  }, [scrollProgress, stage, loadingImages.length, currentImageIndex])
+    return () => clearInterval(interval)
+  }, [scrollProgress, stage, loadingImages.length])
 
-  // Loading bar tied to actual map loading progress
+  // TIME-BASED LOADING BAR - Smooth 0→100% over 3 seconds, then holds at 100%
   useEffect(() => {
-    if (scrollProgress > 0) return
+    if (scrollProgress > 0 || stage !== 'logo-loading') return
 
-    // Update target loading bar based on map progress
-    setLoadingBarProgress(mapLoadingState.progress)
-
-    // When map fully loads, proceed to blur
-    if (mapLoadingState.isLoaded && mapLoadingState.progress >= 100) {
-      setCanProceedToBlur(true)
-    }
-  }, [scrollProgress, mapLoadingState])
-
-  // Smooth loading bar animation at 120fps
-  useEffect(() => {
-    if (scrollProgress > 0) return
+    const startTime = Date.now()
+    const duration = 3000 // 3 seconds
 
     let animationFrameId: number
 
     const animate = () => {
-      setSmoothLoadingBarProgress((current) => {
-        const target = loadingBarProgress
-        const diff = target - current
+      const elapsed = Date.now() - startTime
+      const progress = Math.min((elapsed / duration) * 100, 100)
 
-        // Smooth interpolation - closes gap by 20% each frame
-        if (Math.abs(diff) < 0.1) {
-          return target
-        }
-        return current + diff * 0.2
-      })
+      setSmoothLoadingBarProgress(progress)
 
+      // Keep animating to hold at 100% (in case map takes longer than 3s)
       animationFrameId = requestAnimationFrame(animate)
     }
 
@@ -168,7 +153,17 @@ export const LoadingScreen = ({ onComplete, duration, scrollProgress }: LoadingS
         cancelAnimationFrame(animationFrameId)
       }
     }
-  }, [scrollProgress, loadingBarProgress])
+  }, [scrollProgress, stage])
+
+  // SAFETY CHECK - Wait for map to load, then allow progression
+  useEffect(() => {
+    if (scrollProgress > 0) return
+
+    // When map fully loads, allow proceeding to blur
+    if (mapLoadingState.isLoaded && mapLoadingState.progress >= 100) {
+      setCanProceedToBlur(true)
+    }
+  }, [scrollProgress, mapLoadingState])
 
   useEffect(() => {
     // Generate random blocks with natural dissolve timing
@@ -196,7 +191,7 @@ export const LoadingScreen = ({ onComplete, duration, scrollProgress }: LoadingS
       }
     }
 
-    // Shuffle blocks and assign truly random delays for natural dissolve
+    // Shuffle blocks and assign truly random delays, rotation, and scale for natural dissolve
     const shuffled = blockPositions.sort(() => Math.random() - 0.5)
     const maxDelay = 1200 // Spread dissolve over 1.2 seconds
     shuffled.forEach((block) => {

@@ -186,12 +186,12 @@ const POIButton = ({
 }: POIButtonProps) => {
   const buttonRef = useRef<HTMLButtonElement>(null)
 
-  // Magnetic cursor effect
+  // Magnetic cursor effect with Olivier Larose's refined physics
   const mouseX = useMotionValue(0)
   const mouseY = useMotionValue(0)
 
-  // Spring physics for smooth magnetic pull
-  const springConfig = { damping: 20, stiffness: 300 }
+  // Olivier's spring config: more damping for buttery smooth motion
+  const springConfig = { damping: 25, stiffness: 400, mass: 0.5 }
   const x = useSpring(mouseX, springConfig)
   const y = useSpring(mouseY, springConfig)
 
@@ -205,9 +205,14 @@ const POIButton = ({
     const distanceX = e.clientX - centerX
     const distanceY = e.clientY - centerY
 
-    // Magnetic pull (max 8px)
-    mouseX.set(distanceX * 0.15)
-    mouseY.set(distanceY * 0.15)
+    // Enhanced magnetic pull with distance-based strength
+    const distance = Math.sqrt(distanceX * distanceX + distanceY * distanceY)
+    const maxDistance = 100 // Magnetic field radius
+    const strength = Math.max(0, 1 - distance / maxDistance)
+
+    // Stronger pull when closer, max 12px
+    mouseX.set(distanceX * 0.2 * strength)
+    mouseY.set(distanceY * 0.2 * strength)
   }
 
   const handleMouseLeave = () => {
@@ -249,11 +254,11 @@ const POIButton = ({
       whileHover={{
         scale: 1.05,
         y: -2,
-        transition: { duration: 0.2 }
+        transition: { type: 'spring', stiffness: 400, damping: 25 }
       }}
       whileTap={{
         scale: 0.95,
-        transition: { duration: 0.1 }
+        transition: { type: 'spring', stiffness: 600, damping: 30 }
       }}
       onAnimationComplete={onAnimationComplete}
       style={{

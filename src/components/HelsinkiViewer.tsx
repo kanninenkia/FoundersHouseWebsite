@@ -9,6 +9,8 @@ import { HelsinkiScene } from '../core'
 import type { PointOfInterest } from '../constants/poi'
 import { POINTS_OF_INTEREST } from '../constants/poi'
 import { POINavigator } from './POINavigator'
+import { MagneticElement } from './MagneticElement'
+import { AnimatedHamburger } from './AnimatedHamburger'
 import './HelsinkiViewer.css'
 
 interface MapLoadingState {
@@ -42,6 +44,9 @@ export const HelsinkiViewer = ({ shouldLoad = true, shouldPause = false, scrollP
 
   // Camera flying state for vignette effect
   const [isCameraFlying, setIsCameraFlying] = useState(false)
+
+  // Menu state for hamburger animation
+  const [isMenuOpen, setIsMenuOpen] = useState(false)
 
   // Idle detection state
   const lastInteractionTime = useRef<number>(Date.now())
@@ -424,29 +429,38 @@ export const HelsinkiViewer = ({ shouldLoad = true, shouldPause = false, scrollP
       />
 
 
-      {/* Logo - Top Left */}
-      <div
+      {/* Logo - Top Left with Magnetic Effect & Rotation */}
+      <MagneticElement
         className="logo-container"
         style={{
           opacity: showUI ? 1 : 0,
           transition: 'opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1)',
-          pointerEvents: 'none',
+          pointerEvents: showUI ? 'auto' : 'none',
         }}
+        strength={0.25}
+        range={120}
+        rotate={true}
+        rotateDegrees={5}
       >
         <img src="/logo.svg" alt="Founders House Logo" className="cube-logo" />
-      </div>
+      </MagneticElement>
 
-      {/* Hamburger Menu - Top Right */}
-      <div
+      {/* Hamburger Menu - Top Right with Magnetic Effect & Morph Animation */}
+      <MagneticElement
         className="hamburger-menu"
         style={{
           opacity: showUI ? 1 : 0,
           transition: 'opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1)',
-          pointerEvents: 'none',
+          pointerEvents: showUI ? 'auto' : 'none',
         }}
+        strength={0.25}
+        range={120}
       >
-        <img src="/hamburger.svg" alt="Menu" className="hamburger-icon" />
-      </div>
+        <AnimatedHamburger
+          isOpen={isMenuOpen}
+          onClick={() => setIsMenuOpen(!isMenuOpen)}
+        />
+      </MagneticElement>
 
       {/* Status overlay */}
       <div

@@ -134,14 +134,14 @@
     left: 50%;
     width: 90vw;
     height: 100vh;
-    transform: translateX(-50%);
+    transform: translateX(-50%) scale(0.95); /* Start scaled down - visible and effective */
   }
   100% {
     top: 40vh;
     left: 50%;
     width: 90vw;
     height: 100vh;
-    transform: translateX(-50%);
+    transform: translateX(-50%) scale(1); /* Scale up to full size - creates depth */
   }
 }
 .fade-up-text {
@@ -584,6 +584,15 @@
 .text-page .corner-label.fade-in {
   animation: fadeInCornerElements 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   animation-delay: 0.4s;
+}
+
+/* Staggered animation for corner labels (100ms delay) */
+.text-page .corner-label.top-left.fade-in {
+  animation-delay: 0.4s; /* First label */
+}
+
+.text-page .corner-label.top-right.fade-in {
+  animation-delay: 0.5s; /* 100ms stagger */
 }
 
 .text-page .corner-label.top-left {

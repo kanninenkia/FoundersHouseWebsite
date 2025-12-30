@@ -2,6 +2,13 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+  cursor: inherit; /* Smooth cursor transition inheritance */
+}
+
+/* Smooth cursor transitions globally */
+button, a, [role="button"], [role="tab"] {
+  cursor: pointer;
+  transition: cursor 0.2s ease;
 }
 
 html, body, #root {
