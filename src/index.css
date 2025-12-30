@@ -2,6 +2,27 @@
   font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
+
+  /* Timing variables for consistent animations */
+  --timing-fast: 180ms;
+  --timing-medium: 420ms;
+  --timing-slow: 600ms;
+
+  /* Easing curves */
+  --ease-smooth: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-back: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-cinematic: cubic-bezier(0.65, 0, 0.35, 1);
+
+  /* Stagger delays */
+  --stagger-word: 80ms;
+  --stagger-poi: 50ms;
+}
+
+/* Typography polish for crisp text rendering */
+* {
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 body {
@@ -10,4 +31,27 @@ body {
   place-items: center;
   min-width: 320px;
   min-height: 100vh;
+  font-feature-settings: 'kern' 1;
+  cursor: default;
+}
+
+/* Reduced motion support for accessibility */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Focus indicators for keyboard navigation (only visible when using keyboard) */
+button:focus-visible,
+a:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid #AD1013;
+  outline-offset: 4px;
+  border-radius: 2px;
 }

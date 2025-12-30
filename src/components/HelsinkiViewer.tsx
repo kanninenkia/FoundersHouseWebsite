@@ -39,6 +39,13 @@ export const HelsinkiViewer = ({ shouldLoad = true, shouldPause = false, scrollP
   const [showHeroText, setShowHeroText] = useState(false)
   const [showUI, setShowUI] = useState(false)
   const fadeTimers = useRef<{ hero?: NodeJS.Timeout; ui?: NodeJS.Timeout }>({})
+
+  // Camera flying state for vignette effect
+  const [isCameraFlying, setIsCameraFlying] = useState(false)
+
+  // Idle detection state
+  const lastInteractionTime = useRef<number>(Date.now())
+  const initialLoadTime = useRef<number>(Date.now())
   // Staged fade-in logic for hero text and UI after map expands
   useEffect(() => {
     // Only trigger when scrollProgress transitions to 1
@@ -142,10 +149,59 @@ export const HelsinkiViewer = ({ shouldLoad = true, shouldPause = false, scrollP
           const threshold = 13
           const isInCenter = distanceFromCenterX <= threshold && distanceFromCenterY <= threshold
 
-          // Fade based on distance from center
-          const maxDistance = Math.max(distanceFromCenterX, distanceFromCenterY)
-          const opacity = isInCenter ? Math.max(0, Math.min(1, 1 - (maxDistance / threshold))) : 0
+          // Binary visibility: fully opaque when in range, hidden when not
+          const opacity = isInCenter ? 1 : 0
           setHeroTextOpacity(opacity)
+
+          // Auto-centering logic: if hero text is visible and user has been idle for 3+ seconds
+          const now = Date.now()
+          const timeSinceLastInteraction = now - lastInteractionTime.current
+          const timeSinceLoad = now - initialLoadTime.current
+          const idleThreshold = 3000 // 3 seconds
+          const initialLoadDelay = 15000 // 15 seconds - don't drift until after initial load period
+
+          if (isInCenter && timeSinceLastInteraction >= idleThreshold && timeSinceLoad >= initialLoadDelay) {
+            // Gradual rotation to center FH at the hero text sweet spot (50% horizontal, 65% vertical)
+            // This is a subtle drift, not a camera fly-to
+
+            // Calculate how far off-center FH currently is (in viewport %)
+            const offsetX = viewportX - centerX // Horizontal offset from target
+            const offsetY = viewportY - centerY // Vertical offset from target
+
+            // Only apply adjustment if there's a meaningful offset
+            // Stop drifting when we're close to perfect center (< 2% offset)
+            // Also ensure offsets are not too large (safety check to prevent camera flying away)
+            const maxSafeOffset = 20 // Max 20% viewport offset
+            if ((Math.abs(offsetX) > 2 || Math.abs(offsetY) > 2) &&
+                Math.abs(offsetX) < maxSafeOffset && Math.abs(offsetY) < maxSafeOffset) {
+              const controls = sceneRef.current.getControls()
+              if (controls && controls.target) {
+                // Get current target position
+                const currentTarget = controls.target.clone()
+
+                // Get camera's right and up vectors in world space
+                const right = new THREE.Vector3()
+                const worldUp = new THREE.Vector3(0, 1, 0)
+                camera.getWorldDirection(right)
+                right.crossVectors(worldUp, right).normalize()
+
+                const cameraUp = new THREE.Vector3()
+                cameraUp.crossVectors(right, camera.getWorldDirection(new THREE.Vector3())).normalize()
+
+                // Convert viewport offset to world space adjustment
+                // Negative offsetX means FH is too far right, need to move target right
+                // Negative offsetY means FH is too far down, need to move target down
+                const driftSpeed = 0.3 // Much faster, frame-rate independent
+                const worldAdjustment = new THREE.Vector3()
+                worldAdjustment.addScaledVector(right, -offsetX * driftSpeed)
+                worldAdjustment.addScaledVector(cameraUp, offsetY * driftSpeed)
+
+                // Apply the adjustment to camera target
+                const newTarget = currentTarget.add(worldAdjustment)
+                controls.setTarget(newTarget.x, newTarget.y, newTarget.z)
+              }
+            }
+          }
 
           animationFrameRef.current = requestAnimationFrame(animate)
         }
@@ -188,6 +244,48 @@ export const HelsinkiViewer = ({ shouldLoad = true, shouldPause = false, scrollP
     // Enable parallax when map reaches fullscreen (scrollProgress >= 1)
     sceneRef.current.setParallaxEnabled(scrollProgress >= 1)
   }, [scrollProgress])
+
+  // Track user interactions for idle detection
+  useEffect(() => {
+    let lastMouseX = 0
+    let lastMouseY = 0
+
+    const handleMouseInteraction = (event: MouseEvent) => {
+      // For mousemove, only count as interaction if mouse actually moved
+      if (event.type === 'mousemove') {
+        if (event.clientX === lastMouseX && event.clientY === lastMouseY) {
+          return // Mouse didn't actually move, ignore
+        }
+        lastMouseX = event.clientX
+        lastMouseY = event.clientY
+      }
+
+      lastInteractionTime.current = Date.now()
+    }
+
+    const handleTouchInteraction = () => {
+      lastInteractionTime.current = Date.now()
+    }
+
+    const handleWheelInteraction = () => {
+      lastInteractionTime.current = Date.now()
+    }
+
+    // Listen for all interaction types
+    window.addEventListener('mousedown', handleMouseInteraction)
+    window.addEventListener('mousemove', handleMouseInteraction)
+    window.addEventListener('touchstart', handleTouchInteraction)
+    window.addEventListener('touchmove', handleTouchInteraction)
+    window.addEventListener('wheel', handleWheelInteraction)
+
+    return () => {
+      window.removeEventListener('mousedown', handleMouseInteraction)
+      window.removeEventListener('mousemove', handleMouseInteraction)
+      window.removeEventListener('touchstart', handleTouchInteraction)
+      window.removeEventListener('touchmove', handleTouchInteraction)
+      window.removeEventListener('wheel', handleWheelInteraction)
+    }
+  }, [])
 
   // Wheel event listener to control grayscale slider - bidirectional and very gradual
   useEffect(() => {
@@ -278,8 +376,17 @@ export const HelsinkiViewer = ({ shouldLoad = true, shouldPause = false, scrollP
       )?.[0]
 
       if (poiKey) {
+        // Enable vignette during camera transition
+        setIsCameraFlying(true)
+
         // Use the focusPOI method to smoothly transition to the selected POI
         ;(sceneRef.current as any).focusPOI(poiKey)
+
+        // Disable vignette after transition completes + extra time for gradual fade
+        // 2.5s flight + 1.2s fade out = 3.7s total
+        setTimeout(() => {
+          setIsCameraFlying(false)
+        }, 3700)
       }
     }
   }
@@ -288,7 +395,7 @@ export const HelsinkiViewer = ({ shouldLoad = true, shouldPause = false, scrollP
     <>
       <div
         ref={containerRef}
-        className="helsinki-container"
+        className={`helsinki-container ${isCameraFlying ? 'camera-flying' : ''}`}
       />
 
 
@@ -297,7 +404,7 @@ export const HelsinkiViewer = ({ shouldLoad = true, shouldPause = false, scrollP
         className="logo-container"
         style={{
           opacity: showUI ? 1 : 0,
-          transition: 'opacity 0.5s ease',
+          transition: 'opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1)',
           pointerEvents: 'none',
         }}
       >
@@ -309,7 +416,7 @@ export const HelsinkiViewer = ({ shouldLoad = true, shouldPause = false, scrollP
         className="hamburger-menu"
         style={{
           opacity: showUI ? 1 : 0,
-          transition: 'opacity 0.5s ease',
+          transition: 'opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1)',
           pointerEvents: 'none',
         }}
       >
@@ -349,8 +456,11 @@ export const HelsinkiViewer = ({ shouldLoad = true, shouldPause = false, scrollP
       </div>
 
       {/* POI Navigator - Bottom navigation bar */}
+      {/* Only render when showUI is true to trigger POI animations */}
       {showUI && (
-        <POINavigator onPOISelect={handlePOISelect} initialPOI="FOUNDERS_HOUSE" />
+        <div className="poi-navigator-wrapper">
+          <POINavigator onPOISelect={handlePOISelect} initialPOI="FOUNDERS_HOUSE" />
+        </div>
       )}
 
     </>

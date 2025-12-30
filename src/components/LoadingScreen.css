@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;600;700&display=swap');
+
 /* Zoom wrapper for HelsinkiViewer zoom-out effect */
 .helsinki-zoom-wrapper {
   width: 100%;
@@ -12,7 +14,6 @@
 .helsinki-zoom-wrapper.zooming-out {
   transform: scale(1);
 }
-@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;600;700&display=swap');
 
 .text-pushed-expand {
   animation: textPushedExpand 1s cubic-bezier(0.4, 0, 0.2, 1) forwards;
@@ -764,6 +765,60 @@
   }
   to {
     opacity: 0;
+  }
+}
+
+/* Skip intro button - minimal, founder-friendly style */
+.skip-intro-button {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  padding: 0;
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.7);
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 0.875rem;
+  font-weight: 400;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+  z-index: 10001;
+  opacity: 0;
+  animation: fadeIn 400ms cubic-bezier(0.22, 1, 0.36, 1) 200ms forwards;
+  transition: all 200ms ease;
+  text-transform: uppercase;
+}
+
+.skip-intro-button:hover {
+  color: rgba(255, 255, 255, 1);
+  transform: translateX(4px);
+}
+
+.skip-intro-button:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.5);
+  outline-offset: 4px;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skip-intro-button {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+
+  .skip-intro-button:hover {
+    transform: none;
   }
 }
 

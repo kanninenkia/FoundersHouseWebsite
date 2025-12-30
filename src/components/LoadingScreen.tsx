@@ -62,6 +62,48 @@ export const LoadingScreen = ({ onComplete, duration, scrollProgress }: LoadingS
   const [previousImageIndex, setPreviousImageIndex] = useState(0)
   const [isFirstImage, setIsFirstImage] = useState(true)
 
+  // Skip intro button state
+  const [showSkipButton, setShowSkipButton] = useState(false)
+  const [hasSkipped, setHasSkipped] = useState(false)
+
+  // Show skip button when pixelation stage completes and we enter text1
+  useEffect(() => {
+    if (stage === 'text1' || stage === 'text2') {
+      setShowSkipButton(true)
+    } else if (stage === 'map-slide-in' || stage === 'map-expand' || stage === 'complete') {
+      setShowSkipButton(false)
+    }
+  }, [stage])
+
+  // Skip intro handler - jumps directly to map slide-in and then expand
+  const handleSkip = () => {
+    setShowSkipButton(false)
+    setHasSkipped(true)
+    setStage('map-slide-in')
+
+    // Wait for slide-in animation to almost complete (1.6s of 1.8s total)
+    // This shows the map nearly fully slid in before expanding
+    setTimeout(() => {
+      setStage('map-expand')
+      setTimeout(() => {
+        setStage('complete')
+      }, 1500) // Duration of expand animation
+    }, 1600) // 1.6s to let map slide to ~90% before expanding
+  }
+
+  // Keyboard shortcut for skip (Space or Enter)
+  useEffect(() => {
+    const handleKeyPress = (e: KeyboardEvent) => {
+      if ((e.key === ' ' || e.key === 'Enter') && showSkipButton && stage !== 'complete') {
+        e.preventDefault()
+        handleSkip()
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyPress)
+    return () => window.removeEventListener('keydown', handleKeyPress)
+  }, [showSkipButton, stage])
+
   // YOUR IMAGE CYCLING LOGIC - Cycle through images every 600ms with crossfade
   useEffect(() => {
     if (scrollProgress > 0 || stage !== 'logo-loading') return
@@ -173,7 +215,7 @@ export const LoadingScreen = ({ onComplete, duration, scrollProgress }: LoadingS
 
   // JASON'S STAGE TRANSITIONS - map-slide-in and map-expand timing
   useEffect(() => {
-    if (!canProceedToBlur) return
+    if (!canProceedToBlur || hasSkipped) return
 
     // Record start time for time-based stage transitions
     const startTime = Date.now()
@@ -203,7 +245,7 @@ export const LoadingScreen = ({ onComplete, duration, scrollProgress }: LoadingS
     return () => {
       clearInterval(checkInterval)
     }
-  }, [canProceedToBlur, scrollProgress])
+  }, [canProceedToBlur, scrollProgress, hasSkipped])
 
   const showLogo = stage === 'logo-loading' || stage === 'logo-blur' || stage === 'pixel-out-to-text1'
   const showLoadingBar = stage === 'logo-loading'
@@ -367,6 +409,17 @@ export const LoadingScreen = ({ onComplete, duration, scrollProgress }: LoadingS
             />
           </div>
         </div>
+
+        {/* Skip intro button - appears after pixelation (2.8s) */}
+        {showSkipButton && stage !== 'complete' && stage !== 'map-slide-in' && stage !== 'map-expand' && (
+          <button
+            className="skip-intro-button"
+            onClick={handleSkip}
+            aria-label="Skip to map"
+          >
+            → Explore
+          </button>
+        )}
       </div>
     </div>
   )

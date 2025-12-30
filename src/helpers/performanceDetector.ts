@@ -100,3 +100,28 @@ export function detectPerformanceTier(): PerformanceProfile {
 
   return profiles[tier]
 }
+
+/**
+ * Check if user prefers reduced motion
+ */
+export function prefersReducedMotion(): boolean {
+  return window.matchMedia('(prefers-reduced-motion: reduce)').matches
+}
+
+/**
+ * Check if heavy effects should be enabled
+ * Combines performance tier and motion preferences
+ */
+export function shouldEnableHeavyEffects(): boolean {
+  const profile = detectPerformanceTier()
+  const reducedMotion = prefersReducedMotion()
+
+  // Disable heavy effects if:
+  // - User prefers reduced motion
+  // - Device is low-performance
+  if (reducedMotion || profile.tier === 'low') {
+    return false
+  }
+
+  return true
+}

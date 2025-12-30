@@ -313,7 +313,6 @@
   pointer-events: none;
   z-index: 1001;
   padding-bottom: 20vh;
-  /* Removed animation - opacity now controlled by React state based on camera direction */
 }
 
 .hero-text-wrapper {
@@ -385,4 +384,45 @@
     padding-left: 1rem;
     padding-right: 1rem;
   }
+}
+
+/* Subtle vignette overlay for depth during camera transitions */
+/* Uses brand dark red (#590D0F) to maintain visual consistency */
+.helsinki-container::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    circle at center,
+    transparent 30%,
+    rgba(89, 13, 15, 0.18) 100%
+  );
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 1200ms cubic-bezier(0.33, 1, 0.68, 1);
+  z-index: 2;
+}
+
+.helsinki-container.camera-flying::before {
+  opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .helsinki-container::before {
+    display: none;
+  }
+}
+
+/* POI Navigator wrapper - ensures fade transition works */
+.poi-navigator-wrapper {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  pointer-events: none;
+}
+
+.poi-navigator-wrapper * {
+  pointer-events: auto;
 }

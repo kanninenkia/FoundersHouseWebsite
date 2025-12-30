@@ -9,6 +9,7 @@ interface POINavigatorProps {
 
 export const POINavigator = ({ onPOISelect, initialPOI = 'FOUNDERS_HOUSE' }: POINavigatorProps) => {
   const [selectedPOI, setSelectedPOI] = useState<string>(initialPOI)
+  const [focusedIndex, setFocusedIndex] = useState(5) // Start at Founders House (center)
 
   // Convert POI object to array for easier mapping
   const poiList = Object.entries(POINTS_OF_INTEREST).map(([key, poi]) => ({
@@ -21,17 +22,99 @@ export const POINavigator = ({ onPOISelect, initialPOI = 'FOUNDERS_HOUSE' }: POI
     onPOISelect?.(poi)
   }
 
+  // Silent keyboard navigation - discoverable easter egg
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      switch (e.key) {
+        case 'ArrowRight':
+        case 'ArrowDown':
+          e.preventDefault()
+          setFocusedIndex((prev) => {
+            const next = Math.min(prev + 1, poiList.length - 1)
+            return next
+          })
+          break
+        case 'ArrowLeft':
+        case 'ArrowUp':
+          e.preventDefault()
+          setFocusedIndex((prev) => {
+            const next = Math.max(prev - 1, 0)
+            return next
+          })
+          break
+        case 'Enter':
+        case ' ':
+          e.preventDefault()
+          const focusedPOI = poiList[focusedIndex]
+          if (focusedPOI) {
+            handlePOIClick(focusedPOI.key, focusedPOI)
+          }
+          break
+        case 'Escape':
+          e.preventDefault()
+          // Reset to Founders House
+          const foundersHouse = poiList.find(p => p.key === 'FOUNDERS_HOUSE')
+          if (foundersHouse) {
+            handlePOIClick(foundersHouse.key, foundersHouse)
+          }
+          break
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [focusedIndex, poiList])
+
   // Calculate the selected index for the vector path
   const selectedIndex = poiList.findIndex(poi => poi.key === selectedPOI)
 
+  // Calculate expansion offset from center (Founders House is center at index 5)
+  const centerIndex = 5 // FOUNDERS_HOUSE position
+
+  const getStaggerDelay = (index: number): number => {
+    // Founders House appears first (0ms delay)
+    // All other POIs expand simultaneously after Founders House (200ms delay)
+    return index === centerIndex ? 0 : 200
+  }
+
+  const getPullDistance = (index: number): string => {
+    if (index === centerIndex) return '0px' // Founders House doesn't move
+
+    // Items are placed by CSS Grid in their natural positions
+    // We need them to START at center, then animate OUT to their natural position
+    // Animation goes: translateX(pull-distance) at 0% -> translateX(0) at 100%
+
+    const distanceFromCenter = Math.abs(index - centerIndex)
+
+    // Each grid item is roughly separated by button width + gap
+    const pixelsPerStep = 120
+    const totalDistance = distanceFromCenter * pixelsPerStep
+
+    // Items on LEFT of center (index < 5):
+    // Natural position is LEFT of center, so to start at center they need translateX(+distance)
+    // Items on RIGHT of center (index > 5):
+    // Natural position is RIGHT of center, so to start at center they need translateX(-distance)
+    const direction = index < centerIndex ? 1 : -1
+
+    return `${direction * totalDistance}px`
+  }
+
   return (
-    <div className="poi-navigator">
-      <div className="poi-list">
-        {poiList.map((poi) => (
+    <div className="poi-navigator" role="navigation" aria-label="Points of interest">
+      <div className="poi-list" role="tablist">
+        {poiList.map((poi, index) => (
           <button
             key={poi.key}
-            className={`poi-item ${selectedPOI === poi.key ? 'active' : ''}`}
+            className={`poi-item poi-item-stagger ${selectedPOI === poi.key ? 'active' : ''} ${index === focusedIndex ? 'keyboard-focused' : ''}`}
             onClick={() => handlePOIClick(poi.key, poi)}
+            role="tab"
+            aria-selected={selectedPOI === poi.key}
+            aria-label={`Point of interest: ${poi.name}`}
+            tabIndex={0}
+            style={{
+              animationDelay: `${getStaggerDelay(index)}ms`,
+              '--pull-distance': getPullDistance(index)
+            } as React.CSSProperties}
           >
             {poi.name.toUpperCase()}
           </button>
