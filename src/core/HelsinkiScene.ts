@@ -44,7 +44,6 @@ export class HelsinkiScene {
   private renderer: THREE.WebGLRenderer
   private controls: HelsinkiCameraController
   private helsinkiModel: THREE.Group | null = null
-  private fogTilesModel: THREE.Group | null = null
   private cityLights: THREE.Object3D | null = null
   private perlinTexture: THREE.DataTexture
   private postProcessMaterial: THREE.ShaderMaterial
@@ -122,10 +121,9 @@ export class HelsinkiScene {
     // Setup interaction event listeners
     this.setupInteractionListeners()
 
-    // Load models (main map + fog tiles)
+    // Load main map
     loadDualModels({
       mainMapPath: '/map.glb',
-      fogTilesPath: '/fogtiles.glb',
       scene: this.scene,
       camera: this.camera,
       controls: this.controls,
@@ -134,10 +132,8 @@ export class HelsinkiScene {
       onLoadComplete: config.onLoadComplete,
     }).then((result) => {
       this.helsinkiModel = result.mainMap
-      this.fogTilesModel = result.fogTiles
 
-      console.log('✓ Main map loaded')
-      console.log('✓ Fog tiles loaded')
+      console.log('✓ Main map loaded with edge fade')
 
       // (Tram logic removed)
       this.poiHighlightManager.setModel(result.mainMap)
@@ -155,7 +151,7 @@ export class HelsinkiScene {
 
   // (Tram logic removed)
     }).catch((error) => {
-      console.error('Failed to load models:', error)
+      console.error('Failed to load model:', error)
     })
 
     // Setup click handler for debugging (model accessed via getter closure)
@@ -481,24 +477,6 @@ export class HelsinkiScene {
       }
 
       this.scene.remove(this.helsinkiModel)
-    }
-
-    // Dispose fog tiles
-    if (this.fogTilesModel) {
-      this.fogTilesModel.traverse((child) => {
-        if (child instanceof THREE.Mesh) {
-          if (child.geometry) child.geometry.dispose()
-          if (child.material) {
-            if (Array.isArray(child.material)) {
-              child.material.forEach(m => m.dispose())
-            } else {
-              child.material.dispose()
-            }
-          }
-        }
-      })
-      this.scene.remove(this.fogTilesModel)
-      this.fogTilesModel = null
     }
 
     // Dispose stars

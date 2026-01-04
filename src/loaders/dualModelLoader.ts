@@ -9,7 +9,6 @@ import { COLORS } from '../constants/designSystem'
 
 export interface DualLoadParams {
   mainMapPath: string
-  fogTilesPath: string
   scene: THREE.Scene
   camera: THREE.PerspectiveCamera
   controls: any
@@ -20,7 +19,6 @@ export interface DualLoadParams {
 
 export interface DualLoadResult {
   mainMap: THREE.Group
-  fogTiles: THREE.Group
 }
 
 /**
@@ -35,7 +33,6 @@ async function loadSingleGLB(
     loader.load(
       path,
       (gltf) => {
-        console.log(`✓ Loaded: ${path}`)
         resolve(gltf.scene)
       },
       (xhr) => {
@@ -44,7 +41,6 @@ async function loadSingleGLB(
         }
       },
       (error) => {
-        console.error(`✗ Failed to load: ${path}`, error)
         reject(error)
       }
     )
@@ -68,7 +64,105 @@ async function checkResourceExists(url: string, timeoutMs = 8000): Promise<boole
   }
 }
 
-// Fog material application removed - loading raw fog tiles only
+/**
+ * Apply edge fade-out to map meshes
+ * Creates smooth radial fade at the edges to prevent cliff-off
+ */
+function applyMapEdgeFade(model: THREE.Group): void {
+  // Calculate bounding box to determine center and extent
+  model.updateMatrixWorld(true)
+
+  const bbox = new THREE.Box3().setFromObject(model)
+  const center = bbox.getCenter(new THREE.Vector3())
+  const size = bbox.getSize(new THREE.Vector3())
+  const maxRadius = Math.max(size.x, size.z) * 0.5
+
+  // Fade parameters - minimal fade at edges only
+  const fadeStartDistance = maxRadius * 0.90  // Start fading at 90% from center
+  const fadeEndDistance = maxRadius * 0.98    // Fully transparent at 98% (very close to edge)
+
+  model.traverse((child) => {
+    if (child instanceof THREE.Mesh && child.geometry) {
+      const materials = Array.isArray(child.material) ? child.material : [child.material]
+      
+      materials.forEach((mat: any) => {
+        if (mat) {
+          // Store original values
+          mat.userData = mat.userData || {}
+          mat.userData.edgeFadeCenter = center.clone()
+          mat.userData.edgeFadeStart = fadeStartDistance
+          mat.userData.edgeFadeEnd = fadeEndDistance
+          mat.userData.hasEdgeFade = true
+          
+          // Enable transparency for fade
+          mat.transparent = true
+          mat.depthWrite = true
+          mat.needsUpdate = true
+          
+          // Use onBeforeCompile to inject fade shader code
+          // Store reference to prevent multiple bindings
+          if (!mat.userData.edgeFadeCompiled) {
+            const originalOnBeforeCompile = mat.onBeforeCompile
+
+            mat.onBeforeCompile = (shader: any) => {
+              // Call original if it exists
+              if (originalOnBeforeCompile && typeof originalOnBeforeCompile === 'function') {
+                originalOnBeforeCompile.call(mat, shader)
+              }
+
+              // Skip if already modified
+              if (shader.uniforms.fadeCenter) {
+                return
+              }
+
+              try {
+                // Add uniforms
+                shader.uniforms.fadeCenter = { value: center.clone() }
+                shader.uniforms.fadeStart = { value: fadeStartDistance }
+                shader.uniforms.fadeEnd = { value: fadeEndDistance }
+
+                // Modify vertex shader - add varying declaration and assignment
+                shader.vertexShader = shader.vertexShader.replace(
+                  '#include <common>',
+                  `#include <common>\nvarying vec3 vWorldPosition;`
+                )
+
+                shader.vertexShader = shader.vertexShader.replace(
+                  '#include <project_vertex>',
+                  `#include <project_vertex>\nvWorldPosition = (modelMatrix * vec4(transformed, 1.0)).xyz;`
+                )
+
+                // Modify fragment shader - add varying and uniforms
+                shader.fragmentShader = shader.fragmentShader.replace(
+                  '#include <common>',
+                  `#include <common>\nvarying vec3 vWorldPosition;\nuniform vec3 fadeCenter;\nuniform float fadeStart;\nuniform float fadeEnd;`
+                )
+
+                // Apply fade effect
+                shader.fragmentShader = shader.fragmentShader.replace(
+                  '#include <dithering_fragment>',
+                  `#include <dithering_fragment>\nvec2 posXZ = vWorldPosition.xz;\nvec2 centerXZ = fadeCenter.xz;\nfloat dist = distance(posXZ, centerXZ);\nfloat fadeFactor = 1.0 - smoothstep(fadeStart, fadeEnd, dist);\ngl_FragColor.a *= fadeFactor;`
+                )
+              } catch (error) {
+                // Shader modification error - silently continue
+              }
+            }
+
+            // Provide unique cache key to prevent shader conflicts
+            mat.customProgramCacheKey = () => {
+              return `edgeFade_${mat.type}_${mat.uuid}`
+            }
+
+            mat.userData.edgeFadeCompiled = true
+          }
+
+          // Mark material as needing recompile
+          mat.needsUpdate = true
+        }
+      })
+    }
+  })
+}
 
 /**
  * Process and position the main map model
@@ -78,8 +172,6 @@ function processMainMap(
   camera: THREE.PerspectiveCamera,
   isNightMode: boolean
 ): void {
-  console.log('Processing main map...')
-
   const edgeGeometries: THREE.EdgesGeometry[] = []
   const edgeMaterials: THREE.LineBasicMaterial[] = []
 
@@ -160,18 +252,16 @@ function processMainMap(
     model.position.set(-rotatedCenter.x, -rotatedCenter.y, -rotatedCenter.z)
   }
 
-  console.log('Main map processed')
+  // Apply edge fade to prevent cliff-off at map edges
+  applyMapEdgeFade(model)
 }
 
-// Fog tiles processing removed - loading raw fog tiles only
-
 /**
- * Load main map and fog tiles simultaneously
+ * Load main map model
  */
 export async function loadDualModels(params: DualLoadParams): Promise<DualLoadResult> {
   const {
     mainMapPath,
-    fogTilesPath,
     scene,
     camera,
     isNightMode = false,
@@ -179,27 +269,11 @@ export async function loadDualModels(params: DualLoadParams): Promise<DualLoadRe
     onLoadComplete,
   } = params
 
-  console.log('Starting dual model loading...')
-  console.log(`Main map: ${mainMapPath}`)
-  console.log(`Fog tiles: ${fogTilesPath}`)
-
-  // Check if files exist
-  console.log('Checking if resources exist...')
-  const [mainExists, fogExists] = await Promise.all([
-    checkResourceExists(mainMapPath),
-    checkResourceExists(fogTilesPath),
-  ])
-
-  console.log(`Main map exists: ${mainExists}`)
-  console.log(`Fog tiles exist: ${fogExists}`)
+  // Check if file exists
+  const mainExists = await checkResourceExists(mainMapPath)
 
   if (!mainExists) {
     throw new Error(`Main map not found: ${mainMapPath}`)
-  }
-  if (!fogExists) {
-    console.warn(`Fog tiles not found: ${fogTilesPath}, continuing without fog tiles...`)
-  } else {
-    console.log('Fog tiles found, will load them...')
   }
 
   // Setup GLTF loader with DRACO
@@ -209,83 +283,30 @@ export async function loadDualModels(params: DualLoadParams): Promise<DualLoadRe
   dracoLoader.setDecoderConfig({ type: 'js' })
   loader.setDRACOLoader(dracoLoader)
 
-  // Track loading progress for both files
+  // Track loading progress
   let mainMapLoaded = 0
   let mainMapTotal = 0
-  let fogTilesLoaded = 0
-  let fogTilesTotal = 0
 
-  const updateCombinedProgress = () => {
-    if (onLoadProgress) {
-      const totalLoaded = mainMapLoaded + fogTilesLoaded
-      const totalSize = mainMapTotal + fogTilesTotal
-
-      if (totalSize > 0) {
-        const progress = (totalLoaded / totalSize) * 100
-        onLoadProgress(progress)
-      }
+  const updateProgress = () => {
+    if (onLoadProgress && mainMapTotal > 0) {
+      const progress = (mainMapLoaded / mainMapTotal) * 100
+      onLoadProgress(progress)
     }
   }
 
-  // Load both files in parallel
-  const loadPromises: Promise<THREE.Group>[] = [
-    loadSingleGLB(mainMapPath, loader, (loaded, total) => {
+  // Load main map
+  try {
+    const mainMapModel = await loadSingleGLB(mainMapPath, loader, (loaded, total) => {
       mainMapLoaded = loaded
       mainMapTotal = total
-      updateCombinedProgress()
-    }),
-  ]
+      updateProgress()
+    })
 
-  // Only load fog tiles if they exist
-  if (fogExists) {
-    loadPromises.push(
-      loadSingleGLB(fogTilesPath, loader, (loaded, total) => {
-        fogTilesLoaded = loaded
-        fogTilesTotal = total
-        updateCombinedProgress()
-      })
-    )
-  }
-
-  try {
-    const results = await Promise.all(loadPromises)
-    const mainMapModel = results[0]
-    const fogTilesModel = fogExists ? results[1] : new THREE.Group()
-
-    console.log(`Loaded ${results.length} model(s) successfully!`)
-    console.log(`Main map model has ${mainMapModel.children.length} children`)
-    if (fogExists) {
-      console.log(`Fog tiles model has ${fogTilesModel.children.length} children`)
-    }
-
-    // Process main map
+    // Process main map (includes edge fade)
     processMainMap(mainMapModel, camera, isNightMode)
 
-    // Debug main map position first
-    console.log('=== MAIN MAP DEBUG ===')
-    const mainBBox = new THREE.Box3().setFromObject(mainMapModel)
-    console.log(`Main map BBox min: (${mainBBox.min.x.toFixed(1)}, ${mainBBox.min.y.toFixed(1)}, ${mainBBox.min.z.toFixed(1)})`)
-    console.log(`Main map BBox max: (${mainBBox.max.x.toFixed(1)}, ${mainBBox.max.y.toFixed(1)}, ${mainBBox.max.z.toFixed(1)})`)
-    console.log(`Main map position: (${mainMapModel.position.x}, ${mainMapModel.position.y}, ${mainMapModel.position.z})`)
-    console.log(`Main map rotation: (${mainMapModel.rotation.x}, ${mainMapModel.rotation.y}, ${mainMapModel.rotation.z})`)
-
-    // Add both to scene
+    // Add to scene
     scene.add(mainMapModel)
-    if (fogExists && fogTilesModel) {
-      // Match fog tiles position and rotation to main map
-      fogTilesModel.position.copy(mainMapModel.position)
-      fogTilesModel.rotation.copy(mainMapModel.rotation)
-      fogTilesModel.scale.copy(mainMapModel.scale)
-
-      console.log('=== FOG TILES ===')
-      console.log('Matched position/rotation/scale to main map')
-      console.log(`Position: (${fogTilesModel.position.x.toFixed(1)}, ${fogTilesModel.position.y.toFixed(1)}, ${fogTilesModel.position.z.toFixed(1)})`)
-      console.log(`Rotation: (${fogTilesModel.rotation.x.toFixed(2)}, ${fogTilesModel.rotation.y.toFixed(2)}, ${fogTilesModel.rotation.z.toFixed(2)})`)
-      console.log('NO MATERIAL CHANGES - using original materials from GLB')
-
-      scene.add(fogTilesModel)
-      console.log('✓ Fog tiles added to scene')
-    }
 
     if (onLoadComplete) {
       onLoadComplete()
@@ -293,10 +314,8 @@ export async function loadDualModels(params: DualLoadParams): Promise<DualLoadRe
 
     return {
       mainMap: mainMapModel,
-      fogTiles: fogTilesModel,
     }
   } catch (error) {
-    console.error('Error loading models:', error)
     throw error
   }
 }
