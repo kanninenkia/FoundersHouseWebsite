@@ -97,6 +97,12 @@ export class HelsinkiCameraController {
   // Add a new property for the drag target position
   private dragTargetPosition: THREE.Vector3 = new THREE.Vector3();
 
+  // Reusable objects to eliminate allocations during interaction (PERFORMANCE CRITICAL)
+  private _tempSpherical: THREE.Spherical = new THREE.Spherical();
+  private _tempVector3: THREE.Vector3 = new THREE.Vector3();
+  private _tempVector3_2: THREE.Vector3 = new THREE.Vector3();
+  private _tempVector3_3: THREE.Vector3 = new THREE.Vector3();
+
   constructor(camera: THREE.PerspectiveCamera, domElement: HTMLElement) {
     this.camera = camera
     this.domElement = domElement
@@ -198,12 +204,11 @@ export class HelsinkiCameraController {
    */
   private calculatePolarEasing(movingUp: boolean): number {
     if (!this.orbit) return 1.0
-    // Get current polar angle from OrbitControls
-    const spherical = new THREE.Spherical()
-    const offset = this.camera.position.clone().sub(this.orbit.target)
-    spherical.setFromVector3(offset)
-    const currentPolar = spherical.phi
-    
+    // Get current polar angle from OrbitControls (reuse objects)
+    this._tempVector3.copy(this.camera.position).sub(this.orbit.target)
+    this._tempSpherical.setFromVector3(this._tempVector3)
+    const currentPolar = this._tempSpherical.phi
+
     // movingUp means decreasing polar angle (towards minPolarAngle)
     return this.calculateBoundaryEasingGeneric(
       currentPolar,
@@ -222,12 +227,12 @@ export class HelsinkiCameraController {
     if (this.minAzimuthAngle === -Infinity || this.maxAzimuthAngle === Infinity) {
       return 1.0 // No easing for unconstrained rotation
     }
-    
-    const spherical = new THREE.Spherical()
-    const offset = this.camera.position.clone().sub(this.orbit.target)
-    spherical.setFromVector3(offset)
-    const currentAzimuth = spherical.theta
-    
+
+    // Reuse objects to avoid allocation
+    this._tempVector3.copy(this.camera.position).sub(this.orbit.target)
+    this._tempSpherical.setFromVector3(this._tempVector3)
+    const currentAzimuth = this._tempSpherical.theta
+
     return this.calculateBoundaryEasingGeneric(
       currentAzimuth,
       this.minAzimuthAngle,
@@ -294,15 +299,14 @@ export class HelsinkiCameraController {
     this.lastMouseX = event.clientX;
     this.lastMouseY = event.clientY;
     if (this.isDragging && event.buttons === 1 && this.horizontalDragEnabled) {
-      // Get camera direction vectors for panning
-      const cameraDirection = new THREE.Vector3()
-      this.camera.getWorldDirection(cameraDirection)
-      
-      // Get the forward vector (camera direction projected onto XZ plane)
-      const forward = new THREE.Vector3(cameraDirection.x, 0, cameraDirection.z).normalize()
-      
+      // Get camera direction vectors for panning (reuse temp vectors)
+      this.camera.getWorldDirection(this._tempVector3)
+
+      // Get the forward vector (camera direction projected onto XZ plane, reuse vector)
+      this._tempVector3_2.set(this._tempVector3.x, 0, this._tempVector3.z).normalize()
+
       // Store for momentum continuation
-      this.lastForward.copy(forward)
+      this.lastForward.copy(this._tempVector3_2)
       
       // === ROTATION (horizontal drag) ===
       // Calculate target rotation velocity
@@ -331,19 +335,22 @@ export class HelsinkiCameraController {
       const targetRotationVelocity = deltaX * this.rotateSensitivity * rotationEasing
       this.rotationVelocity = this.rotationVelocity + (targetRotationVelocity - this.rotationVelocity) * this.smoothingFactor
 
-      // Rotate camera in place - pivot around camera position, not target
-      const offsetToTarget = this.orbit.target.clone().sub(this.camera.position)
-      offsetToTarget.applyAxisAngle(new THREE.Vector3(0, 1, 0), this.rotationVelocity)
-      this.orbit.target.copy(this.camera.position).add(offsetToTarget)
+      // Rotate camera in place - pivot around camera position, not target (reuse vectors)
+      this._tempVector3_3.copy(this.orbit.target).sub(this.camera.position)
+      this._tempVector3.set(0, 1, 0)
+      this._tempVector3_3.applyAxisAngle(this._tempVector3, this.rotationVelocity)
+      this.orbit.target.copy(this.camera.position).add(this._tempVector3_3)
       this.target.copy(this.orbit.target)
       this.camera.lookAt(this.orbit.target)
 
       // === PAN (vertical drag) ===
       const targetPanZ = deltaY * this.panSensitivity * panEasing
-      const targetVelocity = new THREE.Vector3()
-      // Only move along the XZ plane (no Y/height adjustment)
-      targetVelocity.addScaledVector(forward.setY(0).normalize(), targetPanZ)
-      this.velocity.lerp(targetVelocity, this.smoothingFactor)
+      // Reuse temp vector for target velocity
+      this._tempVector3.set(0, 0, 0)
+      // Only move along the XZ plane (no Y/height adjustment, reuse _tempVector3_2 as forward)
+      this._tempVector3_2.setY(0).normalize()
+      this._tempVector3.addScaledVector(this._tempVector3_2, targetPanZ)
+      this.velocity.lerp(this._tempVector3, this.smoothingFactor)
       this.dragTargetPosition.add(this.velocity)
       this.orbit.target.add(this.velocity)
       this.target.copy(this.orbit.target)

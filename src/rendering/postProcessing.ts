@@ -51,6 +51,13 @@ export function setupComposer(renderer: THREE.WebGLRenderer, scene: THREE.Scene,
     shaderPass.renderToScreen = true
     composer.addPass(shaderPass)
 
+    // Warm up the composer by rendering once (compiles all post-processing shaders)
+    try {
+      composer.render()
+    } catch (e) {
+      // Ignore errors during warmup
+    }
+
     return { composer, bloomPass: null }
   } catch (err) {
     return { composer: null, bloomPass: null }

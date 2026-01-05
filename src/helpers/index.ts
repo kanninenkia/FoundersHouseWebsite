@@ -10,9 +10,6 @@ export {
   isLineSegmentsWithBasicMaterial
 } from './geometryHelpers'
 
-export {
-  isNightInHelsinki
-} from './timeUtils'
 
 export {
   PerlinNoiseGenerator

@@ -27,8 +27,8 @@ export const MagneticElement = ({
   const mouseY = useMotionValue(0)
   const rotation = useMotionValue(0)
 
-  // Olivier's spring config: buttery smooth motion
-  const springConfig = { damping: 25, stiffness: 400, mass: 0.5 }
+  // Optimized spring config: buttery smooth motion with minimal overshoot
+  const springConfig = { damping: 28, stiffness: 400, mass: 0.5 }
   const x = useSpring(mouseX, springConfig)
   const y = useSpring(mouseY, springConfig)
   const rotateZ = useSpring(rotation, springConfig)

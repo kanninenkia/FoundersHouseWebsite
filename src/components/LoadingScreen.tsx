@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { HelsinkiViewer } from './HelsinkiViewer'
 import './LoadingScreen.css'
 
@@ -39,12 +39,14 @@ export const LoadingScreen = ({ onComplete, duration, scrollProgress }: LoadingS
   // Always start fresh on page load - don't persist animation stage
   const [stage, setStage] = useState<Stage>('logo-loading')
   const [mapLoadingState, setMapLoadingState] = useState<MapLoadingState>({ isLoaded: false, progress: 0 })
-  const [loadingBarProgress, setLoadingBarProgress] = useState(0)
-  const [smoothLoadingBarProgress, setSmoothLoadingBarProgress] = useState(0)
   const [canProceedToBlur, setCanProceedToBlur] = useState(false)
+  
+  // Direct DOM manipulation for loading bar - bypasses React re-renders
+  const loadingBarRef = useRef<HTMLDivElement>(null)
 
   // YOUR IMAGE CYCLING - All images now optimized as WebP
-  const [loadingImages] = useState(() => {
+  // Select ONE random image on component mount
+  const [loadingImage] = useState(() => {
     const images = [
       '/LoadInImage-min.webp',
       '/The Legends Day.webp',
@@ -53,14 +55,10 @@ export const LoadingScreen = ({ onComplete, duration, scrollProgress }: LoadingS
       '/Legends Day Still 002.webp',
       '/Legends Day Still 014.webp'
     ]
-    // Shuffle for variety since all images are now optimized
-    return images.sort(() => Math.random() - 0.5)
+    // Pick one random image
+    const randomIndex = Math.floor(Math.random() * images.length)
+    return images[randomIndex]
   })
-
-  // Start with first image from shuffled array
-  const [currentImageIndex, setCurrentImageIndex] = useState(0)
-  const [previousImageIndex, setPreviousImageIndex] = useState(0)
-  const [isFirstImage, setIsFirstImage] = useState(true)
 
   // Skip intro button state
   const [showSkipButton, setShowSkipButton] = useState(false)
@@ -104,46 +102,29 @@ export const LoadingScreen = ({ onComplete, duration, scrollProgress }: LoadingS
     return () => window.removeEventListener('keydown', handleKeyPress)
   }, [showSkipButton, stage])
 
-  // TIME-BASED IMAGE CYCLING - Predictable, smooth, 600ms per image
+  // REMOVED: Time-based image cycling - now using single random image
+
+  // ULTRA-SMOOTH LOADING BAR - Direct DOM manipulation, zero React interference
   useEffect(() => {
     if (scrollProgress > 0 || stage !== 'logo-loading') return
 
-    const startTime = Date.now()
-    let lastIndex = 0
-
-    const interval = setInterval(() => {
-      const elapsed = Date.now() - startTime
-      const imageIndex = Math.floor(elapsed / 600) % loadingImages.length
-
-      // Only update if index actually changed
-      if (imageIndex !== lastIndex) {
-        lastIndex = imageIndex
-        setIsFirstImage(false)
-        setPreviousImageIndex((prev) => imageIndex === 0 ? loadingImages.length - 1 : imageIndex - 1)
-        setCurrentImageIndex(imageIndex)
-      }
-    }, 50) // Check every 50ms (more than enough for 600ms transitions)
-
-    return () => clearInterval(interval)
-  }, [scrollProgress, stage, loadingImages.length])
-
-  // TIME-BASED LOADING BAR - Smooth 0→100% over 3 seconds, then holds at 100%
-  useEffect(() => {
-    if (scrollProgress > 0 || stage !== 'logo-loading') return
-
-    const startTime = Date.now()
+    const startTime = performance.now()
     const duration = 3000 // 3 seconds
-
     let animationFrameId: number
 
-    const animate = () => {
-      const elapsed = Date.now() - startTime
+    const animate = (currentTime: number) => {
+      const elapsed = currentTime - startTime
       const progress = Math.min((elapsed / duration) * 100, 100)
+      
+      // Direct DOM update - bypasses React state and re-renders
+      if (loadingBarRef.current) {
+        loadingBarRef.current.style.width = `${progress}%`
+      }
 
-      setSmoothLoadingBarProgress(progress)
-
-      // Keep animating to hold at 100% (in case map takes longer than 3s)
-      animationFrameId = requestAnimationFrame(animate)
+      // Continue until we hit 100%
+      if (progress < 100) {
+        animationFrameId = requestAnimationFrame(animate)
+      }
     }
 
     animationFrameId = requestAnimationFrame(animate)
@@ -209,13 +190,14 @@ export const LoadingScreen = ({ onComplete, duration, scrollProgress }: LoadingS
   }, [duration, onComplete])
 
   // JASON'S STAGE TRANSITIONS - map-slide-in and map-expand timing
+  // Runs continuously regardless of tab visibility
   useEffect(() => {
     if (!canProceedToBlur || hasSkipped) return
 
     // Record start time for time-based stage transitions
     const startTime = Date.now()
 
-    // Use setInterval instead of setTimeout chain to work in background tabs
+    // Use setInterval to check elapsed time continuously
     const checkInterval = setInterval(() => {
       const elapsed = Date.now() - startTime
 
@@ -318,24 +300,13 @@ export const LoadingScreen = ({ onComplete, duration, scrollProgress }: LoadingS
           </div>
         </div>
 
-        {/* Background layer: YOUR CYCLING LOADING IMAGES WITH CROSSFADE - Always visible during initial stages */}
+        {/* Background layer: Single random loading image - Always visible during initial stages */}
         {showBackgroundImage && (
           <div className="loading-background-image">
-            {/* Previous image - stays visible underneath (only show after first transition) */}
-            {!isFirstImage && (
-              <img
-                key={`prev-${previousImageIndex}`}
-                src={loadingImages[previousImageIndex]}
-                alt="Founders House"
-                className="background-image-layer background-image-previous"
-              />
-            )}
-            {/* Current image - fades in on top (except first image which appears immediately) */}
             <img
-              key={`curr-${currentImageIndex}`}
-              src={loadingImages[currentImageIndex]}
+              src={loadingImage}
               alt="Founders House"
-              className={`background-image-layer ${isFirstImage ? 'background-image-first' : 'background-image-current'}`}
+              className="background-image-layer background-image-static"
               loading="eager"
               fetchPriority="high"
             />
@@ -353,7 +324,7 @@ export const LoadingScreen = ({ onComplete, duration, scrollProgress }: LoadingS
         )}
         {showLoadingBar && (
           <div className="loading-bar-container">
-            <div className="loading-bar" style={{ width: `${smoothLoadingBarProgress}%` }} />
+            <div ref={loadingBarRef} className="loading-bar" />
           </div>
         )}
 

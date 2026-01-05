@@ -7,11 +7,10 @@ import * as THREE from 'three'
 import HelsinkiCameraController from './HelsinkiCameraController'
 import { loadDualModels } from '../loaders'
 import { setupPostProcessing, setupComposer, setupSceneLighting } from '../rendering'
-import { addCityLightsPoints, animateCityLights, removeCityLights, updateCityLightsFog, createStarfield, animateStars, setupSceneFog, updateFogColor, disposeCachedLightSprite } from '../effects'
+import { setupSceneFog, updateFogColor } from '../effects'
 import { createSmoothPOIAnimation, updateSmoothPOIAnimation, interruptSmoothPOIAnimation, type SmoothPOIAnimation } from '../animation'
 import {
   PerlinNoiseGenerator,
-  isNightInHelsinki,
   updateMaterialsInHierarchy,
   isLineSegmentsWithBasicMaterial,
   applyCameraConfig,
@@ -26,7 +25,7 @@ import {
   setupClickHandler
 } from '../helpers'
 import { AutoTourManager, POIHighlightManager, FoundersHouseMarker } from './managers'
-import { COLORS, CITY_LIGHTS } from '../constants/designSystem'
+import { COLORS } from '../constants/designSystem'
 import { POINTS_OF_INTEREST } from '../constants/poi'
 
 export interface SceneConfig {
@@ -44,14 +43,12 @@ export class HelsinkiScene {
   private renderer: THREE.WebGLRenderer
   private controls: HelsinkiCameraController
   private helsinkiModel: THREE.Group | null = null
-  private cityLights: THREE.Object3D | null = null
   private perlinTexture: THREE.DataTexture
   private postProcessMaterial: THREE.ShaderMaterial
   private composer: any | null = null
   private renderTarget: THREE.WebGLRenderTarget
   private clock: THREE.Clock
   private container: HTMLElement
-  private stars: THREE.Group | THREE.Points | null = null
   private isNightMode: boolean
   private poiAnimation: SmoothPOIAnimation | null = null
   private fog: THREE.Fog | null = null
@@ -70,7 +67,7 @@ export class HelsinkiScene {
   constructor(config: SceneConfig) {
     this.container = config.container
     this.clock = new THREE.Clock()
-    this.isNightMode = config.isNightMode !== undefined ? config.isNightMode : isNightInHelsinki()
+    this.isNightMode = config.isNightMode !== undefined ? config.isNightMode : false
 
     // Initialize scene
     this.scene = new THREE.Scene()
@@ -105,11 +102,7 @@ export class HelsinkiScene {
     // Setup fog
     this.fog = setupSceneFog(this.scene, this.isNightMode)
 
-    // Add stars for night mode
-    if (this.isNightMode) {
-      this.stars = createStarfield()
-      this.scene.add(this.stars)
-    }
+    // Stars removed - night mode disabled
 
     // Initialize managers (model will be set after loading)
     this.poiHighlightManager = new POIHighlightManager(this.camera)
@@ -130,6 +123,7 @@ export class HelsinkiScene {
       isNightMode: this.isNightMode,
       onLoadProgress: config.onLoadProgress,
       onLoadComplete: config.onLoadComplete,
+      renderer: this.renderer,
     }).then((result) => {
       this.helsinkiModel = result.mainMap
 
@@ -139,15 +133,7 @@ export class HelsinkiScene {
       this.poiHighlightManager.setModel(result.mainMap)
       this.foundersHouseMarker.setModel(result.mainMap, this.camera)
 
-      if (this.isNightMode) {
-        try {
-          // MEMORY: Reduced from 800 -> 500 -> 400 for better memory usage
-          // 400 lights = ~17 KB (positions + colors + flicker state)
-          this.addCityLightsPoints(400)
-        } catch (e) {
-          // Failed to add city lights
-        }
-      }
+      // City lights removed - night mode disabled
 
   // (Tram logic removed)
     }).catch((error) => {
@@ -382,15 +368,7 @@ export class HelsinkiScene {
       }
     }
 
-    // Animate city lights
-    if (this.cityLights) {
-      animateCityLights(this.cityLights, elapsed)
-      updateCityLightsFog(this.cityLights, this.scene)
-    }
-
-    if (this.stars) {
-      animateStars(this.stars, elapsed)
-    }
+    // City lights and stars animation removed - night mode disabled
 
   // (Tram update removed)
 
@@ -479,28 +457,7 @@ export class HelsinkiScene {
       this.scene.remove(this.helsinkiModel)
     }
 
-    // Dispose stars
-    if (this.stars) {
-      this.stars.traverse((child) => {
-        if (child instanceof THREE.Points || child instanceof THREE.Mesh) {
-          if (child.geometry) child.geometry.dispose()
-          if (child.material) {
-            if (Array.isArray(child.material)) {
-              child.material.forEach(m => m.dispose())
-            } else {
-              child.material.dispose()
-            }
-          }
-        }
-      })
-      this.scene.remove(this.stars)
-      this.stars = null
-    }
-
-    this.removeCityLights()
-
-    // MEMORY: Dispose cached light sprite texture
-    disposeCachedLightSprite()
+    // Stars and city lights disposal removed - night mode disabled
 
     this.container.removeChild(this.renderer.domElement)
   }
@@ -722,27 +679,7 @@ export class HelsinkiScene {
       )
     }
 
-    if (this.stars) {
-      this.stars.visible = this.isNightMode
-    } else if (this.isNightMode) {
-      this.stars = createStarfield()
-      this.scene.add(this.stars)
-    }
-
-    if (this.isNightMode) {
-      if (!this.cityLights && this.helsinkiModel) {
-        // MEMORY: Reduced from 1200 -> 600 -> 450 for better memory usage
-        // 450 lights = ~19 KB (positions + colors + flicker state)
-        this.addCityLightsPoints(450)
-      }
-      if (this.cityLights) {
-        this.cityLights.visible = true
-      }
-    } else {
-      if (this.cityLights) {
-        this.cityLights.visible = false
-      }
-    }
+    // Stars and city lights toggle removed - night mode disabled
 
     this.scene.traverse((child) => {
       if (child instanceof THREE.PointLight) {
@@ -760,31 +697,7 @@ export class HelsinkiScene {
     })
   }
 
-  public removeCityLights() {
-    if (!this.cityLights) return
-    if (this.cityLights.parent) this.cityLights.parent.remove(this.cityLights)
-    try {
-      removeCityLights(this.cityLights)
-    } catch (err) {
-      // ignore
-    }
-    this.cityLights = null
-  }
-
-  public setCityLightsDensity(count: number) {
-    this.addCityLightsPoints(Math.max(0, Math.floor(count)))
-  }
-
-  public setCityLightsEnabled(enabled: boolean) {
-    if (this.cityLights) this.cityLights.visible = enabled
-  }
-
-  public addCityLightsPoints(count = 3000, color: number | string = CITY_LIGHTS.color) {
-    if (!this.helsinkiModel) return
-    this.removeCityLights()
-    const group = addCityLightsPoints(this.helsinkiModel, count, color)
-    if (group) this.cityLights = group as any
-  }
+  // City lights methods removed - night mode disabled
 
   public highlightPOI(poiName: keyof typeof POINTS_OF_INTEREST, maxMeshes: number = 20): void {
     this.poiHighlightManager.highlightPOI(poiName, maxMeshes)

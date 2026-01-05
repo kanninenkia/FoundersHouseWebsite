@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { motion, useMotionValue, useSpring, useTransform, AnimatePresence } from 'framer-motion'
+import { motion, useMotionValue, useSpring } from 'framer-motion'
 import { POINTS_OF_INTEREST, type PointOfInterest } from '../constants/poi'
 import './POINavigator.css'
 
@@ -93,7 +93,10 @@ export const POINavigator = ({ onPOISelect, initialPOI = 'FOUNDERS_HOUSE' }: POI
       aria-label="Points of interest"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      transition={{ duration: 0.6 }}
+      transition={{ 
+        duration: 0.5, 
+        ease: [0.22, 1, 0.36, 1]
+      }}
     >
       <div className="poi-list" role="tablist">
         {poiList.map((poi, index) => {
@@ -139,7 +142,11 @@ export const POINavigator = ({ onPOISelect, initialPOI = 'FOUNDERS_HOUSE' }: POI
         className="gradient-blur"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ delay: 0.3, duration: 0.5 }}
+        transition={{ 
+          delay: 0.2, 
+          duration: 0.4,
+          ease: [0.22, 1, 0.36, 1]
+        }}
       >
         <div></div>
         <div></div>
@@ -171,13 +178,9 @@ interface POIButtonProps {
 
 const POIButton = ({
   poi,
-  index,
   isActive,
   isFocused,
-  isHovered,
   isCenter,
-  hoveredIndex,
-  centerIndex,
   initialX,
   onClick,
   onHoverStart,
@@ -190,8 +193,8 @@ const POIButton = ({
   const mouseX = useMotionValue(0)
   const mouseY = useMotionValue(0)
 
-  // Olivier's spring config: more damping for buttery smooth motion
-  const springConfig = { damping: 25, stiffness: 400, mass: 0.5 }
+  // Optimized spring config: buttery smooth motion with minimal overshoot
+  const springConfig = { damping: 28, stiffness: 400, mass: 0.5 }
   const x = useSpring(mouseX, springConfig)
   const y = useSpring(mouseY, springConfig)
 
@@ -254,11 +257,21 @@ const POIButton = ({
       whileHover={{
         scale: 1.05,
         y: -2,
-        transition: { type: 'spring', stiffness: 400, damping: 25 }
+        transition: { 
+          type: 'spring', 
+          stiffness: 400, 
+          damping: 28,
+          mass: 0.5
+        }
       }}
       whileTap={{
         scale: 0.95,
-        transition: { type: 'spring', stiffness: 600, damping: 30 }
+        transition: { 
+          type: 'spring', 
+          stiffness: 600, 
+          damping: 30,
+          mass: 0.3
+        }
       }}
       onAnimationComplete={onAnimationComplete}
       style={{
@@ -354,8 +367,8 @@ const VectorPath = ({ selectedIndex, totalItems, isReady }: VectorPathProps) => 
         initial={{ pathLength: 0 }}
         animate={{ pathLength: isReady ? 1 : 0 }}
         transition={{
-          delay: 0.2,
-          duration: 0.8,
+          delay: 0.15,
+          duration: 0.7,
           ease: [0.22, 1, 0.36, 1]
         }}
       />

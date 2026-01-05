@@ -45,7 +45,8 @@ export const AnimatedHamburger = ({ isOpen, onClick }: AnimatedHamburgerProps) =
           transition={{
             type: 'spring',
             stiffness: 400,
-            damping: 25,
+            damping: 28,
+            mass: 0.5,
           }}
           style={{ originX: '50%', originY: '50%' }}
         />
@@ -66,7 +67,8 @@ export const AnimatedHamburger = ({ isOpen, onClick }: AnimatedHamburgerProps) =
           transition={{
             type: 'spring',
             stiffness: 400,
-            damping: 25,
+            damping: 28,
+            mass: 0.5,
           }}
         />
 
@@ -86,7 +88,8 @@ export const AnimatedHamburger = ({ isOpen, onClick }: AnimatedHamburgerProps) =
           transition={{
             type: 'spring',
             stiffness: 400,
-            damping: 25,
+            damping: 28,
+            mass: 0.5,
           }}
           style={{ originX: '50%', originY: '50%' }}
         />

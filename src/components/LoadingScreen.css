@@ -4,57 +4,59 @@
 .helsinki-zoom-wrapper {
   width: 100%;
   height: 100%;
-  transform: scale(1);
-  transition: transform 2.6s cubic-bezier(.4,.25,0,1);
+  transform: scale(1) translateZ(0);
+  transition: transform 2.6s cubic-bezier(0.22, 1, 0.36, 1);
   will-change: transform;
+  backface-visibility: hidden;
+  -webkit-font-smoothing: antialiased;
 }
 .helsinki-zoom-wrapper.zoomed-in {
-  transform: scale(1.4);
+  transform: scale(1.4) translateZ(0);
 }
 .helsinki-zoom-wrapper.zooming-out {
-  transform: scale(1);
+  transform: scale(1) translateZ(0);
 }
 
 .text-pushed-expand {
-  animation: textPushedExpand 1s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  animation: textPushedExpand 1s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
 
 @keyframes textPushedExpand {
   0% {
-    transform: translateY(-22vh);
+    transform: translateY(-22vh) translateZ(0);
     opacity: 1;
   }
   100% {
-    transform: translateY(-35vh);
+    transform: translateY(-35vh) translateZ(0);
     opacity: 1;
   }
 }
 
 .text2-move-up {
-  animation: text2MoveUpWithMap 1.2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  animation: text2MoveUpWithMap 1.2s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
 
 @keyframes text2MoveUpWithMap {
   0% {
-    transform: translateY(0);
+    transform: translateY(0) translateZ(0);
     opacity: 1;
   }
   100% {
-    transform: translateY(-40vh);
+    transform: translateY(-40vh) translateZ(0);
     opacity: 1;
   }
 }
 
 .text-page.slide-up-exit {
-  animation: textPageSlideUpExit 1.2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+  animation: textPageSlideUpExit 1.2s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
 
 @keyframes textPageSlideUpExit {
   0% {
-    transform: translateY(0) scale(1);
+    transform: translateY(0) scale(1) translateZ(0);
   }
   100% {
-    transform: translateY(-5%) scale(1.05);
+    transform: translateY(-5%) scale(1.05) translateZ(0);
   }
 }
 
@@ -67,7 +69,7 @@
   background: transparent;
   z-index: 2;
   opacity: 1;
-  animation: mapExpandToFull 1.2s cubic-bezier(.4,.25,0,1) forwards;
+  animation: mapExpandToFull 1.2s cubic-bezier(0.4, 0.25, 0, 1) forwards;
   will-change: top, left, width, height, transform;
   overflow: hidden;
   transform: translateX(-50%);
@@ -134,34 +136,36 @@
     left: 50%;
     width: 90vw;
     height: 100vh;
-    transform: translateX(-50%) scale(0.95); /* Start scaled down - visible and effective */
+    transform: translateX(-50%) scale(0.95);
   }
   100% {
     top: 40vh;
     left: 50%;
     width: 90vw;
     height: 100vh;
-    transform: translateX(-50%) scale(1); /* Scale up to full size - creates depth */
+    transform: translateX(-50%) scale(1);
   }
 }
 .fade-up-text {
   display: inline-block;
-  animation: fadeUpIn 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: fadeUpIn 1.2s cubic-bezier(0.22, 1, 0.36, 1) forwards;
   opacity: 0;
+  will-change: transform, opacity;
+  backface-visibility: hidden;
 }
 
 .fade-up-text.fade-up-out {
-  animation: fadeUpOut 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: fadeUpOut 0.4s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
 
 @keyframes fadeUpOut {
   from {
     opacity: 1;
-    transform: translateY(0);
+    transform: translateY(0) translateZ(0);
   }
   to {
     opacity: 0;
-    transform: translateY(10px);
+    transform: translateY(10px) translateZ(0);
   }
 }
 .fade-up-wrapper {
@@ -172,24 +176,28 @@
 
 .fade-in-text {
   display: inline-block;
-  animation: fadeInEaseOut 2.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: fadeInEaseOut 2.2s cubic-bezier(0.22, 1, 0.36, 1) forwards;
   opacity: 0;
+  will-change: opacity;
+  backface-visibility: hidden;
 }
 
 .fade-up-text {
   display: inline-block;
-  animation: fadeUpIn 2.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: fadeUpIn 2.2s cubic-bezier(0.22, 1, 0.36, 1) forwards;
   opacity: 0;
+  will-change: transform, opacity;
+  backface-visibility: hidden;
 }
 
 @keyframes fadeUpIn {
   from {
     opacity: 0;
-    transform: translateY(40px);
+    transform: translateY(40px) translateZ(0);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: translateY(0) translateZ(0);
   }
 }
 
@@ -243,29 +251,13 @@
   display: block;
 }
 
-.background-image-previous {
+/* Static background image - no cycling */
+.background-image-static {
   z-index: 1;
-}
-
-.background-image-first {
-  z-index: 2;
   opacity: 1;
-  /* No animation for first image - appears instantly */
 }
 
-.background-image-current {
-  z-index: 2;
-  animation: crossfadeIn 0.6s ease-in-out;
-}
-
-@keyframes crossfadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
+/* REMOVED: Animation styles for image cycling */
 
 /* Noise overlay - REMOVED (saved for future use)
 .loading-noise-overlay {
@@ -292,7 +284,10 @@
 .loading-logo {
   position: relative;
   z-index: 2;
-  transition: all 4.5s cubic-bezier(0.23, 0.26, 0, 1);
+  transition: filter 4.5s cubic-bezier(0.22, 1, 0.36, 1), 
+              opacity 4.5s cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: filter, opacity;
+  backface-visibility: hidden;
 }
 
 .loading-logo.blur-out {
@@ -317,6 +312,9 @@
   border-radius: 1px;
   overflow: hidden;
   z-index: 10;
+  will-change: opacity;
+  contain: layout style paint;
+  pointer-events: none;
 }
 
 .loading-bar {
@@ -324,7 +322,10 @@
   width: 0%;
   background: #FFFFFF;
   border-radius: 1px;
-  transition: width 0.1s ease-out;
+  will-change: width;
+  contain: layout style paint;
+  transform: translateZ(0);
+  pointer-events: none;
 }
 
 /* Blocks container for pixelation effect - covers the background image and logo */
@@ -454,26 +455,12 @@
   justify-content: center;
   gap: 0.5em;
   line-height: 1;
-  animation: textFadeIn 0.6s ease-out forwards;
+  animation: textFadeIn 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
   white-space: nowrap;
   text-align: center;
   flex-wrap: wrap;
-    transition:
-      width 1s cubic-bezier(0.4, 0, 0.2, 1),
-      left 1s cubic-bezier(0.4, 0, 0.2, 1),
-      top 1s cubic-bezier(0.4, 0, 0.2, 1),
-      height 1s cubic-bezier(0.4, 0, 0.2, 1),
-      transform 1s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-
-  /* Step 1.5: Pause at halfway (50% height from top) */
-  .map-container.halfway {
-    top: 40vh;
-    left: 50%;
-    width: 90vw;
-    height: 50vh;
-    transform: translateX(-50%);
-    /* transition matches .map-container for smoothness */
+  will-change: opacity, transform;
+  backface-visibility: hidden;
   margin-top: 1rem;
 }
 
@@ -486,12 +473,15 @@
   text-align: center;
   opacity: 1;
   overflow: hidden;
+  will-change: transform, opacity;
+  backface-visibility: hidden;
+  transform: translateZ(0);
 }
 
 /* Fade-in animation for text with ease-out timing */
 .fade-in-text {
   display: inline-block;
-  animation: fadeInEaseOut 3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: fadeInEaseOut 3s cubic-bezier(0.22, 1, 0.36, 1) forwards;
   opacity: 0;
 }
 
@@ -499,12 +489,8 @@
   from {
     opacity: 0;
   }
-  0% {
-    top: 40vh;
-    left: 50%;
-    width: 90vw;
-    height: 100vh;
-    transform: translateX(-50%);
+  to {
+    opacity: 1;
   }
 }
 
@@ -579,10 +565,12 @@
   letter-spacing: 0.1em;
   text-transform: uppercase;
   opacity: 0;
+  will-change: opacity;
+  backface-visibility: hidden;
 }
 
 .text-page .corner-label.fade-in {
-  animation: fadeInCornerElements 1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: fadeInCornerElements 1s cubic-bezier(0.22, 1, 0.36, 1) forwards;
   animation-delay: 0.4s;
 }
 
@@ -610,21 +598,21 @@
 @keyframes textFadeIn {
   from {
     opacity: 0;
-    transform: translateY(20px);
+    transform: translateY(20px) translateZ(0);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: translateY(0) translateZ(0);
   }
 }
 
 @keyframes textSlideUpExit {
   from {
-    transform: translateY(0);
+    transform: translateY(0) translateZ(0);
     opacity: 1;
   }
   to {
-    transform: translateY(-100%);
+    transform: translateY(-100%) translateZ(0);
     opacity: 1;
   }
 }
@@ -794,13 +782,16 @@
   z-index: 10001;
   opacity: 0;
   animation: fadeIn 400ms cubic-bezier(0.22, 1, 0.36, 1) 200ms forwards;
-  transition: all 200ms ease;
+  transition: color 200ms cubic-bezier(0.22, 1, 0.36, 1),
+              transform 200ms cubic-bezier(0.22, 1, 0.36, 1);
   text-transform: uppercase;
+  will-change: transform, opacity;
+  backface-visibility: hidden;
 }
 
 .skip-intro-button:hover {
   color: rgba(255, 255, 255, 1);
-  transform: translateX(4px);
+  transform: translateX(4px) translateZ(0);
 }
 
 .skip-intro-button:focus-visible {
@@ -811,11 +802,11 @@
 @keyframes fadeIn {
   from {
     opacity: 0;
-    transform: translateY(10px);
+    transform: translateY(10px) translateZ(0);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: translateY(0) translateZ(0);
   }
 }
 

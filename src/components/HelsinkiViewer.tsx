@@ -56,6 +56,10 @@ export const HelsinkiViewer = ({ shouldLoad = true, shouldPause = false, scrollP
   const [isDragging, setIsDragging] = useState(false)
   const [cursorPosition, setCursorPosition] = useState({ x: 0, y: 0 })
 
+  // "Drag & Explore" indicator state - shows until first interaction
+  const [showDragIndicator, setShowDragIndicator] = useState(true)
+  const hasInteractedRef = useRef(false)
+
   // Track dragging and cursor position for indicator
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
@@ -86,14 +90,14 @@ export const HelsinkiViewer = ({ shouldLoad = true, shouldPause = false, scrollP
       // Clear any previous timers
       if (fadeTimers.current.hero) clearTimeout(fadeTimers.current.hero)
       if (fadeTimers.current.ui) clearTimeout(fadeTimers.current.ui)
-      // Hero text after 1s
+      // Hero text after 800ms (reduced from 1s for snappier feel)
       fadeTimers.current.hero = setTimeout(() => {
         setShowHeroText(true)
-      }, 1000)
-      // UI after 2.2s (1s + 1.2s)
+      }, 800)
+      // UI after 1.8s (800ms + 1s - reduced from 2.2s)
       fadeTimers.current.ui = setTimeout(() => {
         setShowUI(true)
-      }, 2200)
+      }, 1800)
     } else {
       // If user scrolls back, hide all and clear timers
       setShowHeroText(false)
@@ -291,14 +295,32 @@ export const HelsinkiViewer = ({ shouldLoad = true, shouldPause = false, scrollP
       }
 
       lastInteractionTime.current = Date.now()
+      
+      // Hide drag indicator on first interaction
+      if (!hasInteractedRef.current) {
+        hasInteractedRef.current = true
+        setShowDragIndicator(false)
+      }
     }
 
     const handleTouchInteraction = () => {
       lastInteractionTime.current = Date.now()
+      
+      // Hide drag indicator on first interaction
+      if (!hasInteractedRef.current) {
+        hasInteractedRef.current = true
+        setShowDragIndicator(false)
+      }
     }
 
     const handleWheelInteraction = () => {
       lastInteractionTime.current = Date.now()
+      
+      // Hide drag indicator on first interaction
+      if (!hasInteractedRef.current) {
+        hasInteractedRef.current = true
+        setShowDragIndicator(false)
+      }
     }
 
     // Listen for all interaction types
@@ -425,8 +447,10 @@ export const HelsinkiViewer = ({ shouldLoad = true, shouldPause = false, scrollP
     <>
       <div
         ref={containerRef}
-        className={`helsinki-container ${isCameraFlying ? 'camera-flying' : ''}`}
-      />
+        className="helsinki-container"
+      >
+        <div className={`vignette-overlay ${isCameraFlying ? 'active' : ''}`} />
+      </div>
 
 
       {/* Logo - Top Left with Magnetic Effect & Rotation */}
@@ -434,7 +458,7 @@ export const HelsinkiViewer = ({ shouldLoad = true, shouldPause = false, scrollP
         className="logo-container"
         style={{
           opacity: showUI ? 1 : 0,
-          transition: 'opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1)',
+          transition: 'opacity 0.5s cubic-bezier(0.22, 1, 0.36, 1)',
           pointerEvents: showUI ? 'auto' : 'none',
         }}
         strength={0.25}
@@ -450,7 +474,7 @@ export const HelsinkiViewer = ({ shouldLoad = true, shouldPause = false, scrollP
         className="hamburger-menu"
         style={{
           opacity: showUI ? 1 : 0,
-          transition: 'opacity 0.6s cubic-bezier(0.4, 0, 0.2, 1)',
+          transition: 'opacity 0.5s cubic-bezier(0.22, 1, 0.36, 1)',
           pointerEvents: showUI ? 'auto' : 'none',
         }}
         strength={0.25}
@@ -467,7 +491,7 @@ export const HelsinkiViewer = ({ shouldLoad = true, shouldPause = false, scrollP
         className="ui-overlay"
         style={{
           opacity: showUI ? 1 : 0,
-          transition: 'opacity 0.5s ease',
+          transition: 'opacity 0.4s cubic-bezier(0.22, 1, 0.36, 1)',
           pointerEvents: 'none',
         }}
       >
@@ -479,10 +503,30 @@ export const HelsinkiViewer = ({ shouldLoad = true, shouldPause = false, scrollP
         className="hero-text-container"
         style={{
           opacity: showHeroText ? heroTextOpacity : 0,
-          transition: 'opacity 0.7s cubic-bezier(0.4,0,0.2,1)',
+          transition: 'opacity 0.6s cubic-bezier(0.22, 1, 0.36, 1)',
           pointerEvents: 'none',
         }}
       >
+        {/* "Drag & Explore" indicator - appears above hero text, disappears on first interaction */}
+        {showHeroText && showDragIndicator && heroTextOpacity > 0.5 && (
+          <div className="drag-explore-indicator">
+            <svg viewBox="0 0 60 60" className="drag-circle">
+              <circle
+                cx="30"
+                cy="30"
+                r="25"
+                fill="none"
+                stroke="#8B1215"
+                strokeWidth="0.8"
+                opacity="0.3"
+              />
+            </svg>
+            <div className="drag-label">
+              Drag &<br />Explore
+            </div>
+          </div>
+        )}
+
         <div className="hero-text-wrapper">
           <div className="hero-subtext-row">
             <p className="hero-subtext hero-subtext-left">Built for the obsessed.</p>
@@ -491,6 +535,18 @@ export const HelsinkiViewer = ({ shouldLoad = true, shouldPause = false, scrollP
           <h1 className="hero-title">
             <span className="hero-title-founders">FOUNDERS</span> <span className="hero-title-house">HOUSE</span>
           </h1>
+          
+          {/* Vertical red line with "Learn more" at the end */}
+          <div className="hero-line-wrapper">
+            <div className="hero-vertical-line"></div>
+            <a href="#" className="hero-learn-more" onClick={(e) => {
+              e.preventDefault()
+              // TODO: Navigate to info page when ready
+              console.log('Navigate to learn more page')
+            }}>
+              Learn more
+            </a>
+          </div>
         </div>
       </div>
 
@@ -517,9 +573,9 @@ export const HelsinkiViewer = ({ shouldLoad = true, shouldPause = false, scrollP
               cy="25"
               r="20"
               fill="none"
-              stroke="#D82E11"
-              strokeWidth="1"
-              opacity="0.3"
+              stroke="#8B1215"
+              strokeWidth="0.8"
+              opacity="0.25"
             />
           </svg>
           <div className="cursor-label">EXPLORE</div>
