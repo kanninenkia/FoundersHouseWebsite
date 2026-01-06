@@ -60,6 +60,9 @@ export const HelsinkiViewer = ({ shouldLoad = true, shouldPause = false, scrollP
   const [showDragIndicator, setShowDragIndicator] = useState(true)
   const hasInteractedRef = useRef(false)
 
+  // Transition state is now managed by App.tsx (accessed via window globals)
+  const [isTransitionActive, setIsTransitionActive] = useState(false)
+
   // Track dragging and cursor position for indicator
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
@@ -120,7 +123,6 @@ export const HelsinkiViewer = ({ shouldLoad = true, shouldPause = false, scrollP
     // CRITICAL: Cleanup any existing scene before creating new one
     // This prevents memory leaks during HMR (Hot Module Reload)
     if (sceneRef.current) {
-      console.warn('Cleaning up existing scene before creating new one (HMR)')
       sceneRef.current.dispose()
       sceneRef.current = null
     }
@@ -250,8 +252,6 @@ export const HelsinkiViewer = ({ shouldLoad = true, shouldPause = false, scrollP
 
     // Cleanup
     return () => {
-      console.log('HelsinkiViewer cleanup: disposing scene and canceling animation')
-
       if (animationFrameRef.current) {
         cancelAnimationFrame(animationFrameRef.current)
         animationFrameRef.current = 0
@@ -457,8 +457,10 @@ export const HelsinkiViewer = ({ shouldLoad = true, shouldPause = false, scrollP
       <MagneticElement
         className="logo-container"
         style={{
-          opacity: showUI ? 1 : 0,
-          transition: 'opacity 0.5s cubic-bezier(0.22, 1, 0.36, 1)',
+          opacity: showUI && !isTransitionActive ? 1 : 0,
+          transition: isTransitionActive
+            ? 'opacity 1.5s cubic-bezier(0.22, 1, 0.36, 1)'
+            : 'opacity 0.8s cubic-bezier(0.22, 1, 0.36, 1)',
           pointerEvents: showUI ? 'auto' : 'none',
         }}
         strength={0.25}
@@ -473,8 +475,10 @@ export const HelsinkiViewer = ({ shouldLoad = true, shouldPause = false, scrollP
       <MagneticElement
         className="hamburger-menu"
         style={{
-          opacity: showUI ? 1 : 0,
-          transition: 'opacity 0.5s cubic-bezier(0.22, 1, 0.36, 1)',
+          opacity: showUI && !isTransitionActive ? 1 : 0,
+          transition: isTransitionActive
+            ? 'opacity 1.5s cubic-bezier(0.22, 1, 0.36, 1)'
+            : 'opacity 0.8s cubic-bezier(0.22, 1, 0.36, 1)',
           pointerEvents: showUI ? 'auto' : 'none',
         }}
         strength={0.25}
@@ -539,11 +543,61 @@ export const HelsinkiViewer = ({ shouldLoad = true, shouldPause = false, scrollP
           {/* Vertical red line with "Learn more" at the end */}
           <div className="hero-line-wrapper">
             <div className="hero-vertical-line"></div>
-            <a href="#" className="hero-learn-more" onClick={(e) => {
-              e.preventDefault()
-              // TODO: Navigate to info page when ready
-              console.log('Navigate to learn more page')
-            }}>
+            <a 
+              href="#" 
+              className={`hero-learn-more ${showHeroText && heroTextOpacity > 0.5 ? 'clickable' : ''}`}
+              onClick={(e) => {
+                e.preventDefault()
+
+                // Only allow click when hero text is visible
+                if (!showHeroText || heroTextOpacity <= 0.5) return
+
+                // Check if we're already transitioning
+                if (isTransitionActive) return
+
+                // Use global transition controls from App.tsx
+                const globalSetTransitionActive = (window as any).setTransitionActive
+                const globalSetTransitionCenter = (window as any).setTransitionCenter
+
+                // Square always expands from center of screen
+                if (globalSetTransitionCenter) {
+                  globalSetTransitionCenter({ x: 50, y: 50 })
+                }
+
+                // Mark transition as started (for UI hiding)
+                setIsTransitionActive(true)
+
+                // STEP 1: Start transition overlay immediately
+                if (globalSetTransitionActive) {
+                  globalSetTransitionActive(true)
+                }
+
+                // STEP 2: Cinematic zoom into FH center (1.2s)
+                if (sceneRef.current) {
+                  sceneRef.current.focusPOI('FOUNDERS_HOUSE', 100, -136, 22, 1.2, true, () => {
+
+                    // STEP 3: Wait for red square to FULLY expand and cover screen
+                    // Red square: starts at 1.2s, duration 0.8s = completes at 2.0s
+                    // Wait until 2.0s to navigate (screen is fully red)
+                    setTimeout(() => {
+                      if ((window as any).navigateToLearnMore) {
+                        (window as any).navigateToLearnMore()
+                      }
+
+                      // STEP 4: Keep overlay active for flying squares to appear in LearnMore
+                      // After navigation, squares should fly through the red screen
+                      // Total duration: 2.0s (to navigate) + 1.5s (for squares) = 3.5s
+                      setTimeout(() => {
+                        if (globalSetTransitionActive) {
+                          globalSetTransitionActive(false)
+                        }
+                        setIsTransitionActive(false)
+                      }, 1500)
+                    }, 800)
+                  }, true)
+                }
+              }}
+            >
               Learn more
             </a>
           </div>
@@ -581,7 +635,6 @@ export const HelsinkiViewer = ({ shouldLoad = true, shouldPause = false, scrollP
           <div className="cursor-label">EXPLORE</div>
         </div>
       )}
-
     </>
   )
 }

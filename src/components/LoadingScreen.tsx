@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef } from 'react'
+import { motion } from 'framer-motion'
 import { HelsinkiViewer } from './HelsinkiViewer'
 import './LoadingScreen.css'
 
@@ -233,9 +234,6 @@ export const LoadingScreen = ({ onComplete, duration, scrollProgress }: LoadingS
   const showText1 = stage === 'text1' && showText1Delayed
   const [fadeOutText1, setFadeOutText1] = useState(false)
   const shouldBlurLogo = stage === 'logo-blur' || stage === 'pixel-out-to-text1'
-  // Start loading map immediately at page launch (all stages)
-  const shouldLoadMap = true
-  const shouldPauseMapLoading = false
 
   // JASON'S TEXT DELAY AND FADE-OUT LOGIC
   useEffect(() => {
@@ -255,22 +253,18 @@ export const LoadingScreen = ({ onComplete, duration, scrollProgress }: LoadingS
     }
   }, [stage])
 
-  // Debug logging
-  console.log('[LoadingScreen] Render:', {
-    stage,
-    shouldLoadMap,
-    shouldPauseMapLoading,
-    scrollProgress
-  })
-
   return (
-    <div
+    <motion.div
       className="loading-screen"
       style={{
         pointerEvents: 'auto',
         zIndex: 10000,
         background: 'transparent'
       }}
+      initial={{ opacity: 1 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 1 }}
+      transition={{ duration: 0 }}
     >
       <div className="loading-content">
         {/* Persistent dark red background layer */}
@@ -387,6 +381,6 @@ export const LoadingScreen = ({ onComplete, duration, scrollProgress }: LoadingS
           </button>
         )}
       </div>
-    </div>
+    </motion.div>
   )
 }

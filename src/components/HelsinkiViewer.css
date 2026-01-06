@@ -448,14 +448,20 @@
   color: #6B6762;
   text-decoration: none;
   display: inline-block;
-  cursor: pointer;
+  cursor: default;
   transition: color 0.3s cubic-bezier(0.22, 1, 0.36, 1);
-  pointer-events: none !important; /* Disabled - button gets in the way when hidden */
+  pointer-events: none; /* Disabled by default until hero text is visible */
   user-select: none;
   -webkit-user-select: none;
 }
 
-.hero-learn-more:hover {
+/* Enable clicking when visible */
+.hero-learn-more.clickable {
+  pointer-events: auto !important;
+  cursor: pointer;
+}
+
+.hero-learn-more.clickable:hover {
   color: #8B1215;
 }
 

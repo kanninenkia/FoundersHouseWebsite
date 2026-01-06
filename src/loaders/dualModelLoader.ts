@@ -90,11 +90,9 @@ async function loadSingleGLB(
               arrayBuffer,
               '',
               (gltf) => {
-                console.log(`✓ Loaded: ${path}`)
                 resolve(gltf.scene)
               },
               (error) => {
-                console.error(`✗ Failed to parse: ${path}`, error)
                 reject(error)
               }
             )
@@ -106,11 +104,9 @@ async function loadSingleGLB(
               arrayBuffer,
               '',
               (gltf) => {
-                console.log(`✓ Loaded: ${path}`)
                 resolve(gltf.scene)
               },
               (error) => {
-                console.error(`✗ Failed to parse: ${path}`, error)
                 reject(error)
               }
             )
@@ -118,7 +114,6 @@ async function loadSingleGLB(
         }
       })
       .catch(error => {
-        console.error(`✗ Failed to load: ${path}`, error)
         reject(error)
       })
   })
@@ -146,7 +141,6 @@ async function checkResourceExists(url: string, timeoutMs = 8000): Promise<boole
  * Creates smooth radial fade at the edges to prevent cliff-off
  */
 function applyMapEdgeFade(model: THREE.Group): void {
-  console.log('Applying edge fade to map...')
   
   // Calculate bounding box to determine center and extent
   model.updateMatrixWorld(true)
@@ -160,10 +154,6 @@ function applyMapEdgeFade(model: THREE.Group): void {
   const fadeStartDistance = maxRadius * 0.94  // Start fading at 94% from center
   const fadeEndDistance = maxRadius * 0.98   // Fully transparent at 98%
   
-  console.log(`Map bbox size: (${size.x.toFixed(1)}, ${size.y.toFixed(1)}, ${size.z.toFixed(1)})`)
-  console.log(`Map center: (${center.x.toFixed(1)}, ${center.y.toFixed(1)}, ${center.z.toFixed(1)})`)
-  console.log(`Max radius: ${maxRadius.toFixed(1)}`)
-  console.log(`Edge fade: ${fadeStartDistance.toFixed(1)} → ${fadeEndDistance.toFixed(1)}`)
 
   let processedMeshes = 0
   let skippedBuildings = 0
@@ -175,7 +165,6 @@ function applyMapEdgeFade(model: THREE.Group): void {
       const meshSize = box.getSize(new THREE.Vector3())
       const isBuilding = meshSize.y > 10
       
-      console.log(`Mesh: ${child.name || 'unnamed'}, size: (${meshSize.x.toFixed(1)}, ${meshSize.y.toFixed(1)}, ${meshSize.z.toFixed(1)}), isBuilding: ${isBuilding}`)
       
       // DON'T skip buildings for now - apply to ALL meshes to test
       // if (isBuilding) {
@@ -198,7 +187,6 @@ function applyMapEdgeFade(model: THREE.Group): void {
           const hasTextures = !!(mat.map || mat.emissiveMap || mat.normalMap || mat.aoMap || mat.roughnessMap || mat.metalnessMap)
           if (hasTextures) {
             texturedMeshes++
-            console.log(`Found textured material: ${mat.name || 'unnamed'}, type: ${mat.type}`)
           }
           
           // Store original values
@@ -217,11 +205,9 @@ function applyMapEdgeFade(model: THREE.Group): void {
             mat.onBeforeCompile = (shader: any) => {
               // Skip if already processed
               if (shader.uniforms.fadeCenter) {
-                console.log('Shader already has fadeCenter uniform, skipping')
                 return
               }
               
-              console.log(`Compiling edge fade shader for material: ${mat.name || mat.uuid}`)
               
               // Add uniforms
               shader.uniforms.fadeCenter = { value: center.clone() }
@@ -267,8 +253,6 @@ gl_FragColor.a *= fadeFactor;`
     }
   })
   
-  console.log(`✓ Edge fade applied to ${processedMeshes} ground meshes (skipped ${skippedBuildings} buildings)`)
-  console.log(`✓ Found ${texturedMeshes} textured materials`)
 }
 
 /**
@@ -281,7 +265,6 @@ function processMainMap(
   renderer?: THREE.WebGLRenderer,
   scene?: THREE.Scene
 ): void {
-  console.log('Processing main map...')
 
   const edgeGeometries: THREE.EdgesGeometry[] = []
   const edgeMaterials: THREE.LineBasicMaterial[] = []
@@ -363,14 +346,12 @@ function processMainMap(
     model.position.set(-rotatedCenter.x, -rotatedCenter.y, -rotatedCenter.z)
   }
 
-  console.log('Main map processed')
 
   // Apply edge fade to prevent cliff-off at map edges
   applyMapEdgeFade(model)
 
   // Pre-compile all shaders to prevent stuttering on first rotation (if renderer available)
   if (renderer && scene) {
-    console.log('Pre-compiling shaders (this may take a moment)...')
     
     // Force immediate material updates before compilation
     model.traverse((child) => {
@@ -386,7 +367,6 @@ function processMainMap(
     
     // Pre-compile with multiple camera angles
     preCompileShaders(camera, renderer, scene)
-    console.log('✓ Shaders pre-compiled')
   }
 }
 
@@ -460,14 +440,10 @@ export async function loadDualModels(params: DualLoadParams): Promise<DualLoadRe
     renderer,
   } = params
 
-  console.log('Starting model loading...')
-  console.log(`Main map: ${mainMapPath}`)
 
   // Check if file exists
-  console.log('Checking if resource exists...')
   const mainExists = await checkResourceExists(mainMapPath)
 
-  console.log(`Main map exists: ${mainExists}`)
 
   if (!mainExists) {
     throw new Error(`Main map not found: ${mainMapPath}`)
@@ -499,19 +475,12 @@ export async function loadDualModels(params: DualLoadParams): Promise<DualLoadRe
       updateProgress()
     })
 
-    console.log(`✓ Loaded map successfully!`)
-    console.log(`Main map model has ${mainMapModel.children.length} children`)
 
     // Process main map (includes edge fade and shader pre-compilation)
     processMainMap(mainMapModel, camera, isNightMode, renderer, scene)
 
     // Debug main map position
-    console.log('=== MAIN MAP DEBUG ===')
     const mainBBox = new THREE.Box3().setFromObject(mainMapModel)
-    console.log(`Main map BBox min: (${mainBBox.min.x.toFixed(1)}, ${mainBBox.min.y.toFixed(1)}, ${mainBBox.min.z.toFixed(1)})`)
-    console.log(`Main map BBox max: (${mainBBox.max.x.toFixed(1)}, ${mainBBox.max.y.toFixed(1)}, ${mainBBox.max.z.toFixed(1)})`)
-    console.log(`Main map position: (${mainMapModel.position.x}, ${mainMapModel.position.y}, ${mainMapModel.position.z})`)
-    console.log(`Main map rotation: (${mainMapModel.rotation.x}, ${mainMapModel.rotation.y}, ${mainMapModel.rotation.z})`)
 
     // Add to scene
     scene.add(mainMapModel)
@@ -528,7 +497,6 @@ export async function loadDualModels(params: DualLoadParams): Promise<DualLoadRe
       mainMap: mainMapModel,
     }
   } catch (error) {
-    console.error('Error loading model:', error)
     throw error
   }
 }

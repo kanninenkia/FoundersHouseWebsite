@@ -127,7 +127,6 @@ export class HelsinkiScene {
     }).then((result) => {
       this.helsinkiModel = result.mainMap
 
-      console.log('✓ Main map loaded with edge fade')
 
       // (Tram logic removed)
       this.poiHighlightManager.setModel(result.mainMap)
@@ -137,7 +136,6 @@ export class HelsinkiScene {
 
   // (Tram logic removed)
     }).catch((error) => {
-      console.error('Failed to load model:', error)
     })
 
     // Setup click handler for debugging (model accessed via getter closure)
@@ -523,7 +521,8 @@ export class HelsinkiScene {
     elevation?: number,
     duration: number = 2.5,
     animated: boolean = true,
-    onComplete?: () => void
+    onComplete?: () => void,
+    directZoom: boolean = false
   ): void {
     const poi = POINTS_OF_INTEREST[poiName]
     if (!poi) return
@@ -594,41 +593,80 @@ export class HelsinkiScene {
       // Clamp POI target to camera boundaries to prevent snap-back
       const clampedPOITarget = this.clampPositionToBoundaries(poi.worldCoords)
 
-      // Create smooth POI animation
-      this.poiAnimation = createSmoothPOIAnimation(
-        this.camera,
-        currentTarget,
-        clampedPOITarget,
-        finalDistance,
-        finalAzimuth,
-        finalElevation,
-        duration,
-        () => {
-          // On complete: highlight POI
-          this.poiHighlightManager.highlightPOI(poiName, 200)
+      // For direct zoom, calculate end position by moving camera toward POI along its current direction
+      if (directZoom) {
+        // Calculate direction from current camera position to POI
+        const poiVec = new THREE.Vector3(clampedPOITarget.x, clampedPOITarget.y, clampedPOITarget.z)
+        const direction = new THREE.Vector3().subVectors(poiVec, this.camera.position).normalize()
+        
+        // Calculate end camera position: move toward POI while maintaining direction
+        const endCameraPosition = new THREE.Vector3().addVectors(
+          poiVec,
+          direction.multiplyScalar(-finalDistance)
+        )
 
-          // CRITICAL: Set controls to EXACT final position (prevents drift)
-          // Use clamped target to stay within boundaries
-          this.controls.setTarget(clampedPOITarget.x, clampedPOITarget.y, clampedPOITarget.z)
-
-          // CRITICAL: Restore camera constraints after POI animation
-          // Reset minDistance to respect camera constraints (700 minimum)
-          this.controls.minDistance = 700
-
-          // Sync all internal camera state to prevent any movement
-          if (this.controls.syncInternalState) {
-            this.controls.syncInternalState()
+        // Create direct zoom animation (no spherical recalculation)
+        this.poiAnimation = {
+          isActive: true,
+          startTime: performance.now() / 1000,
+          duration,
+          startCameraPosition: this.camera.position.clone(),
+          startTargetPosition: currentTarget.clone(),
+          endCameraPosition: endCameraPosition,
+          endTargetPosition: poiVec,
+          currentVelocity: new THREE.Vector3(),
+          currentTargetVelocity: new THREE.Vector3(),
+          onComplete: () => {
+            this.poiHighlightManager.highlightPOI(poiName, 200)
+            this.controls.setTarget(clampedPOITarget.x, clampedPOITarget.y, clampedPOITarget.z)
+            this.controls.minDistance = 700
+            if (this.controls.syncInternalState) {
+              this.controls.syncInternalState()
+            }
+            if (onComplete) onComplete()
+          },
+          onInterrupt: () => {
+            this.poiHighlightManager.clearHighlights()
           }
-
-          if (onComplete) {
-            onComplete()
-          }
-        },
-        () => {
-          // On interrupt: clear highlights
-          this.poiHighlightManager.clearHighlights()
         }
-      )
+      } else {
+        // Standard POI animation with spherical coordinates
+        // Create smooth POI animation
+        this.poiAnimation = createSmoothPOIAnimation(
+          this.camera,
+          currentTarget,
+          clampedPOITarget,
+          finalDistance,
+          finalAzimuth,
+          finalElevation,
+          duration,
+          () => {
+            // On complete: highlight POI
+            this.poiHighlightManager.highlightPOI(poiName, 200)
+
+            // CRITICAL: Set controls to EXACT final position (prevents drift)
+            // Use clamped target to stay within boundaries
+            this.controls.setTarget(clampedPOITarget.x, clampedPOITarget.y, clampedPOITarget.z)
+
+            // CRITICAL: Restore camera constraints after POI animation
+            // Reset minDistance to respect camera constraints (700 minimum)
+            this.controls.minDistance = 700
+
+            // Sync all internal camera state to prevent any movement
+            if (this.controls.syncInternalState) {
+              this.controls.syncInternalState()
+            }
+
+            if (onComplete) {
+              onComplete()
+            }
+          },
+          () => {
+            // On interrupt: clear highlights
+            this.poiHighlightManager.clearHighlights()
+          }
+        )
+      }
     } else {
       // Instant teleport (no animation)
       const config: CameraConfig = {

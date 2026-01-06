@@ -1,0 +1,129 @@
+/**
+ * TransitionOverlay.css - Expanding square with flying elements
+ */
+
+.transition-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 9999;
+  pointer-events: none;
+  overflow: hidden;
+  perspective: 1000px;
+  perspective-origin: 50% 50%;
+  /* GPU acceleration */
+  transform: translateZ(0);
+  will-change: opacity;
+}
+
+/* Expanding red square */
+.transition-square {
+  position: absolute;
+  width: 100vw;
+  height: 100vw;
+  background-color: #C03434;
+  transform: translate(-50%, -50%);
+  transform-origin: center;
+  will-change: transform;
+  backface-visibility: hidden;
+  /* GPU acceleration */
+  transform: translate(-50%, -50%) translateZ(0);
+}
+
+/* Flying decorative squares - pass through completely */
+.transition-flying-square {
+  position: absolute;
+  background-color: #8B1215;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  will-change: transform, opacity, filter;
+  backface-visibility: hidden;
+  /* GPU acceleration */
+  transform: translateZ(0);
+}
+
+/* Position each square uniquely - spread across viewport */
+.transition-flying-square.square-0 {
+  width: 140px;
+  height: 140px;
+  top: 12%;
+  left: 18%;
+}
+
+.transition-flying-square.square-1 {
+  width: 90px;
+  height: 90px;
+  top: 58%;
+  left: 78%;
+}
+
+.transition-flying-square.square-2 {
+  width: 160px;
+  height: 160px;
+  top: 38%;
+  left: 8%;
+}
+
+.transition-flying-square.square-3 {
+  width: 100px;
+  height: 100px;
+  top: 22%;
+  left: 88%;
+}
+
+.transition-flying-square.square-4 {
+  width: 120px;
+  height: 120px;
+  top: 72%;
+  left: 28%;
+}
+
+.transition-flying-square.square-5 {
+  width: 145px;
+  height: 145px;
+  top: 32%;
+  left: 62%;
+}
+
+.transition-flying-square.square-6 {
+  width: 105px;
+  height: 105px;
+  top: 82%;
+  left: 68%;
+}
+
+.transition-flying-square.square-7 {
+  width: 115px;
+  height: 115px;
+  top: 48%;
+  left: 42%;
+}
+
+.transition-flying-square.square-8 {
+  width: 95px;
+  height: 95px;
+  top: 18%;
+  left: 52%;
+}
+
+.transition-flying-square.square-9 {
+  width: 135px;
+  height: 135px;
+  top: 65%;
+  left: 15%;
+}
+
+.transition-flying-square.square-10 {
+  width: 110px;
+  height: 110px;
+  top: 45%;
+  left: 82%;
+}
+
+.transition-flying-square.square-11 {
+  width: 125px;
+  height: 125px;
+  top: 28%;
+  left: 38%;
+}
