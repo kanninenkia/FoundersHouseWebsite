@@ -1,0 +1,114 @@
+/**
+ * QuoteCard.css - Quote card with image background
+ * Fade-in animation similar to loading sequence
+ */
+
+.quote-card {
+  position: relative;
+  width: 100%;
+  max-width: 380px; /* Smaller for grid layout */
+  aspect-ratio: 3/5; /* Taller - changed from 4/5 to make more vertical */
+  overflow: hidden;
+  border-radius: 0;
+  cursor: pointer;
+  transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+  margin: 0 auto;
+  /* Initial state controlled by scroll-based transforms */
+  will-change: transform, opacity;
+  backface-visibility: hidden;
+}
+
+.quote-card:hover {
+  transform: scale(1.02);
+}
+
+/* Image background */
+.quote-card-image {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  z-index: 1;
+}
+
+/* Dark overlay for text readability */
+.quote-card-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    to top,
+    rgba(0, 0, 0, 0.85) 0%,
+    rgba(0, 0, 0, 0.4) 50%,
+    rgba(0, 0, 0, 0.2) 100%
+  );
+  z-index: 2;
+}
+
+/* Content container */
+.quote-card-content {
+  position: relative;
+  z-index: 3;
+  height: 100%;
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+
+/* Quote text - above name */
+.quote-card-text {
+  font-size: clamp(0.85rem, 1.1vw, 1.1rem);
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.95);
+  margin: 0 0 1rem 0; /* Reduced from 1.5rem to bring closer to name */
+  font-weight: 400;
+  font-style: italic;
+}
+
+/* Name - bottom 18% of card, split into two lines */
+.quote-card-name {
+  font-size: clamp(1.5rem, 2.2vw, 2.2rem);
+  font-weight: 900;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
+  margin: 0;
+  min-height: 18%;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start; /* Left aligned */
+  justify-content: flex-end;
+}
+
+/* Individual name parts for color variation */
+.quote-card-name .name-first,
+.quote-card-name .name-last {
+  display: block;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .quote-card {
+    max-width: 100%;
+  }
+
+  .quote-card-content {
+    padding: 1.5rem;
+  }
+
+  .quote-card-text {
+    font-size: 0.9rem;
+    margin-bottom: 1rem;
+  }
+
+  .quote-card-name {
+    font-size: 1.5rem;
+  }
+}

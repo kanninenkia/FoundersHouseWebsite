@@ -540,29 +540,21 @@ export const HelsinkiViewer = ({ shouldLoad = true, shouldPause = false, scrollP
             <span className="hero-title-founders">FOUNDERS</span> <span className="hero-title-house">HOUSE</span>
           </h1>
           
-          {/* Vertical red line with "Learn more" at the end */}
-          <div className="hero-line-wrapper">
-            <div className="hero-vertical-line"></div>
-            <a 
-              href="#" 
-              className={`hero-learn-more ${showHeroText && heroTextOpacity > 0.5 ? 'clickable' : ''}`}
-              onClick={(e) => {
-                e.preventDefault()
+          {/* Vertical red line with "Learn more" at the end - only render when conditions are met */}
+          {showHeroText && heroTextOpacity > 0.5 && (
+            <div className="hero-line-wrapper">
+              <div className="hero-vertical-line"></div>
+              <a 
+                href="#" 
+                className="hero-learn-more clickable"
+                onClick={(e) => {
+                  e.preventDefault()
 
-                // Only allow click when hero text is visible
-                if (!showHeroText || heroTextOpacity <= 0.5) return
+                  // Check if we're already transitioning
+                  if (isTransitionActive) return
 
-                // Check if we're already transitioning
-                if (isTransitionActive) return
-
-                // Use global transition controls from App.tsx
-                const globalSetTransitionActive = (window as any).setTransitionActive
-                const globalSetTransitionCenter = (window as any).setTransitionCenter
-
-                // Square always expands from center of screen
-                if (globalSetTransitionCenter) {
-                  globalSetTransitionCenter({ x: 50, y: 50 })
-                }
+                  // Use global transition controls from App.tsx
+                  const globalSetTransitionActive = (window as any).setTransitionActive
 
                 // Mark transition as started (for UI hiding)
                 setIsTransitionActive(true)
@@ -576,24 +568,21 @@ export const HelsinkiViewer = ({ shouldLoad = true, shouldPause = false, scrollP
                 if (sceneRef.current) {
                   sceneRef.current.focusPOI('FOUNDERS_HOUSE', 100, -136, 22, 1.2, true, () => {
 
-                    // STEP 3: Wait for red square to FULLY expand and cover screen
-                    // Red square: starts at 1.2s, duration 0.8s = completes at 2.0s
-                    // Wait until 2.0s to navigate (screen is fully red)
-                    setTimeout(() => {
-                      if ((window as any).navigateToLearnMore) {
-                        (window as any).navigateToLearnMore()
-                      }
+                    // STEP 3: Navigate immediately after zoom completes
+                    // No red square animation, go straight to red page
+                    if ((window as any).navigateToLearnMore) {
+                      (window as any).navigateToLearnMore()
+                    }
 
-                      // STEP 4: Keep overlay active for flying squares to appear in LearnMore
-                      // After navigation, squares should fly through the red screen
-                      // Total duration: 2.0s (to navigate) + 1.5s (for squares) = 3.5s
-                      setTimeout(() => {
-                        if (globalSetTransitionActive) {
-                          globalSetTransitionActive(false)
-                        }
-                        setIsTransitionActive(false)
-                      }, 1500)
-                    }, 800)
+                    // STEP 4: Keep overlay active for flying squares to appear in LearnMore
+                    // After navigation, squares fly through immediately
+                    // Total duration: 1.2s (zoom) + 1.5s (for squares) = 2.7s
+                    setTimeout(() => {
+                      if (globalSetTransitionActive) {
+                        globalSetTransitionActive(false)
+                      }
+                      setIsTransitionActive(false)
+                    }, 1500)
                   }, true)
                 }
               }}
@@ -601,6 +590,7 @@ export const HelsinkiViewer = ({ shouldLoad = true, shouldPause = false, scrollP
               Learn more
             </a>
           </div>
+          )}
         </div>
       </div>
 

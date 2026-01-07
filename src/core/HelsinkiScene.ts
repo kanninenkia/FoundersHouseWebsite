@@ -135,7 +135,7 @@ export class HelsinkiScene {
       // City lights removed - night mode disabled
 
   // (Tram logic removed)
-    }).catch((error) => {
+    }).catch(() => {
     })
 
     // Setup click handler for debugging (model accessed via getter closure)
@@ -597,39 +597,51 @@ export class HelsinkiScene {
       if (directZoom) {
         // Calculate direction from current camera position to POI
         const poiVec = new THREE.Vector3(clampedPOITarget.x, clampedPOITarget.y, clampedPOITarget.z)
-        const direction = new THREE.Vector3().subVectors(poiVec, this.camera.position).normalize()
         
-        // Calculate end camera position: move toward POI while maintaining direction
-        const endCameraPosition = new THREE.Vector3().addVectors(
-          poiVec,
-          direction.multiplyScalar(-finalDistance)
-        )
+        // Calculate current distance to POI
+        const currentDistance = this.camera.position.distanceTo(poiVec)
+        
+        // FIXED: Only use directZoom logic if we're zooming IN (getting closer)
+        // If finalDistance >= currentDistance, it means we'd be moving away, so use standard spherical approach
+        if (finalDistance < currentDistance) {
+          // We're zooming in - maintain current viewing angle
+          const currentCameraPos = this.camera.position.clone()
+          const directionFromPOI = new THREE.Vector3().subVectors(currentCameraPos, poiVec).normalize()
+          
+          // Calculate end camera position: start at POI, move outward along direction by finalDistance
+          const endCameraPosition = new THREE.Vector3().addVectors(
+            poiVec,
+            directionFromPOI.multiplyScalar(finalDistance)
+          )
 
-        // Create direct zoom animation (no spherical recalculation)
-        this.poiAnimation = {
-          isActive: true,
-          startTime: performance.now() / 1000,
-          duration,
-          startCameraPosition: this.camera.position.clone(),
-          startTargetPosition: currentTarget.clone(),
-          endCameraPosition: endCameraPosition,
-          endTargetPosition: poiVec,
-          currentVelocity: new THREE.Vector3(),
-          currentTargetVelocity: new THREE.Vector3(),
-          onComplete: () => {
-            this.poiHighlightManager.highlightPOI(poiName, 200)
-            this.controls.setTarget(clampedPOITarget.x, clampedPOITarget.y, clampedPOITarget.z)
-            this.controls.minDistance = 700
-            if (this.controls.syncInternalState) {
-              this.controls.syncInternalState()
+          // Create direct zoom animation (no spherical recalculation)
+          this.poiAnimation = {
+            isActive: true,
+            startTime: performance.now() / 1000,
+            duration,
+            startCameraPosition: this.camera.position.clone(),
+            startTargetPosition: currentTarget.clone(),
+            endCameraPosition: endCameraPosition,
+            endTargetPosition: poiVec,
+            currentVelocity: new THREE.Vector3(),
+            currentTargetVelocity: new THREE.Vector3(),
+            onComplete: () => {
+              this.poiHighlightManager.highlightPOI(poiName, 200)
+              this.controls.setTarget(clampedPOITarget.x, clampedPOITarget.y, clampedPOITarget.z)
+              this.controls.minDistance = 700
+              if (this.controls.syncInternalState) {
+                this.controls.syncInternalState()
+              }
+              if (onComplete) onComplete()
+            },
+            onInterrupt: () => {
+              this.poiHighlightManager.clearHighlights()
             }
-            if (onComplete) onComplete()
-          },
-          onInterrupt: () => {
-            this.poiHighlightManager.clearHighlights()
           }
+          return
         }
-      } else {
+        // If we reach here, finalDistance >= currentDistance, so fall through to standard animation
+      }
         // Standard POI animation with spherical coordinates
         // Create smooth POI animation
         this.poiAnimation = createSmoothPOIAnimation(
@@ -666,7 +678,6 @@ export class HelsinkiScene {
             this.poiHighlightManager.clearHighlights()
           }
         )
-      }
     } else {
       // Instant teleport (no animation)
       const config: CameraConfig = {

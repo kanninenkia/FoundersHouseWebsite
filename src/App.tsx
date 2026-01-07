@@ -15,7 +15,6 @@ function AppContent() {
 
   // Transition state lifted to App level so it persists across route changes
   const [isTransitionActive, setIsTransitionActive] = useState(false)
-  const [transitionCenter, setTransitionCenter] = useState({ x: 50, y: 50 })
 
   // Persist scroll progress across tab switches, but NOT on page reload
   const [scrollProgress, setScrollProgress] = useState(() => {
@@ -76,12 +75,10 @@ function AppContent() {
   useEffect(() => {
     ;(window as any).navigateToLearnMore = handleLearnMoreClick
     ;(window as any).setTransitionActive = setIsTransitionActive
-    ;(window as any).setTransitionCenter = setTransitionCenter
 
     return () => {
       delete (window as any).navigateToLearnMore
       delete (window as any).setTransitionActive
-      delete (window as any).setTransitionCenter
     }
   }, [navigate])
 
@@ -103,7 +100,7 @@ function AppContent() {
       </Routes>
 
       {/* Transition overlay persists across route changes */}
-      <TransitionOverlay isActive={isTransitionActive} centerPoint={transitionCenter} />
+      <TransitionOverlay isActive={isTransitionActive} />
     </div>
   )
 }

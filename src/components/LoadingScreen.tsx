@@ -37,8 +37,12 @@ type Stage = 'logo-loading' | 'logo-blur' | 'pixel-out-to-text1' | 'text1' | 'te
 
 export const LoadingScreen = ({ onComplete, duration, scrollProgress }: LoadingScreenProps) => {
   const [blocks, setBlocks] = useState<Block[]>([])
-  // Always start fresh on page load - don't persist animation stage
-  const [stage, setStage] = useState<Stage>('logo-loading')
+
+  // Check if we should skip intro (returning from LearnMore)
+  const shouldSkipIntro = sessionStorage.getItem('skipIntro') === 'true'
+
+  // If skipIntro flag is set, start at 'complete' stage, otherwise start fresh
+  const [stage, setStage] = useState<Stage>(shouldSkipIntro ? 'complete' : 'logo-loading')
   const [mapLoadingState, setMapLoadingState] = useState<MapLoadingState>({ isLoaded: false, progress: 0 })
   const [canProceedToBlur, setCanProceedToBlur] = useState(false)
   
@@ -64,6 +68,13 @@ export const LoadingScreen = ({ onComplete, duration, scrollProgress }: LoadingS
   // Skip intro button state
   const [showSkipButton, setShowSkipButton] = useState(false)
   const [hasSkipped, setHasSkipped] = useState(false)
+
+  // Clear skipIntro flag after component mounts
+  useEffect(() => {
+    if (shouldSkipIntro) {
+      sessionStorage.removeItem('skipIntro')
+    }
+  }, [shouldSkipIntro])
 
   // Show skip button when pixelation stage completes and we enter text1
   useEffect(() => {

@@ -8,16 +8,13 @@
 .learn-more-container {
   width: 100%;
   min-height: 100vh;
-  height: 100vh;
-  overflow: hidden;
-  position: fixed;
-  top: 0;
-  left: 0;
-  background-color: #C03434; /* Exact match with transition square */
+  background-color: #9E1B1E; /* Lighter red - matches header, will fade to #590D0F */
   color: #FFFFFF;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
   transition: background-color 0.8s cubic-bezier(0.22, 1, 0.36, 1);
   will-change: opacity;
+  position: relative;
+  overflow-x: hidden;
 }
 
 /* ==================== BACK TO MAP BUTTON ==================== */
@@ -76,18 +73,26 @@
 /* ==================== OPENING STATEMENT SECTION ==================== */
 
 .opening-section {
-  position: relative;
+  position: fixed;
+  top: 0;
+  left: 0;
   width: 100%;
-  min-height: 100vh;
+  height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 6rem 4rem 8rem 4rem;
   overflow: hidden;
-  background: #C03434; /* Solid color - no gradient for seamless transition */
+  background: transparent; /* Inherit from container for smooth color transition */
   perspective: 800px;
   perspective-origin: 50% 50%;
   transform-style: preserve-3d;
+  pointer-events: none; /* Allow scrolling through */
+  z-index: 10; /* Above quote cards section */
+}
+
+.opening-section * {
+  pointer-events: auto; /* Re-enable for child elements */
 }
 
 .opening-content {
@@ -142,32 +147,32 @@
 .floating-image-1 {
   top: 8%;
   left: 25%;
-  width: 280px;
-  height: 364px;
+  width: 224px; /* 280 * 0.8 */
+  height: 291px; /* 364 * 0.8 */
   background-image: url('/Wave x Maki Photo.webp');
 }
 
 .floating-image-2 {
   top: 12%;
   right: 8%;
-  width: 322px;
-  height: 238px;
+  width: 258px; /* 322 * 0.8 */
+  height: 190px; /* 238 * 0.8 */
   background-image: url('/Legends Day Still 002.webp');
 }
 
 .floating-image-3 {
   bottom: 22%;
   left: 5%;
-  width: 301px;
-  height: 238px;
+  width: 241px; /* 301 * 0.8 */
+  height: 190px; /* 238 * 0.8 */
   background-image: url('/Wave x Maki Photo (2).webp');
 }
 
 .floating-image-4 {
   bottom: 18%;
   right: 8%;
-  width: 343px;
-  height: 259px;
+  width: 274px; /* 343 * 0.8 */
+  height: 207px; /* 259 * 0.8 */
   background-image: url('/Legends Day Still 014.webp');
 }
 
@@ -175,8 +180,8 @@
   bottom: 28%;
   left: 50%;
   transform: translateX(-50%);
-  width: 301px;
-  height: 224px;
+  width: 241px; /* 301 * 0.8 */
+  height: 179px; /* 224 * 0.8 */
   background-image: url('/The Legends Day.webp');
   z-index: 2;
 }
@@ -184,8 +189,8 @@
 .floating-image-6 {
   bottom: 45%;
   left: 12%;
-  width: 259px;
-  height: 203px;
+  width: 207px; /* 259 * 0.8 */
+  height: 162px; /* 203 * 0.8 */
   background-image: url('/LoadInImage-min.webp');
 }
 
@@ -302,13 +307,124 @@
   margin: 0;
 }
 
-/* ==================== 3-7. VALUE SECTIONS ==================== */
+/* ==================== 3. QUOTE CARDS SECTION - 3x2 GRID ==================== */
+
+.quote-cards-section {
+  position: fixed; /* Changed to fixed to sit behind opening section */
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh;
+  padding: 8rem 4rem 16rem 4rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #590D0F; /* Dark red - revealed as elements fly through */
+  overflow: hidden;
+  z-index: 1; /* Behind opening section */
+}
+
+.quote-cards-grid {
+  position: relative;
+  max-width: 1100px;
+  width: 100%;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  padding: 0 2rem;
+  align-items: start;
+}
+
+/* Magazine-style editorial layout with staggered heights */
+.quote-card-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+/* TOP ROW - Staggered vertical positioning */
+
+/* Top-left: ILKKA (light-red) - mid height */
+.quote-card-wrapper:nth-child(1) {
+  margin-top: 30px;
+  z-index: 1;
+}
+
+/* Top-center: MIKI (white) - HIGHEST - visual anchor */
+.quote-card-wrapper:nth-child(2) {
+  margin-top: 0px;
+  z-index: 3;
+}
+
+/* Top-right: PETTERI (dark-red) - lower than center */
+.quote-card-wrapper:nth-child(3) {
+  margin-top: 40px;
+  z-index: 1;
+}
+
+/* BOTTOM ROW - Staggered vertical positioning */
+
+/* Bottom-left: MIKKO (white) - aligned under left column */
+.quote-card-wrapper:nth-child(4) {
+  margin-top: 10px;
+  z-index: 1;
+}
+
+/* Bottom-center: ELINA (dark-red) - raised higher */
+.quote-card-wrapper:nth-child(5) {
+  margin-top: -20px;
+  z-index: 2;
+}
+
+/* Bottom-right: TUOMAS (light-red) - lowest of bottom row */
+.quote-card-wrapper:nth-child(6) {
+  margin-top: 10px;
+  z-index: 1;
+}
+
+/* Responsive adjustments */
+@media (max-width: 1200px) {
+  .quote-cards-grid {
+    max-width: 900px;
+    gap: 1.5rem;
+  }
+}
+
+@media (max-width: 900px) {
+  .quote-cards-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+    padding: 0 1rem;
+  }
+
+  .quote-cards-section {
+    padding: 6rem 1rem;
+  }
+
+  /* Reset staggered margins on mobile */
+  .quote-card-wrapper:nth-child(n) {
+    margin-top: 0 !important;
+  }
+}
+
+@media (max-width: 600px) {
+  .quote-cards-grid {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+
+  .quote-cards-section {
+    padding: 4rem 1rem;
+  }
+}
+
+/* ==================== OLD VALUE SECTIONS (DEPRECATED) ==================== */
 
 .value-section {
   position: relative;
   width: 100%;
   min-height: 100vh;
-  padding: 6rem 4rem;
+  padding: 8rem 0; /* Removed side padding for quote cards to take full width */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -334,8 +450,8 @@
 .value-content {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 6rem;
-  max-width: 1400px;
+  gap: 8rem; /* Increased gap: 6rem -> 8rem for better breathing room */
+  max-width: 1200px; /* Reduced from 1400px to make content tighter and more readable */
   width: 100%;
   align-items: center;
   position: relative;

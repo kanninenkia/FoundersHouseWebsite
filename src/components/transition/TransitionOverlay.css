@@ -1,5 +1,5 @@
 /**
- * TransitionOverlay.css - Expanding square with flying elements
+ * TransitionOverlay.css - Flying elements during transition
  */
 
 .transition-overlay {
@@ -37,7 +37,7 @@
   position: absolute;
   background-color: #8B1215;
   border: 1px solid rgba(255, 255, 255, 0.08);
-  will-change: transform, opacity, filter;
+  will-change: transform, opacity;
   backface-visibility: hidden;
   /* GPU acceleration */
   transform: translateZ(0);
