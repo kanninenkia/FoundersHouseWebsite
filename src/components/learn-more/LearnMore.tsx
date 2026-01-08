@@ -167,10 +167,16 @@ export const LearnMore = () => {
   // But STOP hijacking wheel after reaching 100% to allow traditional scroll
   useEffect(() => {
     const handleWheel = (e: WheelEvent) => {
-      // Only hijack wheel if we haven't reached the end OR user is scrolling back up
-      const atTheEnd = accumulatedScroll.current >= maxVirtualScroll * 0.99
+      // Only hijack wheel if we're in z-scroll range
+      const atTheEnd = accumulatedScroll.current >= maxVirtualScroll
+      const scrollingUp = e.deltaY < 0
 
-      if (!atTheEnd || e.deltaY < 0) {
+      // Hijack wheel in these cases:
+      // 1. Not at the end (still in z-scroll range)
+      // 2. At the end, scrolling up, AND window.scrollY is at 0 (box scroll finished, return to z-scroll)
+      const shouldHijack = !atTheEnd || (scrollingUp && window.scrollY === 0)
+
+      if (shouldHijack) {
         e.preventDefault()
 
         // Accumulate scroll delta bidirectionally with damping for smoother control
@@ -193,11 +199,12 @@ export const LearnMore = () => {
           isScrollingRef.current = false
         }, 150)
 
-        // Mark as complete when at the end (for pointer events)
-        const isComplete = accumulatedScroll.current >= maxVirtualScroll * 0.99
+        // Mark as complete when at 100% - BIDIRECTIONAL with hysteresis
+        // Use slight threshold to prevent jumping when near boundary
+        const isComplete = progress >= 0.98
         setZScrollComplete(isComplete)
       }
-      // When at the end and scrolling down, allow default behavior (traditional scroll)
+      // When at the end and scrolling down, OR in box scroll, allow default behavior (traditional scroll)
     }
 
     window.addEventListener('wheel', handleWheel, { passive: false })
@@ -293,10 +300,10 @@ export const LearnMore = () => {
   // Stage 1 (0-50%): Header elements fly through gradually
   // Stage 2 (50-100%): Color transition happens and quote cards fade in
 
-  // Opening section opacity - fades out more gradually to reveal cards
-  const openingSectionOpacity = useTransform(depthTransitionProgress, [0, 0.5], [1, 0])
+  // Opening section opacity - fades out completely by 60% to ensure clean transition
+  const openingSectionOpacity = useTransform(depthTransitionProgress, [0, 0.4, 0.6], [1, 0.3, 0])
 
-  // Pointer events for quote cards - enable when visible (>70%)
+  // Pointer events for quote cards - enable when visible (>70% to match new threshold)
   const cardsInteractive = scrollProgress > 0.7
   
   // Background color - smooth transition from light red to dark red during scroll
@@ -313,23 +320,90 @@ export const LearnMore = () => {
     }
   )
 
-  // Scroll-based width animation state
+  // Scroll-based box animation state (width, height, opacity, and text for box-in-box effect)
   const [scrollWidth, setScrollWidth] = useState('100%')
+  const [scrollHeight, setScrollHeight] = useState('100vh')
+  const [boxScrollProgress, setBoxScrollProgress] = useState(0)
+  const [boxOpacity, setBoxOpacity] = useState(1)
+  const [obsessiveY, setObsessiveY] = useState(100) // Y transform percentage for slide-up
+  const [obsessiveOpacity, setObsessiveOpacity] = useState(0) // Opacity for text visibility
 
-  // Listen to scroll after z-scroll completes to animate width
+  // Listen to scroll to animate width + height (BIDIRECTIONAL)
+  // Box stays FIXED at viewport center, just shrinks to reveal borders
   useEffect(() => {
-    if (!zScrollComplete) return
+    let rafId: number | null = null
+    let lastScrollY = -1
 
     const handleScroll = () => {
-      const scrolled = window.scrollY
-      const maxScroll = window.innerHeight * 2 // 200vh of content
-      const progress = Math.min(scrolled / maxScroll, 1)
-      const width = 100 - (progress * 20) // 100% → 80%
-      setScrollWidth(`${width}%`)
+      if (rafId !== null) return // Already scheduled
+
+      rafId = requestAnimationFrame(() => {
+        const scrolled = window.scrollY
+
+        // Only update if scroll position actually changed
+        if (Math.abs(scrolled - lastScrollY) > 0.5) {
+          lastScrollY = scrolled
+
+          if (zScrollComplete) {
+            // Box scroll is active - calculate progress from current scroll position
+            const maxScroll = window.innerHeight * 4 // EXTENDED to 400vh for SLOWER animation (was 300vh)
+            const progress = Math.min(scrolled / maxScroll, 1)
+
+            // Track box scroll progress for card fade-out
+            setBoxScrollProgress(progress)
+
+            // Width animation: 100% → 70% (BIGGER BORDERS - was 80%)
+            const width = 100 - (progress * 30)
+            setScrollWidth(`${width}%`)
+
+            // Height animation: 100vh → 70vh (BIGGER BORDERS - was 80vh)
+            const height = 100 - (progress * 30)
+            setScrollHeight(`${height}vh`)
+
+            // Opacity animation: 100% → 50% during border animation (SLOWER curve)
+            // Returns to 100% at the end
+            const opacity = progress < 0.85
+              ? 1 - (progress * 0.5)  // Fade to 50% during first 85% (was 90%)
+              : 0.5 + ((progress - 0.85) / 0.15) * 0.5  // Fade back to 100% in last 15% (was 10%)
+            setBoxOpacity(opacity)
+
+            // OBSESSIVE text animation: Fades up AFTER cards fade away (starts at 60%)
+            // Cards finish fading by ~55% (last card at 0.3 delay + 0.25 fade = 0.55)
+            const textStart = 0.6 // Start at 60% scroll (after cards are fully gone)
+            const textProgress = Math.max(0, Math.min(1, (progress - textStart) / (1 - textStart)))
+
+            // Y position: Moves up from off-screen to final position
+            const yPosition = (1 - textProgress) * 100 // Starts at 100 (off screen), moves to 0
+            setObsessiveY(yPosition)
+
+            // Opacity: 0 before textStart, then fades in faster to reach full opacity
+            const textOpacity = Math.min(1, textProgress * 1.5) // Faster fade to ensure full opacity
+            setObsessiveOpacity(textOpacity)
+          } else {
+            // Reset to initial state when z-scroll is active
+            setBoxScrollProgress(0)
+            setScrollWidth('100%')
+            setScrollHeight('100vh')
+            setBoxOpacity(1)
+            setObsessiveY(100)
+            setObsessiveOpacity(0)
+          }
+        }
+
+        rafId = null
+      })
     }
 
-    window.addEventListener('scroll', handleScroll)
-    return () => window.removeEventListener('scroll', handleScroll)
+    // Initial call to set starting values
+    handleScroll()
+
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    return () => {
+      window.removeEventListener('scroll', handleScroll)
+      if (rafId !== null) {
+        cancelAnimationFrame(rafId)
+      }
+    }
   }, [zScrollComplete])
 
 
@@ -445,31 +519,70 @@ export const LearnMore = () => {
       <motion.section
         className="quote-cards-section"
         style={{
-          pointerEvents: cardsInteractive ? 'auto' : 'none'
+          pointerEvents: cardsInteractive && !zScrollComplete ? 'auto' : 'none',
+          zIndex: scrollProgress > 0.6 ? 10 : 1, // Move above box when cards are active (smoother)
         }}
       >
         <div className="quote-cards-grid">
           {quoteCardsData.map((card, index) => {
-            // Calculate card visibility based PURELY on scroll progress
-            // Threshold: Cards start appearing at 70% scroll progress
-            const appearThreshold = 0.7
-            const cardProgress = Math.max(0, Math.min(1, (scrollProgress - appearThreshold) / (1 - appearThreshold)))
+            // === PHASE 1: FADE IN (scroll progress 70%-100%) ===
+            // Balanced entrance - 50% faster than before
+            const appearThreshold = 0.7  // Start at 70% for good reveal window
+            const fadeInProgress = Math.max(0, Math.min(1, (scrollProgress - appearThreshold) / (1 - appearThreshold)))
 
-            // Stagger each card's animation
-            const staggerDelay = index * 0.15 // 150ms between each card
-            const cardOpacity = Math.max(0, Math.min(1, (cardProgress - staggerDelay) * 3))
+            // Stagger each card's fade-in animation (balanced spacing)
+            const staggerDelay = index * 0.1 // Tighter spacing (was 0.15) - 50% faster
+            const fadeInOpacity = Math.max(0, Math.min(1, (fadeInProgress - staggerDelay) * 2.7)) // 50% faster (was 1.8)
 
-            // Y-axis animation: start from offset, move to 0
+            // Y-axis fade-in: start from offset, move to 0 (balanced movement)
             const yOffset = card.animateY
-            const cardY = yOffset * (1 - Math.max(0, Math.min(1, (cardProgress - staggerDelay) * 2)))
+            const fadeInY = yOffset * (1 - Math.max(0, Math.min(1, (fadeInProgress - staggerDelay) * 1.8))) // 50% faster (was 1.2)
+
+            // === PHASE 2: FADE OUT IN REVERSE (as borders close in) ===
+            // Cards fade out synchronized with box shrinking (BIDIRECTIONAL, balanced speed)
+            const totalCards = quoteCardsData.length
+            const reverseIndex = totalCards - 1 - index
+            const reverseStaggerDelay = reverseIndex * 0.06  // Even tighter stagger for more fade time
+
+            // Fade out happens gradually over FULL range to ensure completion
+            const fadeOutStart = 0.0   // Start immediately when box scroll begins
+            const fadeOutEnd = 1.0     // Full 100% of scroll
+            const fadeOutRange = fadeOutEnd - fadeOutStart
+
+            // Calculate fade progress (BIDIRECTIONAL - works when scrolling up or down)
+            const fadeOutProgress = zScrollComplete
+              ? Math.max(0, Math.min(1, (boxScrollProgress - fadeOutStart) / fadeOutRange))
+              : 0
+
+            // Opacity: 1 → 0 with reverse stagger (VERY strong multiplier to guarantee complete fade)
+            const fadeOutOpacity = 1 - Math.max(0, Math.min(1, (fadeOutProgress - reverseStaggerDelay) * 4.0))  // Much stronger (was 2.5)
+
+            // Y-axis fade-out: move to opposite direction (balanced drift)
+            const fadeOutY = -yOffset * Math.max(0, Math.min(1, (fadeOutProgress - reverseStaggerDelay) * 2.5))  // Increased for smoother exit
+
+            // === COMBINE PHASES (BIDIRECTIONAL) ===
+            // Always use the most appropriate phase based on scroll state
+            let finalOpacity = fadeInOpacity
+            let finalY = fadeInY
+
+            // When box scroll is active, blend fade-in and fade-out
+            if (zScrollComplete) {
+              // Box scroll active: multiply fade-in by fade-out
+              finalOpacity = fadeInOpacity * fadeOutOpacity
+              finalY = fadeInY + fadeOutY
+            } else {
+              // Z-scroll active: use only fade-in (fully bidirectional)
+              finalOpacity = fadeInOpacity
+              finalY = fadeInY
+            }
 
             return (
               <motion.div
                 key={card.name}
                 className="quote-card-wrapper"
                 style={{
-                  opacity: cardOpacity,
-                  y: cardY
+                  opacity: finalOpacity,
+                  y: finalY
                 }}
               >
                 <QuoteCard
@@ -486,28 +599,86 @@ export const LearnMore = () => {
 
       {/* Scrollable Content Section - Only visible after quote cards complete */}
       {zScrollComplete && (
-        <div
-          ref={scrollContainerRef}
-          style={{
-            position: 'relative',
-            minHeight: '200vh', // Creates scroll area
-            background: '#2B0A05', // Darker background revealed behind
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-          }}
-        >
-          <motion.div
+        <>
+          {/* Fixed overlay with box-in-box effect */}
+          <div
             style={{
-              width: scrollWidth,
-              background: '#590D0F',
-              minHeight: '200vh',
-              position: 'relative',
+              position: 'fixed', // Fixed to viewport
+              top: 0,
+              left: 0,
+              width: '100%',
+              height: '100vh',
+              background: '#2B0A05', // Darker background revealed behind (box-in-box outer)
+              display: 'flex',
+              alignItems: 'center', // Center vertically
+              justifyContent: 'center', // Center horizontally
+              zIndex: 5, // Below quote cards section (z-index 10) but above background
+              pointerEvents: 'none', // Allow scrolling through
             }}
           >
-            {/* Content will go here */}
+            {/* Box-in-box inner container - stays centered, shrinks to reveal borders */}
+            <motion.div
+              style={{
+                width: scrollWidth,
+                height: scrollHeight,
+                background: '#590D0F',
+                opacity: boxOpacity, // Semi-transparent during animation to see through
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                transition: 'width 0.2s ease-out, height 0.2s ease-out, opacity 0.2s ease-out', // SLOWER transitions (was 0.1s)
+              }}
+            >
+              {/* Inner content - will go here */}
+              <div style={{
+                width: '100%',
+                height: '100%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: 'white',
+                fontSize: '2rem',
+                fontWeight: 900,
+                padding: '4rem'
+              }}>
+                {/* Placeholder for future content */}
+              </div>
+            </motion.div>
+          </div>
+
+          {/* Invisible scroll area to trigger animation */}
+          <div
+            ref={scrollContainerRef}
+            style={{
+              position: 'relative',
+              minHeight: '400vh', // Extended to 400vh to match maxScroll (SLOWER animations)
+              background: 'transparent',
+              zIndex: 1,
+            }}
+          />
+
+          {/* OBSESSIVE text - fades up from bottom left corner */}
+          <motion.div
+            style={{
+              position: 'fixed',
+              bottom: '12%', // 12% from bottom (moved lower)
+              left: '8%', // 8% from left (adjusted)
+              transform: `translateY(${obsessiveY}%)`, // Moves up from off-screen
+              opacity: obsessiveOpacity, // Fades in with position after cards are gone
+              zIndex: 15, // Above everything
+              pointerEvents: 'none',
+              fontFamily: 'Outfit, -apple-system, BlinkMacSystemFont, sans-serif',
+              fontSize: 'clamp(4rem, 10vw, 8rem)',
+              fontWeight: 700,
+              color: '#D82E11',
+              textTransform: 'uppercase',
+              letterSpacing: '0.05em',
+              whiteSpace: 'nowrap',
+            }}
+          >
+            OBSESSIVE
           </motion.div>
-        </div>
+        </>
       )}
     </motion.div>
   )

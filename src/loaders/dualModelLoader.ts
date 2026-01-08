@@ -479,9 +479,6 @@ export async function loadDualModels(params: DualLoadParams): Promise<DualLoadRe
     // Process main map (includes edge fade and shader pre-compilation)
     processMainMap(mainMapModel, camera, isNightMode, renderer, scene)
 
-    // Debug main map position
-    const mainBBox = new THREE.Box3().setFromObject(mainMapModel)
-
     // Add to scene
     scene.add(mainMapModel)
 
