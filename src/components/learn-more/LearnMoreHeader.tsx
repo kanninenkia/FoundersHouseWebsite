@@ -1,21 +1,37 @@
 /**
  * LearnMoreHeader - Reusable header component for LearnMore pages
  * Contains logo, menu icon, and back to map button
+ * Handles all entry animation logic internally
  */
 
+import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 
-interface LearnMoreHeaderProps {
-  showBackground: boolean
-  hasEnteredFromTransition: boolean
-}
-
-export const LearnMoreHeader = ({ 
-  showBackground, 
-  hasEnteredFromTransition 
-}: LearnMoreHeaderProps) => {
+export const LearnMoreHeader = () => {
   const navigate = useNavigate()
+
+  // Entry animation state
+  const [hasEnteredFromTransition, setHasEnteredFromTransition] = useState(false)
+  const [showBackground, setShowBackground] = useState(false)
+
+  // Entry animation - check if coming from transition
+  useEffect(() => {
+    const fromTransition = sessionStorage.getItem('transitioningToLearnMore') === 'true'
+
+    if (fromTransition) {
+      setHasEnteredFromTransition(true)
+      setShowBackground(true)
+
+      // Clear the flag after a delay
+      setTimeout(() => {
+        sessionStorage.removeItem('transitioningToLearnMore')
+      }, 100)
+    } else {
+      // If not from transition, show background immediately
+      setShowBackground(true)
+    }
+  }, [])
 
   return (
     <>

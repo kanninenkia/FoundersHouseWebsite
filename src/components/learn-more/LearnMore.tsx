@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { motion, useTransform, useMotionValue, useSpring, MotionValue } from 'framer-motion'
+import Lenis from '@studio-freight/lenis'
 import { QuoteCard } from './QuoteCard'
 import { LearnMoreHeader } from './LearnMoreHeader'
 import { FloatingImage } from './FloatingImage'
@@ -94,6 +95,8 @@ const DecorativeSquare = ({
 
 export const LearnMore = () => {
   const containerRef = useRef<HTMLDivElement>(null)
+  const scrollContainerRef = useRef<HTMLDivElement>(null)
+  const lenisRef = useRef<Lenis | null>(null)
   
   // Mouse parallax motion values with refined spring physics
   const mouseX = useMotionValue(0)
@@ -110,35 +113,45 @@ export const LearnMore = () => {
   // Virtual scroll with smooth spring physics
   const virtualScrollTarget = useMotionValue(0)
   const virtualScroll = useSpring(virtualScrollTarget, {
-    stiffness: 100,
-    damping: 30,
-    mass: 0.5
+    stiffness: 150, // Increased for faster response
+    damping: 25,    // Reduced for quicker settling
+    mass: 0.3,      // Reduced for lighter feel
+    restDelta: 0.01,
+    restSpeed: 0.01
   })
-
-  // Entry animation state
-  const [hasEnteredFromTransition, setHasEnteredFromTransition] = useState(false)
-  const [showBackground, setShowBackground] = useState(false) // Control background visibility
-
-  // Entry animation - check if coming from transition
+  
+  // Force initial state on mount
   useEffect(() => {
+    virtualScrollTarget.set(0)
+    virtualScroll.set(0)
+    depthTransitionProgress.set(0)
+    accumulatedScroll.current = 0
+  }, [])
 
-    // Check if we're coming from a transition
-    const fromTransition = sessionStorage.getItem('transitioningToLearnMore') === 'true'
+  // Entry animation state - check if coming from transition
+  const hasEnteredFromTransition = sessionStorage.getItem('transitioningToLearnMore') === 'true'
+  const showBackground = true
 
-    if (fromTransition) {
-      setHasEnteredFromTransition(true)
-      
-      // CRITICAL: Show background immediately since screen is already red from TransitionOverlay
-      // The red square has already covered the screen before navigation occurred
-      setShowBackground(true)
-      
-      // Clear the flag after a delay
-      setTimeout(() => {
-        sessionStorage.removeItem('transitioningToLearnMore')
-      }, 100)
-    } else {
-      // If not from transition, show background immediately
-      setShowBackground(true)
+  // Initialize Lenis smooth scroll
+  useEffect(() => {
+    const lenis = new Lenis({
+      duration: 1.2,
+      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+      smoothWheel: true,
+      wheelMultiplier: 1,
+    })
+
+    lenisRef.current = lenis
+
+    function raf(time: number) {
+      lenis.raf(time)
+      requestAnimationFrame(raf)
+    }
+
+    requestAnimationFrame(raf)
+
+    return () => {
+      lenis.destroy()
     }
   }, [])
 
@@ -146,41 +159,75 @@ export const LearnMore = () => {
   const accumulatedScroll = useRef(0)
   const maxVirtualScroll = window.innerHeight * 1.5 // Extended for 3-stage sequence
   const [zScrollComplete, setZScrollComplete] = useState(false)
+  const isScrollingRef = useRef(false)
+  const scrollTimeoutRef = useRef<number | undefined>(undefined)
+  const [scrollProgress, setScrollProgress] = useState(0) // Direct state for reliability
 
   // Bidirectional Z-scroll animation - scrub forward and backward freely
+  // But STOP hijacking wheel after reaching 100% to allow traditional scroll
   useEffect(() => {
     const handleWheel = (e: WheelEvent) => {
-      e.preventDefault()
+      // Only hijack wheel if we haven't reached the end OR user is scrolling back up
+      const atTheEnd = accumulatedScroll.current >= maxVirtualScroll * 0.99
 
-      // Accumulate scroll delta bidirectionally
-      accumulatedScroll.current = Math.max(0, Math.min(maxVirtualScroll, accumulatedScroll.current + e.deltaY))
+      if (!atTheEnd || e.deltaY < 0) {
+        e.preventDefault()
 
-      // Set virtual scroll target (drives all animations)
-      virtualScrollTarget.set(accumulatedScroll.current)
+        // Accumulate scroll delta bidirectionally with damping for smoother control
+        const scrollDelta = e.deltaY * 1.5 // Increase multiplier for faster response
+        accumulatedScroll.current = Math.max(0, Math.min(maxVirtualScroll, accumulatedScroll.current + scrollDelta))
 
-      // Mark as complete when at the end (for pointer events)
-      setZScrollComplete(accumulatedScroll.current >= maxVirtualScroll * 0.99)
+        // Calculate and update progress IMMEDIATELY (don't rely on springs)
+        const progress = Math.max(0, Math.min(1, accumulatedScroll.current / maxVirtualScroll))
+        setScrollProgress(progress)
+
+        // Set virtual scroll target (drives all animations)
+        virtualScrollTarget.set(accumulatedScroll.current)
+
+        // Track scrolling state
+        isScrollingRef.current = true
+        if (scrollTimeoutRef.current) {
+          clearTimeout(scrollTimeoutRef.current)
+        }
+        scrollTimeoutRef.current = window.setTimeout(() => {
+          isScrollingRef.current = false
+        }, 150)
+
+        // Mark as complete when at the end (for pointer events)
+        const isComplete = accumulatedScroll.current >= maxVirtualScroll * 0.99
+        setZScrollComplete(isComplete)
+      }
+      // When at the end and scrolling down, allow default behavior (traditional scroll)
     }
 
     window.addEventListener('wheel', handleWheel, { passive: false })
 
     return () => {
       window.removeEventListener('wheel', handleWheel)
+      if (scrollTimeoutRef.current) {
+        clearTimeout(scrollTimeoutRef.current)
+      }
     }
   }, [virtualScrollTarget, maxVirtualScroll])
 
   // Subscribe to virtual scroll changes to update depth progress
+  // Also sync with scrollProgress state for reliability
   useEffect(() => {
+    // Update depth progress from state (always reliable)
+    depthTransitionProgress.set(scrollProgress)
+    
     const unsubscribe = virtualScroll.on('change', (latest) => {
       // Calculate depth transition progress
       const transitionStart = 0
       const transitionEnd = maxVirtualScroll
       const depthProgress = Math.max(0, Math.min(1, (latest - transitionStart) / (transitionEnd - transitionStart)))
+      
+      // Always update, even if value is the same (ensures consistency)
       depthTransitionProgress.set(depthProgress)
     })
 
     return () => unsubscribe()
-  }, [virtualScroll, depthTransitionProgress])
+  }, [virtualScroll, depthTransitionProgress, maxVirtualScroll, scrollProgress])
 
   // Track mouse position for parallax
   useEffect(() => {
@@ -243,39 +290,47 @@ export const LearnMore = () => {
   const finalDepthOpacity = hasSettled ? 1 : depthOpacity
 
   // 3-STAGE SEQUENCE CONTROLLED BY SCROLL:
-  // Stage 1 (0-40%): Header elements fly through
-  // Stage 2 (40-70%): Color transition happens
-  // Stage 3 (70-100%): Quote cards fade in
+  // Stage 1 (0-50%): Header elements fly through gradually
+  // Stage 2 (50-100%): Color transition happens and quote cards fade in
 
-  // Opening section opacity - fully disappears by 40%
-  const openingSectionOpacity = useTransform(depthTransitionProgress, [0, 0.4], [1, 0])
-
-  // Quote cards opacity - only appears after 70%
-  const quoteCardsOpacity = useTransform(depthTransitionProgress, [0, 0.7, 1], [0, 0, 1])
+  // Opening section opacity - fades out more gradually to reveal cards
+  const openingSectionOpacity = useTransform(depthTransitionProgress, [0, 0.5], [1, 0])
 
   // Pointer events for quote cards - enable when visible (>70%)
-  const [cardsInteractive, setCardsInteractive] = useState(false)
-
-  useEffect(() => {
-    const unsubscribe = depthTransitionProgress.on('change', (latest) => {
-      setCardsInteractive(latest > 0.7)
-    })
-    return () => unsubscribe()
-  }, [depthTransitionProgress])
+  const cardsInteractive = scrollProgress > 0.7
   
   // Background color - smooth transition from light red to dark red during scroll
+  // Using custom interpolation to ensure proper color transition
   const backgroundColor = useTransform(
-    useSpring(depthTransitionProgress, { stiffness: 80, damping: 30, mass: 0.8 }),
-    [0, 1],
-    ['#9E1B1E', '#590D0F']
+    depthTransitionProgress,
+    (progress) => {
+      // Light red: #9E1B1E (rgb(158, 27, 30))
+      // Dark red: #590D0F (rgb(89, 13, 15))
+      const r = Math.round(158 - (158 - 89) * progress)
+      const g = Math.round(27 - (27 - 13) * progress)
+      const b = Math.round(30 - (30 - 15) * progress)
+      return `rgb(${r}, ${g}, ${b})`
+    }
   )
 
-  // Determine final background: transparent → animated → locked dark red
-  const getBackgroundColor = () => {
-    if (!showBackground) return 'transparent'
-    if (zScrollComplete) return '#590D0F'
-    return backgroundColor
-  }
+  // Scroll-based width animation state
+  const [scrollWidth, setScrollWidth] = useState('100%')
+
+  // Listen to scroll after z-scroll completes to animate width
+  useEffect(() => {
+    if (!zScrollComplete) return
+
+    const handleScroll = () => {
+      const scrolled = window.scrollY
+      const maxScroll = window.innerHeight * 2 // 200vh of content
+      const progress = Math.min(scrolled / maxScroll, 1)
+      const width = 100 - (progress * 20) // 100% → 80%
+      setScrollWidth(`${width}%`)
+    }
+
+    window.addEventListener('scroll', handleScroll)
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [zScrollComplete])
 
 
   return (
@@ -283,20 +338,17 @@ export const LearnMore = () => {
       ref={containerRef}
       className="learn-more-container"
       style={{
-        backgroundColor: getBackgroundColor(),
+        backgroundColor: backgroundColor,
       }}
-      initial={{ opacity: 1 }}
+      initial={{ opacity: 1, backgroundColor: '#9E1B1E' }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 1 }}
       transition={{ duration: 0 }}
       // Force GPU acceleration
       layout={false}
     >
-      {/* Header Component */}
-      <LearnMoreHeader 
-        showBackground={showBackground}
-        hasEnteredFromTransition={hasEnteredFromTransition}
-      />
+      {/* Header Component - handles its own entry animation logic */}
+      <LearnMoreHeader />
 
       {/* 1. Opening Statement Section - Fixed overlay during z-scroll */}
       {/* Only render when we're ready to show content */}
@@ -393,30 +445,31 @@ export const LearnMore = () => {
       <motion.section
         className="quote-cards-section"
         style={{
-          opacity: quoteCardsOpacity,
           pointerEvents: cardsInteractive ? 'auto' : 'none'
         }}
       >
         <div className="quote-cards-grid">
           {quoteCardsData.map((card, index) => {
-            const cardY = useTransform(
-              depthTransitionProgress,
-              [0.7, 0.85 + (index * 0.02)],
-              [card.animateY, 0]
-            )
-            const cardOpacity = useTransform(
-              depthTransitionProgress,
-              [0.7, 0.85 + (index * 0.02)],
-              [0, 1]
-            )
+            // Calculate card visibility based PURELY on scroll progress
+            // Threshold: Cards start appearing at 70% scroll progress
+            const appearThreshold = 0.7
+            const cardProgress = Math.max(0, Math.min(1, (scrollProgress - appearThreshold) / (1 - appearThreshold)))
+
+            // Stagger each card's animation
+            const staggerDelay = index * 0.15 // 150ms between each card
+            const cardOpacity = Math.max(0, Math.min(1, (cardProgress - staggerDelay) * 3))
+
+            // Y-axis animation: start from offset, move to 0
+            const yOffset = card.animateY
+            const cardY = yOffset * (1 - Math.max(0, Math.min(1, (cardProgress - staggerDelay) * 2)))
 
             return (
               <motion.div
                 key={card.name}
                 className="quote-card-wrapper"
                 style={{
-                  y: cardY,
-                  opacity: cardOpacity
+                  opacity: cardOpacity,
+                  y: cardY
                 }}
               >
                 <QuoteCard
@@ -424,7 +477,6 @@ export const LearnMore = () => {
                   quote={card.quote}
                   imageUrl={card.imageUrl}
                   nameColor={card.nameColor}
-                  delay={index * 0.1}
                 />
               </motion.div>
             )
@@ -432,7 +484,31 @@ export const LearnMore = () => {
         </div>
       </motion.section>
 
-      {/* Map, CTA, and Final sections removed - will be recreated later */}
+      {/* Scrollable Content Section - Only visible after quote cards complete */}
+      {zScrollComplete && (
+        <div
+          ref={scrollContainerRef}
+          style={{
+            position: 'relative',
+            minHeight: '200vh', // Creates scroll area
+            background: '#2B0A05', // Darker background revealed behind
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+          }}
+        >
+          <motion.div
+            style={{
+              width: scrollWidth,
+              background: '#590D0F',
+              minHeight: '200vh',
+              position: 'relative',
+            }}
+          >
+            {/* Content will go here */}
+          </motion.div>
+        </div>
+      )}
     </motion.div>
   )
 }

@@ -8,10 +8,9 @@
 .learn-more-container {
   width: 100%;
   min-height: 100vh;
-  background-color: #9E1B1E; /* Lighter red - matches header, will fade to #590D0F */
+  /* Background color controlled by Framer Motion inline style */
   color: #FFFFFF;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
-  transition: background-color 0.8s cubic-bezier(0.22, 1, 0.36, 1);
   will-change: opacity;
   position: relative;
   overflow-x: hidden;
@@ -319,7 +318,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: #590D0F; /* Dark red - revealed as elements fly through */
+  background-color: transparent; /* Transparent to show container's animated background */
   overflow: visible; /* Allow cards to be visible */
   z-index: 1; /* Behind opening section */
 }
