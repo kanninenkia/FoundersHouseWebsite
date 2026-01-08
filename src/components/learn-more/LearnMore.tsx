@@ -113,9 +113,9 @@ export const LearnMore = () => {
   // Virtual scroll with smooth spring physics
   const virtualScrollTarget = useMotionValue(0)
   const virtualScroll = useSpring(virtualScrollTarget, {
-    stiffness: 150, // Increased for faster response
-    damping: 25,    // Reduced for quicker settling
-    mass: 0.3,      // Reduced for lighter feel
+    stiffness: 120, // Balanced for consistent feel
+    damping: 30,    // Balanced damping
+    mass: 0.5,      // Consistent mass
     restDelta: 0.01,
     restSpeed: 0.01
   })
@@ -180,7 +180,7 @@ export const LearnMore = () => {
         e.preventDefault()
 
         // Accumulate scroll delta bidirectionally with damping for smoother control
-        const scrollDelta = e.deltaY * 1.5 // Increase multiplier for faster response
+        const scrollDelta = e.deltaY * 1.2 // Consistent multiplier for smooth response
         accumulatedScroll.current = Math.max(0, Math.min(maxVirtualScroll, accumulatedScroll.current + scrollDelta))
 
         // Calculate and update progress IMMEDIATELY (don't rely on springs)
@@ -276,7 +276,20 @@ export const LearnMore = () => {
 
   const squareDepthZRaw = useTransform(depthTransitionProgress, [0, 0.4], [0, 3500])
   const squareDepthZ = useSpring(squareDepthZRaw, { stiffness: 120, damping: 30, mass: 0.5 })
-  
+
+  // Parallax transforms for box-in-box section - depth hierarchy
+  // OBSESSIVE text (z-index: 15) - closest, fastest parallax (±20px)
+  const obsessiveParallaxX = useTransform(smoothMouseX, [-1, 1], [-20, 20])
+  const obsessiveParallaxY = useTransform(smoothMouseY, [-1, 1], [-20, 20])
+
+  // Placeholder image (z-index: 12) - middle layer, medium parallax (±12px)
+  const placeholderParallaxX = useTransform(smoothMouseX, [-1, 1], [-12, 12])
+  const placeholderParallaxY = useTransform(smoothMouseY, [-1, 1], [-12, 12])
+
+  // Box container (z-index: 5) - furthest back, slowest parallax (±5px)
+  const boxParallaxX = useTransform(smoothMouseX, [-1, 1], [-5, 5])
+  const boxParallaxY = useTransform(smoothMouseY, [-1, 1], [-5, 5])
+
   // Track if initial settle animation has completed
   const [hasSettled, setHasSettled] = useState(!hasEnteredFromTransition)
 
@@ -323,10 +336,13 @@ export const LearnMore = () => {
   // Scroll-based box animation state (width, height, opacity, and text for box-in-box effect)
   const [scrollWidth, setScrollWidth] = useState('100%')
   const [scrollHeight, setScrollHeight] = useState('100vh')
+  const [imageWidth, setImageWidth] = useState('94.6%') // Image width reduced by 14% (1.1 * 0.86 * 100%)
+  const [imageHeight, setImageHeight] = useState('86vh') // Image height reduced by 14% (0.86 * 100vh)
   const [boxScrollProgress, setBoxScrollProgress] = useState(0)
   const [boxOpacity, setBoxOpacity] = useState(1)
   const [obsessiveY, setObsessiveY] = useState(100) // Y transform percentage for slide-up
   const [obsessiveOpacity, setObsessiveOpacity] = useState(0) // Opacity for text visibility
+  const [imageOpacity, setImageOpacity] = useState(0) // Opacity for image visibility
 
   // Listen to scroll to animate width + height (BIDIRECTIONAL)
   // Box stays FIXED at viewport center, just shrinks to reveal borders
@@ -346,47 +362,68 @@ export const LearnMore = () => {
 
           if (zScrollComplete) {
             // Box scroll is active - calculate progress from current scroll position
-            const maxScroll = window.innerHeight * 4 // EXTENDED to 400vh for SLOWER animation (was 300vh)
+            const maxScroll = window.innerHeight
             const progress = Math.min(scrolled / maxScroll, 1)
 
             // Track box scroll progress for card fade-out
             setBoxScrollProgress(progress)
 
-            // Width animation: 100% → 70% (BIGGER BORDERS - was 80%)
-            const width = 100 - (progress * 30)
-            setScrollWidth(`${width}%`)
+            // === PHASE 1 & 2: Text/Image fade in WHILE borders close in (55-90%) ===
+            // With 300vh: 55% = 165vh, 90% = 270vh (animation range = 105vh)
+            const animationStart = 0.55  // Start at 55% (165vh) - after cards fully fade
+            const animationEnd = 0.90    // Complete at 90% (270vh) - leaves buffer for full scroll
+            const animationRange = animationEnd - animationStart // 35% of total = 105vh
+            const animationProgress = Math.max(0, Math.min(1, (progress - animationStart) / animationRange))
 
-            // Height animation: 100vh → 70vh (BIGGER BORDERS - was 80vh)
-            const height = 100 - (progress * 30)
-            setScrollHeight(`${height}vh`)
-
-            // Opacity animation: 100% → 50% during border animation (SLOWER curve)
-            // Returns to 100% at the end
-            const opacity = progress < 0.85
-              ? 1 - (progress * 0.5)  // Fade to 50% during first 85% (was 90%)
-              : 0.5 + ((progress - 0.85) / 0.15) * 0.5  // Fade back to 100% in last 15% (was 10%)
-            setBoxOpacity(opacity)
-
-            // OBSESSIVE text animation: Fades up AFTER cards fade away (starts at 60%)
-            // Cards finish fading by ~55% (last card at 0.3 delay + 0.25 fade = 0.55)
-            const textStart = 0.6 // Start at 60% scroll (after cards are fully gone)
-            const textProgress = Math.max(0, Math.min(1, (progress - textStart) / (1 - textStart)))
-
-            // Y position: Moves up from off-screen to final position
-            const yPosition = (1 - textProgress) * 100 // Starts at 100 (off screen), moves to 0
+            // Text Y position: Moves up from off-screen to final position
+            const yPosition = (1 - animationProgress) * 100 // Starts at 100 (off screen), moves to 0
             setObsessiveY(yPosition)
 
-            // Opacity: 0 before textStart, then fades in faster to reach full opacity
-            const textOpacity = Math.min(1, textProgress * 1.5) // Faster fade to ensure full opacity
+            // Text/Image Opacity: Force to 1.0 once animation is complete
+            // Use a threshold to snap to full opacity
+            let textOpacity = animationProgress
+            if (animationProgress >= 0.95) {
+              textOpacity = 1.0 // Force full opacity at 95% of animation
+            }
+
             setObsessiveOpacity(textOpacity)
+            setImageOpacity(textOpacity)
+
+            // === CENTRALIZED SIZE CALCULATIONS ===
+            const boxProgress = animationProgress // Use same progress as text/image
+
+            // Box dimensions (starts at 100%, shrinks to 70%)
+            const BOX_START_SIZE = 100
+            const BOX_END_SIZE = 70
+            const boxSizeReduction = BOX_START_SIZE - BOX_END_SIZE // 30
+
+            const width = BOX_START_SIZE - (boxProgress * boxSizeReduction)
+            const height = BOX_START_SIZE - (boxProgress * boxSizeReduction)
+
+            setScrollWidth(`${width}%`)
+            setScrollHeight(`${height}vh`)
+
+            // Image dimensions (15% bigger than original calculation)
+            const IMAGE_SCALE = 1.15 // 15% bigger
+            const imgWidth = width * 1.1 * 0.86 * IMAGE_SCALE
+            const imgHeight = height * 0.86 * IMAGE_SCALE
+
+            setImageWidth(`${imgWidth}%`)
+            setImageHeight(`${imgHeight}vh`)
+
+            // Box opacity: Keep at 100% throughout (no dimming)
+            setBoxOpacity(1)
           } else {
             // Reset to initial state when z-scroll is active
             setBoxScrollProgress(0)
             setScrollWidth('100%')
+            setImageWidth('94.6%')
             setScrollHeight('100vh')
+            setImageHeight('86vh')
             setBoxOpacity(1)
             setObsessiveY(100)
             setObsessiveOpacity(0)
+            setImageOpacity(0)
           }
         }
 
@@ -526,27 +563,27 @@ export const LearnMore = () => {
         <div className="quote-cards-grid">
           {quoteCardsData.map((card, index) => {
             // === PHASE 1: FADE IN (scroll progress 70%-100%) ===
-            // Balanced entrance - 50% faster than before
+            // Consistent entrance speed
             const appearThreshold = 0.7  // Start at 70% for good reveal window
             const fadeInProgress = Math.max(0, Math.min(1, (scrollProgress - appearThreshold) / (1 - appearThreshold)))
 
-            // Stagger each card's fade-in animation (balanced spacing)
-            const staggerDelay = index * 0.1 // Tighter spacing (was 0.15) - 50% faster
-            const fadeInOpacity = Math.max(0, Math.min(1, (fadeInProgress - staggerDelay) * 2.7)) // 50% faster (was 1.8)
+            // Stagger each card's fade-in animation (consistent spacing)
+            const staggerDelay = index * 0.1 // Consistent spacing for all cards
+            const fadeInOpacity = Math.max(0, Math.min(1, (fadeInProgress - staggerDelay) * 3.0)) // Consistent speed
 
-            // Y-axis fade-in: start from offset, move to 0 (balanced movement)
+            // Y-axis fade-in: start from offset, move to 0 (consistent movement)
             const yOffset = card.animateY
-            const fadeInY = yOffset * (1 - Math.max(0, Math.min(1, (fadeInProgress - staggerDelay) * 1.8))) // 50% faster (was 1.2)
+            const fadeInY = yOffset * (1 - Math.max(0, Math.min(1, (fadeInProgress - staggerDelay) * 3.0))) // Match opacity speed
 
             // === PHASE 2: FADE OUT IN REVERSE (as borders close in) ===
-            // Cards fade out synchronized with box shrinking (BIDIRECTIONAL, balanced speed)
+            // Cards fade out synchronized with box shrinking (BIDIRECTIONAL, consistent speed)
             const totalCards = quoteCardsData.length
             const reverseIndex = totalCards - 1 - index
-            const reverseStaggerDelay = reverseIndex * 0.06  // Even tighter stagger for more fade time
+            const reverseStaggerDelay = reverseIndex * 0.08  // Stagger spacing for fade-out
 
-            // Fade out happens gradually over FULL range to ensure completion
+            // Fade out happens in first 50% of box scroll (0-50%), leaving space for text animation
             const fadeOutStart = 0.0   // Start immediately when box scroll begins
-            const fadeOutEnd = 1.0     // Full 100% of scroll
+            const fadeOutEnd = 0.5     // End at 50% of scroll
             const fadeOutRange = fadeOutEnd - fadeOutStart
 
             // Calculate fade progress (BIDIRECTIONAL - works when scrolling up or down)
@@ -554,11 +591,11 @@ export const LearnMore = () => {
               ? Math.max(0, Math.min(1, (boxScrollProgress - fadeOutStart) / fadeOutRange))
               : 0
 
-            // Opacity: 1 → 0 with reverse stagger (VERY strong multiplier to guarantee complete fade)
-            const fadeOutOpacity = 1 - Math.max(0, Math.min(1, (fadeOutProgress - reverseStaggerDelay) * 4.0))  // Much stronger (was 2.5)
+            // Opacity: 1 → 0 with reverse stagger (stronger multiplier to complete in shorter range)
+            const fadeOutOpacity = 1 - Math.max(0, Math.min(1, (fadeOutProgress - reverseStaggerDelay) * 2.5))
 
-            // Y-axis fade-out: move to opposite direction (balanced drift)
-            const fadeOutY = -yOffset * Math.max(0, Math.min(1, (fadeOutProgress - reverseStaggerDelay) * 2.5))  // Increased for smoother exit
+            // Y-axis fade-out: move to opposite direction (consistent drift)
+            const fadeOutY = -yOffset * Math.max(0, Math.min(1, (fadeOutProgress - reverseStaggerDelay) * 2.5))
 
             // === COMBINE PHASES (BIDIRECTIONAL) ===
             // Always use the most appropriate phase based on scroll state
@@ -621,12 +658,14 @@ export const LearnMore = () => {
               style={{
                 width: scrollWidth,
                 height: scrollHeight,
+                x: boxParallaxX, // Parallax mouse movement (slowest - furthest back)
+                y: boxParallaxY,
                 background: '#590D0F',
                 opacity: boxOpacity, // Semi-transparent during animation to see through
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                transition: 'width 0.2s ease-out, height 0.2s ease-out, opacity 0.2s ease-out', // SLOWER transitions (was 0.1s)
+                transition: 'width 0.15s ease-out, height 0.15s ease-out, opacity 0.15s ease-out', // Consistent transitions
               }}
             >
               {/* Inner content - will go here */}
@@ -651,9 +690,30 @@ export const LearnMore = () => {
             ref={scrollContainerRef}
             style={{
               position: 'relative',
-              minHeight: '400vh', // Extended to 400vh to match maxScroll (SLOWER animations)
+              minHeight: '300vh', // 300vh to match maxScroll
               background: 'transparent',
               zIndex: 1,
+            }}
+          />
+
+          {/* Placeholder image - slides in from left between box and text */}
+          <motion.img
+            src="/placeholder.webp"
+            alt=""
+            style={{
+              position: 'fixed',
+              top: '55%',
+              left: '50%',
+              x: placeholderParallaxX, // Parallax mouse movement (medium speed - middle layer)
+              y: placeholderParallaxY,
+              translateX: '-50%', // Keep centered (separate from parallax)
+              translateY: '-50%',
+              opacity: imageOpacity,
+              zIndex: 12,
+              width: imageWidth, // Reduced by 14% from 1.1x box width
+              height: imageHeight, // Reduced by 14% from box height
+              objectFit: 'cover', // Cover the entire box area
+              pointerEvents: 'none',
             }}
           />
 
@@ -661,9 +721,11 @@ export const LearnMore = () => {
           <motion.div
             style={{
               position: 'fixed',
-              bottom: '12%', // 12% from bottom (moved lower)
+              bottom: '2%', // 6% from bottom (6% lower than before)
               left: '8%', // 8% from left (adjusted)
-              transform: `translateY(${obsessiveY}%)`, // Moves up from off-screen
+              x: obsessiveParallaxX, // Parallax mouse movement (fastest - closest)
+              y: obsessiveParallaxY,
+              translateY: `${obsessiveY}%`, // Moves up from off-screen (separate from parallax)
               opacity: obsessiveOpacity, // Fades in with position after cards are gone
               zIndex: 15, // Above everything
               pointerEvents: 'none',
