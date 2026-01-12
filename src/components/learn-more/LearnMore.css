@@ -80,7 +80,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 6rem 4rem 8rem 4rem;
+  padding: clamp(4rem, 8vh, 8rem) clamp(2rem, 4vw, 4rem);
   overflow: hidden;
   background: transparent; /* Inherit from container for smooth color transition */
   perspective: 800px;
@@ -97,9 +97,9 @@
 .opening-content {
   position: relative;
   z-index: 10;
-  max-width: 900px;
+  max-width: 900px; /* Fixed width */
   text-align: left;
-  margin-left: 8rem;
+  margin-left: 8rem; /* Fixed margin */
 }
 
 .opening-headline {
@@ -146,32 +146,32 @@
 .floating-image-1 {
   top: 8%;
   left: 25%;
-  width: 224px; /* 280 * 0.8 */
-  height: 291px; /* 364 * 0.8 */
+  width: 224px; /* Fixed size - 280 * 0.8 */
+  height: 291px; /* Fixed size - 364 * 0.8 */
   background-image: url('/images/Wave x Maki Photo.webp');
 }
 
 .floating-image-2 {
   top: 12%;
   right: 8%;
-  width: 258px; /* 322 * 0.8 */
-  height: 190px; /* 238 * 0.8 */
+  width: 258px; /* Fixed size - 322 * 0.8 */
+  height: 190px; /* Fixed size - 238 * 0.8 */
   background-image: url('/images/Legends Day Still 002.webp');
 }
 
 .floating-image-3 {
   bottom: 22%;
   left: 5%;
-  width: 241px; /* 301 * 0.8 */
-  height: 190px; /* 238 * 0.8 */
+  width: 241px; /* Fixed size - 301 * 0.8 */
+  height: 190px; /* Fixed size - 238 * 0.8 */
   background-image: url('/images/Wave x Maki Photo (2).webp');
 }
 
 .floating-image-4 {
   bottom: 18%;
   right: 8%;
-  width: 274px; /* 343 * 0.8 */
-  height: 207px; /* 259 * 0.8 */
+  width: 274px; /* Fixed size - 343 * 0.8 */
+  height: 207px; /* Fixed size - 259 * 0.8 */
   background-image: url('/images/Legends Day Still 014.webp');
 }
 
@@ -179,8 +179,8 @@
   bottom: 28%;
   left: 50%;
   transform: translateX(-50%);
-  width: 241px; /* 301 * 0.8 */
-  height: 179px; /* 224 * 0.8 */
+  width: 241px; /* Fixed size - 301 * 0.8 */
+  height: 179px; /* Fixed size - 224 * 0.8 */
   background-image: url('/images/The Legends Day.webp');
   z-index: 2;
 }
@@ -188,8 +188,8 @@
 .floating-image-6 {
   bottom: 45%;
   left: 12%;
-  width: 207px; /* 259 * 0.8 */
-  height: 162px; /* 203 * 0.8 */
+  width: 207px; /* Fixed size - 259 * 0.8 */
+  height: 162px; /* Fixed size - 203 * 0.8 */
   background-image: url('/images/LoadInImage-min.webp');
 }
 
@@ -314,7 +314,7 @@
   left: 0;
   width: 100%;
   height: 100vh;
-  padding: 4rem 4rem; /* Reduced padding to fit cards in viewport */
+  padding: clamp(2rem, 4vw, 4rem); /* Responsive padding */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -325,15 +325,15 @@
 
 .quote-cards-grid {
   position: relative;
-  max-width: 900px;
+  max-width: 900px; /* Fixed max width */
   width: 100%;
   margin: 0 auto;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 1rem;
-  padding: 0 2rem;
+  gap: 1rem; /* Fixed gap */
+  padding: 0 2rem; /* Fixed padding */
   align-items: start;
-  transform: scale(1.02); /* Increased by 20% from 0.85 (0.85 * 1.2 ≈ 1.02) */
+  transform: scale(0.95);
   transform-origin: center center;
 }
 
@@ -383,39 +383,66 @@
   z-index: 1;
 }
 
-/* Responsive adjustments */
+/* Responsive adjustments - keep quote cards at fixed scale */
 @media (max-width: 1200px) {
-  .quote-cards-grid {
-    max-width: 900px;
-    gap: 1.5rem;
+  .opening-content {
+    margin-left: 4rem;
   }
 }
 
-@media (max-width: 900px) {
+@media (max-width: 1024px) {
   .quote-cards-grid {
     grid-template-columns: repeat(2, 1fr);
     gap: 1.5rem;
     padding: 0 1rem;
+    transform: scale(0.82); /* Keep same scale */
   }
 
   .quote-cards-section {
-    padding: 6rem 1rem;
+    padding: 4rem 1rem;
   }
 
-  /* Reset staggered margins on mobile */
+  /* Reset staggered margins for 2-column layout */
   .quote-card-wrapper:nth-child(n) {
     margin-top: 0 !important;
+  }
+
+  .opening-content {
+    margin-left: 2rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .quote-cards-grid {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+    max-width: 480px;
+    transform: scale(0.82); /* Keep same scale */
+  }
+
+  .quote-cards-section {
+    padding: 3rem 1rem;
+  }
+
+  .opening-section {
+    padding: 4rem 2rem;
+  }
+
+  .opening-content {
+    margin-left: 0;
+    max-width: 100%;
   }
 }
 
 @media (max-width: 600px) {
   .quote-cards-grid {
-    grid-template-columns: 1fr;
-    gap: 2rem;
+    gap: 1.5rem;
+    max-width: 100%;
+    transform: scale(0.82); /* Keep same scale */
   }
 
   .quote-cards-section {
-    padding: 4rem 1rem;
+    padding: 2rem 0.5rem;
   }
 }
 
@@ -689,22 +716,26 @@
   .value-content,
   .map-section {
     grid-template-columns: 1fr;
-    gap: 4rem;
+    gap: clamp(3rem, 6vw, 4rem);
+    padding: clamp(6rem, 10vh, 8rem) clamp(2rem, 4vw, 4rem);
   }
 
   .vertical-word {
-    font-size: 6rem;
-    right: 1rem;
+    font-size: clamp(3.5rem, 7vw, 6rem);
+    right: clamp(0.5rem, 1.5vw, 1rem);
   }
 
   .portrait-grid {
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 2rem;
+    grid-template-columns: repeat(auto-fit, minmax(min(220px, 100%), 1fr));
+    gap: clamp(1.5rem, 3vw, 2rem);
+  }
+
+  .portrait-section {
+    padding: clamp(8rem, 15vh, 12rem) clamp(2rem, 4vw, 4rem);
   }
 }
 
 @media (max-width: 768px) {
-  .opening-section,
   .portrait-section,
   .value-section,
   .map-section,
@@ -713,18 +744,21 @@
     padding: 4rem 2rem;
   }
 
+  /* Keep header images/squares at original size - only hide some on mobile */
   .floating-image-1,
-  .floating-image-2 {
+  .floating-image-2,
+  .floating-image-6 {
     display: none;
   }
 
-  .decorative-square {
-    width: 16px;
-    height: 16px;
-  }
+  /* Don't scale remaining images - keep fixed sizes */
+
+  /* Don't scale decorative squares - keep fixed sizes */
 
   .portrait-grid {
     grid-template-columns: 1fr;
+    max-width: 400px;
+    margin: 0 auto;
   }
 
   .portrait-card:nth-child(odd) {
@@ -733,6 +767,65 @@
 
   .vertical-word {
     display: none;
+  }
+
+  .map-section,
+  .value-content {
+    gap: 3rem;
+  }
+}
+
+/* ==================== BOX-IN-BOX SECTION RESPONSIVE ADJUSTMENTS ==================== */
+
+/* Create CSS custom properties for responsive scaling */
+:root {
+  --box-scale: 1;
+  --box-vw-scale: 1;
+  --box-vh-scale: 1;
+}
+
+@media (max-width: 1600px) {
+  :root {
+    --box-scale: 0.95;
+    --box-vw-scale: 0.95;
+  }
+}
+
+@media (max-width: 1440px) {
+  :root {
+    --box-scale: 0.9;
+    --box-vw-scale: 0.92;
+  }
+}
+
+@media (max-width: 1200px) {
+  :root {
+    --box-scale: 0.85;
+    --box-vw-scale: 0.88;
+  }
+}
+
+@media (max-width: 1024px) {
+  :root {
+    --box-scale: 0.75;
+    --box-vw-scale: 0.8;
+    --box-vh-scale: 0.9;
+  }
+}
+
+@media (max-width: 768px) {
+  :root {
+    --box-scale: 0.65;
+    --box-vw-scale: 0.7;
+    --box-vh-scale: 0.85;
+  }
+}
+
+@media (max-width: 600px) {
+  :root {
+    --box-scale: 0.55;
+    --box-vw-scale: 0.6;
+    --box-vh-scale: 0.8;
   }
 }
 

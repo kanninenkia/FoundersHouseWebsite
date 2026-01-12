@@ -6,7 +6,7 @@
 .quote-card {
   position: relative;
   width: 100%;
-  max-width: 380px; /* Smaller for grid layout */
+  max-width: min(380px, 100%); /* Fluid max-width */
   aspect-ratio: 3/5; /* Taller - changed from 4/5 to make more vertical */
   overflow: hidden;
   border-radius: 0;
@@ -20,6 +20,12 @@
 
 .quote-card:hover {
   transform: scale(1.02);
+}
+
+@media (max-width: 1024px) {
+  .quote-card {
+    max-width: min(400px, 100%);
+  }
 }
 
 /* Image background */
@@ -56,7 +62,7 @@
   position: relative;
   z-index: 3;
   height: 100%;
-  padding: 2rem;
+  padding: clamp(1.5rem, 3vw, 2rem);
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
@@ -64,23 +70,23 @@
 
 /* Quote text - above name */
 .quote-card-text {
-  font-size: clamp(0.85rem, 1.1vw, 1.1rem);
+  font-size: clamp(0.8rem, 1.1vw, 1.1rem);
   line-height: 1.5;
   color: rgba(255, 255, 255, 0.95);
-  margin: 0 0 1rem 0; /* Reduced from 1.5rem to bring closer to name */
+  margin: 0 0 clamp(0.75rem, 1.5vw, 1rem) 0;
   font-weight: 400;
   font-style: italic;
 }
 
 /* Name - bottom 18% of card, split into two lines */
 .quote-card-name {
-  font-size: clamp(1.5rem, 2.2vw, 2.2rem);
+  font-size: clamp(1.4rem, 2.2vw, 2.2rem);
   font-weight: 900;
   line-height: 1.1;
   letter-spacing: -0.02em;
   text-transform: uppercase;
   margin: 0;
-  min-height: 18%;
+  min-height: clamp(16%, 2.5vw, 18%);
   display: flex;
   flex-direction: column;
   align-items: flex-start; /* Left aligned */
@@ -97,18 +103,38 @@
 @media (max-width: 768px) {
   .quote-card {
     max-width: 100%;
+    aspect-ratio: 3/4.5; /* Slightly less tall on mobile */
   }
 
   .quote-card-content {
-    padding: 1.5rem;
+    padding: clamp(1.25rem, 2.5vw, 1.5rem);
   }
 
   .quote-card-text {
-    font-size: 0.9rem;
-    margin-bottom: 1rem;
+    font-size: clamp(0.8rem, 2vw, 0.95rem);
+    margin-bottom: clamp(0.75rem, 1.5vw, 1rem);
   }
 
   .quote-card-name {
-    font-size: 1.5rem;
+    font-size: clamp(1.4rem, 3.5vw, 1.75rem);
+  }
+}
+
+@media (max-width: 600px) {
+  .quote-card {
+    aspect-ratio: 3/4.2;
+  }
+
+  .quote-card-content {
+    padding: clamp(1rem, 2vw, 1.25rem);
+  }
+
+  .quote-card-text {
+    font-size: clamp(0.75rem, 1.8vw, 0.9rem);
+    line-height: 1.4;
+  }
+
+  .quote-card-name {
+    font-size: clamp(1.25rem, 3vw, 1.5rem);
   }
 }

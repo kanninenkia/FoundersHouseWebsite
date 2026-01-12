@@ -417,7 +417,6 @@ export const LearnMore = () => {
   const [horsesOpacity, setHorsesOpacity] = useState(0)
   const [phase4Opacity, setPhase4Opacity] = useState(1)
   const [footerOpacity, setFooterOpacity] = useState(0)
-  const [bgColorProgress, setBgColorProgress] = useState(0)
   const [borderHeight, setBorderHeight] = useState(0) // Border animation: 0 → 100vh → 30vh
 
   useEffect(() => {
@@ -682,13 +681,12 @@ export const LearnMore = () => {
                     const fadeOutProgress = Math.min(fifthProgress * 2, 1) // 0 to 1 over first 50%
                     setPhase4Opacity(1 - EASING.out(fadeOutProgress))
 
-                    // Animate border: Grows throughout most of the phase
-                    // Starts at 25%, continuous growth matching other phase reveals
-                    const borderProgress = Math.max(0, (fifthProgress - 0.25) / 0.75) // 0 to 1 from 25% onwards
+                    // Animate border: Grows throughout first part of the phase
+                    // Starts at 25%, completes at 70% (leaves room for footer fade)
+                    const borderProgress = Math.max(0, Math.min(1, (fifthProgress - 0.25) / 0.45)) // 0 to 1 from 25% to 70%
                     setBorderHeight(EASING.inOut(borderProgress) * 75) // 0vh to 75vh
 
                     // Transition background color from #2B0A05 (43, 10, 5) to #590D0F (89, 13, 15)
-                    setBgColorProgress(fifthProgress)
                     const r = Math.round(43 + (89 - 43) * fifthProgress)
                     const g = Math.round(10 + (13 - 10) * fifthProgress)
                     const b = Math.round(5 + (15 - 5) * fifthProgress)
@@ -696,24 +694,24 @@ export const LearnMore = () => {
 
                     // Fade in CTA text: Starts right as border begins (at 25%)
                     // Scrolls in alongside the border animation
-                    const ctaProgress = Math.max(0, (fifthProgress - 0.25) / 0.55) // 0 to 1 from 25% to 80%
+                    const ctaProgress = Math.max(0, Math.min(1, (fifthProgress - 0.25) / 0.35)) // 0 to 1 from 25% to 60%
                     setCtaTextOpacity(EASING.out(ctaProgress))
 
                     // Fade in horses image: Starts shortly after text (at 35%)
-                    // Completes as border finishes
-                    const horsesProgress = Math.max(0, (fifthProgress - 0.35) / 0.50) // 0 to 1 from 35% to 85%
+                    // Completes as border approaches completion
+                    const horsesProgress = Math.max(0, Math.min(1, (fifthProgress - 0.35) / 0.30)) // 0 to 1 from 35% to 65%
                     setHorsesOpacity(EASING.out(horsesProgress))
 
-                    // Fade in footer: Starts right after border completes
-                    // Border animation ends at fifthProgress = 1.0 (when borderProgress = 1)
-                    // Start footer fade immediately after (map 1.0+ to 0-1)
-                    // Since we're in a 2.0x duration phase, map from 100% onwards
-                    const footerProgress = borderProgress // Use border progress directly - fades as border grows
+                    // Fade in footer: Starts RIGHT AFTER border settles (at 70%)
+                    // Border completes at 70%, footer fades from 70% to 90%
+                    const footerStartProgress = 0.70 // Border finishes at 70%
+                    const footerDuration = 0.20 // Fade in over 20% of phase duration (70% to 90%)
+                    const footerProgress = Math.max(0, Math.min(1, (fifthProgress - footerStartProgress) / footerDuration))
                     setFooterOpacity(EASING.out(footerProgress))
+
                   } else {
                     // Reset phase 5 if not reached
                     setPhase4Opacity(1)
-                    setBgColorProgress(0)
                     setPhase5BackgroundColor('')
                     setBorderHeight(0)
                     setCtaTextOpacity(0)
@@ -724,7 +722,6 @@ export const LearnMore = () => {
                   // Reset phase 4 if not reached
                   setFourthImageOpacity(0)
                   setPhase4Opacity(1)
-                  setBgColorProgress(0)
                   setPhase5BackgroundColor('')
                   setBorderHeight(0)
                   setCtaTextOpacity(0)
@@ -1036,7 +1033,7 @@ export const LearnMore = () => {
             flexDirection: 'column',
             alignItems: 'center',
             justifyContent: 'flex-start',
-            paddingTop: '7vh', // Moved down by 2vh (was 5vh)
+            paddingTop: '7vh',
             paddingBottom: '0',
             zIndex: 20,
             pointerEvents: 'auto',
@@ -1084,21 +1081,24 @@ export const LearnMore = () => {
             }}
           />
 
-          {/* Footer */}
-          <motion.div
-            style={{
-              opacity: footerOpacity,
-              width: '100vw',
-              marginTop: '6vh',
-              maxHeight: '25vh',
-              position: 'relative',
-              left: '50%',
-              transform: 'translateX(-50%)',
-            }}
-          >
-            <Footer />
-          </motion.div>
         </motion.section>
+      )}
+
+      {/* Footer - Fixed position, independent of CTA scroll */}
+      {zScrollComplete && (
+        <motion.div
+          style={{
+            position: 'fixed',
+            bottom: 0,
+            left: 0,
+            width: '100vw',
+            opacity: footerOpacity,
+            zIndex: 25,
+            pointerEvents: footerOpacity > 0 ? 'auto' : 'none',
+          }}
+        >
+          <Footer />
+        </motion.div>
       )}
     </motion.div>
   )
