@@ -148,7 +148,7 @@
   left: 25%;
   width: 224px; /* 280 * 0.8 */
   height: 291px; /* 364 * 0.8 */
-  background-image: url('/Wave x Maki Photo.webp');
+  background-image: url('/images/Wave x Maki Photo.webp');
 }
 
 .floating-image-2 {
@@ -156,7 +156,7 @@
   right: 8%;
   width: 258px; /* 322 * 0.8 */
   height: 190px; /* 238 * 0.8 */
-  background-image: url('/Legends Day Still 002.webp');
+  background-image: url('/images/Legends Day Still 002.webp');
 }
 
 .floating-image-3 {
@@ -164,7 +164,7 @@
   left: 5%;
   width: 241px; /* 301 * 0.8 */
   height: 190px; /* 238 * 0.8 */
-  background-image: url('/Wave x Maki Photo (2).webp');
+  background-image: url('/images/Wave x Maki Photo (2).webp');
 }
 
 .floating-image-4 {
@@ -172,7 +172,7 @@
   right: 8%;
   width: 274px; /* 343 * 0.8 */
   height: 207px; /* 259 * 0.8 */
-  background-image: url('/Legends Day Still 014.webp');
+  background-image: url('/images/Legends Day Still 014.webp');
 }
 
 .floating-image-5 {
@@ -181,7 +181,7 @@
   transform: translateX(-50%);
   width: 241px; /* 301 * 0.8 */
   height: 179px; /* 224 * 0.8 */
-  background-image: url('/The Legends Day.webp');
+  background-image: url('/images/The Legends Day.webp');
   z-index: 2;
 }
 
@@ -190,7 +190,7 @@
   left: 12%;
   width: 207px; /* 259 * 0.8 */
   height: 162px; /* 203 * 0.8 */
-  background-image: url('/LoadInImage-min.webp');
+  background-image: url('/images/LoadInImage-min.webp');
 }
 
 .image-placeholder {

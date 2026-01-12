@@ -468,7 +468,7 @@ export const HelsinkiViewer = ({ shouldLoad = true, shouldPause = false, scrollP
         rotate={true}
         rotateDegrees={5}
       >
-        <img src="/logo.svg" alt="Founders House Logo" className="cube-logo" />
+        <img src="/logos/logo.svg" alt="Founders House Logo" className="cube-logo" />
       </MagneticElement>
 
       {/* Hamburger Menu - Top Right with Magnetic Effect & Morph Animation */}

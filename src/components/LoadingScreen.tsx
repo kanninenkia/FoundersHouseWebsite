@@ -53,12 +53,12 @@ export const LoadingScreen = ({ onComplete, duration, scrollProgress }: LoadingS
   // Select ONE random image on component mount
   const [loadingImage] = useState(() => {
     const images = [
-      '/LoadInImage-min.webp',
-      '/The Legends Day.webp',
-      '/Wave x Maki Photo (2).webp',
-      '/Wave x Maki Photo.webp',
-      '/Legends Day Still 002.webp',
-      '/Legends Day Still 014.webp'
+      '/images/LoadInImage-min.webp',
+      '/images/The Legends Day.webp',
+      '/images/Wave x Maki Photo (2).webp',
+      '/images/Wave x Maki Photo.webp',
+      '/images/Legends Day Still 002.webp',
+      '/images/Legends Day Still 014.webp'
     ]
     // Pick one random image
     const randomIndex = Math.floor(Math.random() * images.length)
@@ -324,7 +324,7 @@ export const LoadingScreen = ({ onComplete, duration, scrollProgress }: LoadingS
             className={`loading-logo ${shouldBlurLogo ? 'blur-out' : ''}`}
             style={{ height: '76px', width: 'auto' }}
           >
-            <img src="/fhlogo_horizontal.png" alt="Founders House" style={{ height: '100%', width: 'auto', display: 'block' }} />
+            <img src="/logos/fhlogo_horizontal.png" alt="Founders House" style={{ height: '100%', width: 'auto', display: 'block' }} />
           </div>
         )}
         {showLoadingBar && (

@@ -16,7 +16,7 @@ interface QuoteCardProps {
 export const QuoteCard = ({
   name,
   quote,
-  imageUrl = '/LoadInImage-min.webp',
+  imageUrl = '/images/LoadInImage-min.webp',
   nameColor = 'white'
 }: QuoteCardProps) => {
   // Split name into first and last

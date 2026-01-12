@@ -1,9 +1,13 @@
-/**
- * FloatingImage Component
- * Decorative images with parallax effect and depth transitions
- */
-
 import { motion, MotionValue, useTransform } from 'framer-motion'
+
+export const FLOATING_IMAGES_CONFIG = [
+  { parallaxRange: [-8, 8] as [number, number], initialZ: 2000, duration: 1.4, delay: 0.8 },
+  { parallaxRange: [8, -8] as [number, number], initialZ: 1800, duration: 1.3, delay: 0.5 },
+  { parallaxRange: [-12, 12] as [number, number], initialZ: 2200, duration: 1.5, delay: 0.4 },
+  { parallaxRange: [10, -10] as [number, number], initialZ: 2500, duration: 1.6, delay: 0.6 },
+  { parallaxRange: [-5, 5] as [number, number], initialZ: 2800, duration: 1.7, delay: 0.8 },
+  { parallaxRange: [-7, 7] as [number, number], initialZ: 2100, duration: 1.45, delay: 0.55 },
+]
 
 interface FloatingImageProps {
   index: number

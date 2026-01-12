@@ -116,7 +116,7 @@ export class HelsinkiScene {
 
     // Load main map
     loadDualModels({
-      mainMapPath: '/map.glb',
+      mainMapPath: '/models/map.glb',
       scene: this.scene,
       camera: this.camera,
       controls: this.controls,

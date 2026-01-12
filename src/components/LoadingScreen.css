@@ -231,7 +231,7 @@
   margin: 0;
   padding: 0;
   /* Ultimate fallback - show LoadInImage as CSS background while React/images load */
-  background: url('/LoadInImage.png') center/cover no-repeat;
+  background: url('/images/LoadInImage-min.webp') center/cover no-repeat;
 }
 
 .loading-background-image img {

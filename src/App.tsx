@@ -61,14 +61,14 @@ function AppContent() {
     }
   }, [location.pathname])
 
-  // Handle navigation from map to learn more
+  // Handle navigation from map to home
   const handleLearnMoreClick = () => {
     sessionStorage.setItem('transitioningToLearnMore', 'true')
 
     // Navigate immediately - timing is now controlled by HelsinkiViewer's callback
-    navigate('/learn-more')
-    // Keep the flag so Learn More knows it came from transition
-    // It will be cleared after Learn More mounts
+    navigate('/home')
+    // Keep the flag so home page knows it came from transition
+    // It will be cleared after home page mounts
   }
 
   // Expose transition controls globally for HelsinkiViewer to use
@@ -96,7 +96,7 @@ function AppContent() {
             />
           }
         />
-        <Route path="/learn-more" element={<LearnMore />} />
+        <Route path="/home" element={<LearnMore />} />
       </Routes>
 
       {/* Transition overlay persists across route changes */}

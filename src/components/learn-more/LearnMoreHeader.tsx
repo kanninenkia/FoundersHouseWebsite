@@ -46,8 +46,8 @@ export const LearnMoreHeader = () => {
           ease: [0.22, 1, 0.36, 1]
         }}
       >
-        <img src="/logoWhite.png" alt="Founders House" className="header-logo" />
-        <img src="/hamburgerWhite.svg" alt="Menu" className="header-menu" />
+        <img src="/logos/logoWhite.png" alt="Founders House" className="header-logo" />
+        <img src="/icons/hamburgerWhite.svg" alt="Menu" className="header-menu" />
       </motion.header>
 
       {/* Back to Map Button */}
