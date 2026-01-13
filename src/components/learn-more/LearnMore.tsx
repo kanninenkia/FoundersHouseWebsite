@@ -1,12 +1,11 @@
-import { useEffect, useRef, useState } from 'react'
-import { motion, useTransform, useMotionValue, useSpring, MotionValue } from 'framer-motion'
+import { useEffect, useRef, useState, useMemo } from 'react'
+import { motion, useTransform, useMotionValue, useSpring } from 'framer-motion'
 import Lenis from '@studio-freight/lenis'
-import { QuoteCard } from './QuoteCard'
-import { LearnMoreHeader } from './LearnMoreHeader'
-import { FloatingImage, FLOATING_IMAGES_CONFIG } from './FloatingImage'
-import { quoteCardsData } from './quoteCardsData'
-import { BoxInBoxSection } from './BoxInBoxSection'
-import Footer from '../Footer'
+import { LearnMoreHeader, OpeningSection } from './sections/header'
+import { QuotesSection } from './sections/quotes'
+import { ScrollPhasesContainer } from './sections/scroll-phases'
+import { CTASection } from './sections/cta'
+import { Footer } from './sections/footer'
 import './LearnMore.css'
 
 const EASING = {
@@ -109,95 +108,6 @@ const ANIMATION_CONFIG = {
     obsessiveLeft: '8%',
     imageTop: '55%',
   },
-}
-
-interface DecorativeSquareProps {
-  index: number
-  hasEnteredFromTransition: boolean
-  smoothMouseX: MotionValue<number>
-  smoothMouseY: MotionValue<number>
-  squareDepthZ: MotionValue<number>
-  depthTransitionProgress: MotionValue<number>
-}
-
-const DecorativeSquare = ({
-  index,
-  hasEnteredFromTransition,
-  smoothMouseX,
-  smoothMouseY,
-  squareDepthZ,
-  depthTransitionProgress
-}: DecorativeSquareProps) => {
-  const { decorativeSquares } = ANIMATION_CONFIG
-  const targetOpacity = decorativeSquares.opacityIndices.includes(index)
-    ? decorativeSquares.opacityDim
-    : decorativeSquares.opacityFull
-
-  const parallaxBase = decorativeSquares.parallaxBase
-  const parallaxX = useTransform(smoothMouseX, [-1, 1], [-parallaxBase - (index * 2), parallaxBase + (index * 2)])
-  const parallaxY = useTransform(smoothMouseY, [-1, 1], [-parallaxBase - (index * 2), parallaxBase + (index * 2)])
-  const depthOpacityTransform = useTransform(depthTransitionProgress, (progress) => {
-    if (progress === 0) return targetOpacity
-    return Math.max(0, targetOpacity - progress * 1.5)
-  })
-
-  if (hasEnteredFromTransition) {
-    return (
-      <motion.div
-        key={`square-${index}`}
-        className={`decorative-square square-${index}`}
-        style={{
-          x: parallaxX,
-          y: parallaxY,
-          z: squareDepthZ,
-          opacity: depthOpacityTransform,
-        }}
-        initial={{
-          z: 2500,
-          opacity: 0,
-        }}
-        animate={{
-          z: [2500, -150, 0],
-          opacity: [0, targetOpacity, targetOpacity],
-        }}
-        transition={{
-          duration: 1.4,
-          delay: 0.9 + (index * 0.05),
-          ease: EASING.bezier.out,
-          times: [0, 0.7, 1],
-        }}
-      />
-    )
-  }
-
-  const startZ = 3000 + (index * 150)
-  const finalZ = 0
-
-  return (
-    <motion.div
-      key={`square-${index}`}
-      className={`decorative-square square-${index}`}
-      style={{
-        x: parallaxX,
-        y: parallaxY,
-        z: squareDepthZ,
-        opacity: depthOpacityTransform,
-      }}
-      initial={{
-        opacity: 0,
-        z: startZ,
-      }}
-      animate={{
-        opacity: targetOpacity,
-        z: finalZ,
-      }}
-      transition={{
-        duration: 1.2 + (index * 0.08),
-        ease: EASING.bezier.out,
-        delay: 0.1 + (index * 0.04)
-      }}
-    />
-  )
 }
 
 export const LearnMore = () => {
@@ -308,10 +218,6 @@ export const LearnMore = () => {
   const textParallaxX = useTransform(smoothMouseX, [-1, 1], ANIMATION_CONFIG.parallax.text.x)
   const textParallaxY = useTransform(smoothMouseY, [-1, 1], ANIMATION_CONFIG.parallax.text.y)
 
-  const floatingImagesConfig = FLOATING_IMAGES_CONFIG.map((config: typeof FLOATING_IMAGES_CONFIG[0], i: number) =>
-    i === 0 && hasEnteredFromTransition ? { ...config, delay: 0.8 } : config
-  )
-
   const textDepthZ = useSpring(useTransform(depthTransitionProgress, [0, 0.4], [0, 1500]), ANIMATION_CONFIG.virtualScrollSpring)
   const imageDepthZ = useSpring(useTransform(depthTransitionProgress, [0, 0.4], [0, 2500]), ANIMATION_CONFIG.virtualScrollSpring)
   const squareDepthZ = useSpring(useTransform(depthTransitionProgress, [0, 0.4], [0, 3500]), ANIMATION_CONFIG.virtualScrollSpring)
@@ -361,7 +267,8 @@ export const LearnMore = () => {
 
   const depthOpacityRaw = useTransform(depthTransitionProgress, [0, 0.2, 0.4], [1, 0.5, 0])
   const depthOpacity = useSpring(depthOpacityRaw, { stiffness: 150, damping: 25 })
-  const finalDepthOpacity = hasSettled ? 1 : depthOpacity
+  const settledOpacity = useMotionValue(1)
+  const finalDepthOpacity = useMemo(() => hasSettled ? settledOpacity : depthOpacity, [hasSettled, settledOpacity, depthOpacity])
 
   const openingSectionOpacity = useTransform(depthTransitionProgress, [0, 0.4, 0.6], [1, 0.3, 0])
   const cardsInteractive = scrollProgress > ANIMATION_CONFIG.timing.cardsFadeIn.threshold
@@ -812,136 +719,33 @@ export const LearnMore = () => {
     >
       <LearnMoreHeader />
 
-      {(showBackground || !hasEnteredFromTransition) && (
-      <motion.section
-        className="opening-section"
-        style={{
-          opacity: openingSectionOpacity,
-          pointerEvents: 'auto'
-        }}
-      >
-        <motion.div
-          className="opening-content"
-          style={{
-            x: textParallaxX,
-            y: textParallaxY,
-            z: textDepthZ,
-            opacity: finalDepthOpacity,
-          }}
-        >
-          <motion.h1
-            className="opening-headline"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{
-              duration: hasEnteredFromTransition ? 1.2 : 1.8,
-              ease: [0.22, 1, 0.36, 1],
-              delay: hasEnteredFromTransition ? 1.8 : 0.8
-            }}
-          >
-            WE BRING EXCEPTIONAL YOUNG<br />
-            TALENT UNDER ONE ROOF,<br />
-            WHERE AMBITION CONCENTRATES<br />
-            AND POTENTIAL MULTIPLIES.
-          </motion.h1>
-        </motion.div>
-        {floatingImagesConfig.map((config: typeof FLOATING_IMAGES_CONFIG[0], i: number) => (
-          <FloatingImage
-            key={`floating-image-${i + 1}`}
-            index={i}
-            className={`floating-image floating-image-${i + 1}`}
-            smoothMouseX={smoothMouseX}
-            smoothMouseY={smoothMouseY}
-            imageDepthZ={imageDepthZ}
-            finalDepthOpacity={finalDepthOpacity}
-            hasEnteredFromTransition={hasEnteredFromTransition}
-            {...config}
-          />
-        ))}
+      <OpeningSection
+        showBackground={showBackground}
+        hasEnteredFromTransition={hasEnteredFromTransition}
+        openingSectionOpacity={openingSectionOpacity}
+        textParallaxX={textParallaxX}
+        textParallaxY={textParallaxY}
+        textDepthZ={textDepthZ}
+        finalDepthOpacity={finalDepthOpacity}
+        smoothMouseX={smoothMouseX}
+        smoothMouseY={smoothMouseY}
+        imageDepthZ={imageDepthZ}
+        squareDepthZ={squareDepthZ}
+        depthTransitionProgress={depthTransitionProgress}
+        ANIMATION_CONFIG={ANIMATION_CONFIG}
+        EASING={EASING}
+      />
 
-        {hasEnteredFromTransition && [...Array(12)].map((_, i) => {
-          const targetOpacity = i % 3 === 0 ? 0.4 : 1.0
+      <QuotesSection
+        scrollProgress={scrollProgress}
+        zScrollComplete={zScrollComplete}
+        boxScrollProgress={boxScrollProgress}
+        cardsInteractive={cardsInteractive}
+        ANIMATION_CONFIG={ANIMATION_CONFIG}
+        EASING={EASING}
+      />
 
-          return (
-            <motion.div
-              key={`flythrough-square-${i}`}
-              className={`decorative-square square-${i % 12}`}
-              initial={{ z: 2500, opacity: 0 }}
-              animate={{ z: -2000, opacity: [0, targetOpacity, 0] }}
-              transition={{ duration: 1.0, delay: 0.3 + (i * 0.05), ease: EASING.bezier.inOut }}
-            />
-          )
-        })}
-        {[...Array(12)].map((_, i) => (
-          <DecorativeSquare
-            key={`square-${i}`}
-            index={i}
-            hasEnteredFromTransition={hasEnteredFromTransition}
-            smoothMouseX={smoothMouseX}
-            smoothMouseY={smoothMouseY}
-            squareDepthZ={squareDepthZ}
-            depthTransitionProgress={depthTransitionProgress}
-          />
-        ))}
-      </motion.section>
-      )}
-
-      <motion.section
-        className="quote-cards-section"
-        style={{
-          pointerEvents: cardsInteractive && !zScrollComplete ? 'auto' : 'none',
-          zIndex: scrollProgress > 0.6 ? 10 : 1,
-        }}
-      >
-        <div className="quote-cards-grid">
-          {quoteCardsData.map((card, index) => {
-            const { quoteCards, timing } = ANIMATION_CONFIG
-            const yOffset = card.animateY
-
-            // Fade in with smooth easing
-            const fadeInProgress = Math.max(0, Math.min(1, (scrollProgress - timing.cardsFadeIn.threshold) / (1 - timing.cardsFadeIn.threshold)))
-            const staggerDelay = index * quoteCards.staggerIn
-            const rawFadeInProgress = Math.max(0, Math.min(1, (fadeInProgress - staggerDelay) * quoteCards.fadeInSpeed))
-            const easedFadeIn = EASING.out(rawFadeInProgress)
-            const fadeInOpacity = easedFadeIn
-            const fadeInY = yOffset * (1 - easedFadeIn)
-
-            // Fade out with smooth easing
-            const reverseIndex = quoteCardsData.length - 1 - index
-            const reverseStaggerDelay = reverseIndex * quoteCards.staggerOut
-            const fadeOutProgress = zScrollComplete
-              ? Math.max(0, Math.min(1, (boxScrollProgress - timing.cardsFadeOut.start) / (timing.cardsFadeOut.end - timing.cardsFadeOut.start)))
-              : 0
-            const rawFadeOutProgress = Math.max(0, Math.min(1, (fadeOutProgress - reverseStaggerDelay) * quoteCards.fadeOutSpeed))
-            const easedFadeOut = EASING.out(rawFadeOutProgress)
-            const fadeOutOpacity = 1 - easedFadeOut
-            const fadeOutY = -yOffset * easedFadeOut
-
-            const finalOpacity = zScrollComplete ? fadeInOpacity * fadeOutOpacity : fadeInOpacity
-            const finalY = zScrollComplete ? fadeInY + fadeOutY : fadeInY
-
-            return (
-              <motion.div
-                key={card.name}
-                className="quote-card-wrapper"
-                style={{
-                  opacity: finalOpacity,
-                  y: finalY
-                }}
-              >
-                <QuoteCard
-                  name={card.name}
-                  quote={card.quote}
-                  imageUrl={card.imageUrl}
-                  nameColor={card.nameColor}
-                />
-              </motion.div>
-            )
-          })}
-        </div>
-      </motion.section>
-
-      <BoxInBoxSection
+      <ScrollPhasesContainer
         zScrollComplete={zScrollComplete}
         scrollContainerRef={scrollContainerRef}
         scrollWidth={scrollWidth}
@@ -1022,67 +826,11 @@ export const LearnMore = () => {
         />
       )}
 
-      {/* Phase 5: Final CTA Section */}
-      {zScrollComplete && (
-        <motion.section
-          style={{
-            position: 'relative',
-            width: '100%',
-            minHeight: '100vh',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'flex-start',
-            paddingTop: '7vh',
-            paddingBottom: '0',
-            zIndex: 20,
-            pointerEvents: 'auto',
-          }}
-        >
-          {/* CTA Text */}
-          <motion.div
-            style={{
-              opacity: ctaTextOpacity,
-              width: '95%',
-              maxWidth: '1572px',
-              textAlign: 'justify',
-            }}
-          >
-            <h2
-              style={{
-                fontFamily: 'IBM Plex Sans, -apple-system, BlinkMacSystemFont, sans-serif',
-                fontSize: 'clamp(1.7rem, 4.25vw, 3.4rem)', // Reduced height by 15%
-                fontWeight: 600,
-                color: '#FFF8F2',
-                textTransform: 'uppercase',
-                lineHeight: 1.2,
-                letterSpacing: '0.02em',
-                margin: 0,
-                textAlign: 'justify',
-                textAlignLast: 'justify',
-              }}
-            >
-              Only a handful move fast enough to be here, and they build alongside the people who will define what comes next.
-            </h2>
-          </motion.div>
-
-          {/* Horses Image */}
-          <motion.img
-            src="/images/horses.webp"
-            alt="Horses"
-            style={{
-              opacity: horsesOpacity,
-              marginTop: '6vh', // Moved down by 2vh (was 4vh)
-              width: '100%',
-              maxWidth: '1572px',
-              height: 'auto',
-              objectFit: 'contain',
-              transform: 'scaleY(0.85)', // Reduce height by 15%
-            }}
-          />
-
-        </motion.section>
-      )}
+      <CTASection
+        zScrollComplete={zScrollComplete}
+        ctaTextOpacity={ctaTextOpacity}
+        horsesOpacity={horsesOpacity}
+      />
 
       {/* Footer - Fixed position, independent of CTA scroll */}
       {zScrollComplete && (
@@ -1097,7 +845,7 @@ export const LearnMore = () => {
             pointerEvents: footerOpacity > 0 ? 'auto' : 'none',
           }}
         >
-          <Footer />
+          <Footer footerOpacity={footerOpacity} />
         </motion.div>
       )}
     </motion.div>

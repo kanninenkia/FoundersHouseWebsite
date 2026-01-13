@@ -1,5 +1,5 @@
 /**
- * LearnMoreHeader - Reusable header component for LearnMore pages
+ * LearnMoreHeader - Reusable header component for LearnMore page
  * Contains logo, menu icon, and back to map button
  * Handles all entry animation logic internally
  */
