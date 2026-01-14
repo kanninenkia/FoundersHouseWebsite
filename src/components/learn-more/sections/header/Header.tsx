@@ -11,25 +11,17 @@ import { useNavigate } from 'react-router-dom'
 export const LearnMoreHeader = () => {
   const navigate = useNavigate()
 
-  // Entry animation state
-  const [hasEnteredFromTransition, setHasEnteredFromTransition] = useState(false)
-  const [showBackground, setShowBackground] = useState(false)
+  // Entry animation state - initialize immediately to prevent flash
+  const fromTransition = sessionStorage.getItem('transitioningToLearnMore') === 'true'
+  const [hasEnteredFromTransition] = useState(fromTransition)
+  const [showBackground] = useState(true)
 
-  // Entry animation - check if coming from transition
+  // Clear the flag after component mounts
   useEffect(() => {
-    const fromTransition = sessionStorage.getItem('transitioningToLearnMore') === 'true'
-
     if (fromTransition) {
-      setHasEnteredFromTransition(true)
-      setShowBackground(true)
-
-      // Clear the flag after a delay
       setTimeout(() => {
         sessionStorage.removeItem('transitioningToLearnMore')
       }, 100)
-    } else {
-      // If not from transition, show background immediately
-      setShowBackground(true)
     }
   }, [])
 

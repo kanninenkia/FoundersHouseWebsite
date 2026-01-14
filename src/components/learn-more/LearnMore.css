@@ -16,6 +16,7 @@
   overflow-x: hidden;
 }
 
+
 /* ==================== BACK TO MAP BUTTON ==================== */
 
 .back-to-map-button {
@@ -32,17 +33,11 @@
   background: transparent;
   border: none;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
   pointer-events: auto;
+  opacity: 0;
 }
 
-.back-to-map-button:hover {
-  opacity: 0.7;
-}
-
-.back-to-map-button:active {
-  opacity: 0.5;
-}
+/* Hover/active states now handled by Framer Motion whileHover/whileTap */
 
 /* ==================== HEADER ==================== */
 
@@ -56,6 +51,7 @@
   justify-content: space-between;
   align-items: center;
   z-index: 1000;
+  opacity: 0;
 }
 
 .header-logo {
@@ -88,6 +84,8 @@
   transform-style: preserve-3d;
   pointer-events: none; /* Allow scrolling through */
   z-index: 10; /* Above quote cards section */
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
 }
 
 .opening-section * {
@@ -110,10 +108,11 @@
   text-transform: uppercase;
   color: #FFFFFF;
   margin: 0;
-  text-shadow: 
+  text-shadow:
     0 1px 2px rgba(0, 0, 0, 0.3),
     0 2px 6px rgba(0, 0, 0, 0.15);
   transform-style: preserve-3d;
+  opacity: 0;
 }
 
 /* Floating images with parallax */
@@ -128,6 +127,7 @@
     0 2px 4px rgba(0, 0, 0, 0.2),
     0 4px 8px rgba(0, 0, 0, 0.15),
     inset 0 0 0 1px rgba(255, 255, 255, 0.03);
+  opacity: 0;
 }
 
 /* Subtle lighting gradient for images */
@@ -213,6 +213,7 @@
     inset -1px -1px 1px rgba(0, 0, 0, 0.2),
     inset 1px 1px 1px rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(0, 0, 0, 0.15);
+  opacity: 0;
 }
 
 /* Subtle lighting for squares */
@@ -841,13 +842,18 @@
   }
 }
 
-/* GPU acceleration hints */
-.floating-image-1,
-.floating-image-2,
-.decorative-square,
+/* GPU acceleration hints - removed transform: translateZ(0) to prevent conflicts with Framer Motion */
 .map-container,
 .cta-section {
   will-change: transform;
   transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
+/* Floating images and decorative squares use Framer Motion transforms - no CSS transform needed */
+.floating-image-1,
+.floating-image-2,
+.decorative-square {
+  will-change: transform;
   backface-visibility: hidden;
 }

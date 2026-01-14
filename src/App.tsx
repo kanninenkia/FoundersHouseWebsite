@@ -66,7 +66,7 @@ function AppContent() {
     sessionStorage.setItem('transitioningToLearnMore', 'true')
 
     // Navigate immediately - timing is now controlled by HelsinkiViewer's callback
-    navigate('/')
+    navigate('/home')
     // Keep the flag so learn more page knows it came from transition
     // It will be cleared after learn more page mounts
   }
@@ -85,18 +85,13 @@ function AppContent() {
   return (
     <div className="App">
       <Routes location={location}>
-        <Route
-          path="/home"
-          element={
-            <LoadingScreen
+        <Route path="/" element={<LoadingScreen
               onComplete={() => {}}
               duration={6000}
               scrollProgress={scrollProgress}
               onScrollProgressChange={setScrollProgress}
-            />
-          }
-        />
-        <Route path="/" element={<LearnMore />} />
+            />} />
+        <Route path="/home" element={<LearnMore />} />
       </Routes>
 
       {/* Transition overlay persists across route changes */}

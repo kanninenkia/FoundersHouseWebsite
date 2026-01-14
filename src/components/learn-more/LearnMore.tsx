@@ -1,139 +1,26 @@
-import { useEffect, useRef, useState, useMemo } from 'react'
-import { motion, useTransform, useMotionValue, useSpring } from 'framer-motion'
+import { useEffect, useRef, useState } from 'react'
+import { motion, useTransform, useSpring } from 'framer-motion'
 import Lenis from '@studio-freight/lenis'
 import { LearnMoreHeader, OpeningSection } from './sections/header'
 import { QuotesSection } from './sections/quotes'
 import { ScrollPhasesContainer } from './sections/scroll-phases'
 import { CTASection } from './sections/cta'
 import { Footer } from './sections/footer'
+import { ANIMATION_CONFIG, EASING } from './config/animationConfig'
+import { useMouseParallax } from './hooks/useMouseParallax'
+import { useVirtualScroll } from './hooks/useVirtualScroll'
+import { useBoxScrollPhases } from './hooks/useBoxScrollPhases'
 import './LearnMore.css'
-
-const EASING = {
-  // Standard ease for most animations - smooth and natural
-  standard: (t: number) => {
-    // cubic-bezier(0.4, 0, 0.2, 1)
-    return t < 0.5
-      ? 4 * t * t * t
-      : 1 - Math.pow(-2 * t + 2, 3) / 2
-  },
-  
-  // Smooth ease out for fades and reveals
-  out: (t: number) => {
-    // cubic-bezier(0.22, 1, 0.36, 1)
-    return 1 - Math.pow(1 - t, 3)
-  },
-  
-  // Gentle ease in-out for continuous movements
-  inOut: (t: number) => {
-    // cubic-bezier(0.65, 0, 0.35, 1)
-    return t < 0.5
-      ? 4 * t * t * t
-      : 1 - Math.pow(-2 * t + 2, 3) / 2
-  },
-  
-  // For framer-motion components
-  bezier: {
-    standard: [0.4, 0, 0.2, 1] as const,
-    out: [0.22, 1, 0.36, 1] as const,
-    inOut: [0.65, 0, 0.35, 1] as const,
-  }
-}
-
-const ANIMATION_CONFIG = {
-  spring: { damping: 35, stiffness: 80, mass: 0.5 },
-  virtualScrollSpring: { stiffness: 120, damping: 30, mass: 0.5, restDelta: 0.01, restSpeed: 0.01 },
-
-  maxVirtualScroll: 1.5,
-  boxScrollHeight: 3,
-
-  timing: {
-    cardsFadeOut: { start: 0, end: 0.35 },  // Reduced window for faster, complete fade out
-    textImageFadeIn: { start: 0.55, end: 0.90 },
-    cardsFadeIn: { threshold: 0.7 },
-  },
-
-  // Narrative-driven scroll phases - each phase gets equal attention
-  scrollPhases: {
-    // Phase 1: Box-in-box reveal with OBSESSIVE text (1.5x viewport)
-    phase1Duration: 1.5,
-    
-    // Phase 2: Transform to rectangle + translate + AMBITIOUS text (2.0x viewport)
-    // Sub-phase 2a: Transform elements (first half)
-    // Sub-phase 2b: Translate + reveal place2 (second half)
-    phase2Duration: 2.0,
-    
-    // Pause: Let AMBITIOUS breathe before next transformation (0.2x viewport)
-    pauseDuration: 0.2,
-    
-    // Phase 3: Rotate map + transform to NEXT-GEN + reveal place3 (2.0x viewport)
-    // Sub-phase 3a: Rotate & zoom map in place (first half)
-    // Sub-phase 3b: Move map + text transformation (second half)
-    phase3Duration: 2.0,
-    
-    // Phase 4: Sticky BUILDERS + reveal place4 (2.0x viewport)
-    // Fade out map & place3, rotate text to horizontal, stick it high, reveal place4
-    phase4Duration: 2.0,
-
-    // Phase 5: Final CTA (2.0x viewport)
-    // Fade out everything, background to dark red, fade in CTA text and horses image
-    phase5Duration: 2.0,
-  },
-
-  box: { startSize: 100, endSize: 75 },
-  imageScale: 1.15,
-
-  parallax: {
-    obsessiveText: { x: [-20, 20], y: [-20, 20] },
-    image: { x: [-12, 12], y: [-12, 12] },
-    box: { x: [-5, 5], y: [-5, 5] },
-    text: { x: [-3, 3], y: [-3, 3] },
-  },
-
-  quoteCards: {
-    fadeInSpeed: 1.8,  // Reduced from 3.0 for smoother fade-in
-    fadeOutSpeed: 2.5,  // Faster fade out to ensure complete disappearance
-    staggerIn: 0.12,    // Slightly increased for better pacing
-    staggerOut: 0.08,   // Reduced for tighter fade out sequence
-  },
-
-  decorativeSquares: {
-    parallaxBase: 15,
-    opacityIndices: [1, 3, 4, 7, 9, 11],
-    opacityDim: 0.4,
-    opacityFull: 1.0,
-  },
-
-  positioning: {
-    obsessiveBottom: '2%',
-    obsessiveLeft: '8%',
-    imageTop: '55%',
-  },
-}
 
 export const LearnMore = () => {
   const containerRef = useRef<HTMLDivElement>(null)
   const scrollContainerRef = useRef<HTMLDivElement>(null)
   const lenisRef = useRef<Lenis | null>(null)
 
-  const mouseX = useMotionValue(0)
-  const mouseY = useMotionValue(0)
-  const smoothMouseX = useSpring(mouseX, ANIMATION_CONFIG.spring)
-  const smoothMouseY = useSpring(mouseY, ANIMATION_CONFIG.spring)
-
-  const depthTransitionProgress = useMotionValue(0)
-  const virtualScrollTarget = useMotionValue(0)
-  const virtualScroll = useSpring(virtualScrollTarget, ANIMATION_CONFIG.virtualScrollSpring)
-
-  useEffect(() => {
-    virtualScrollTarget.set(0)
-    virtualScroll.set(0)
-    depthTransitionProgress.set(0)
-    accumulatedScroll.current = 0
-  }, [])
-
   const hasEnteredFromTransition = sessionStorage.getItem('transitioningToLearnMore') === 'true'
   const showBackground = true
 
+  // Initialize Lenis smooth scroll
   useEffect(() => {
     const lenis = new Lenis({
       duration: 1.2,
@@ -153,109 +40,7 @@ export const LearnMore = () => {
     return () => lenis.destroy()
   }, [])
 
-  const accumulatedScroll = useRef(0)
-  const maxVirtualScroll = window.innerHeight * ANIMATION_CONFIG.maxVirtualScroll
-  const [zScrollComplete, setZScrollComplete] = useState(false)
-  const [scrollProgress, setScrollProgress] = useState(0)
-  const isScrollingRef = useRef(false)
-  const scrollTimeoutRef = useRef<number | undefined>(undefined)
-
-  useEffect(() => {
-    const handleWheel = (e: WheelEvent) => {
-      const atTheEnd = accumulatedScroll.current >= maxVirtualScroll
-      const scrollingUp = e.deltaY < 0
-      const atTop = window.scrollY <= 5 // Small threshold to account for rounding
-      const shouldHijack = !atTheEnd || (scrollingUp && atTop)
-
-      if (shouldHijack) {
-        e.preventDefault()
-
-        const scrollDelta = e.deltaY * 1.2
-        accumulatedScroll.current = Math.max(0, Math.min(maxVirtualScroll, accumulatedScroll.current + scrollDelta))
-
-        const progress = Math.max(0, Math.min(1, accumulatedScroll.current / maxVirtualScroll))
-        setScrollProgress(progress)
-        virtualScrollTarget.set(accumulatedScroll.current)
-
-        isScrollingRef.current = true
-        if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current)
-        scrollTimeoutRef.current = window.setTimeout(() => {
-          isScrollingRef.current = false
-        }, 150)
-
-        setZScrollComplete(progress >= 0.98)
-      }
-    }
-
-    window.addEventListener('wheel', handleWheel, { passive: false })
-    return () => {
-      window.removeEventListener('wheel', handleWheel)
-      if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current)
-    }
-  }, [virtualScrollTarget, maxVirtualScroll])
-
-  useEffect(() => {
-    depthTransitionProgress.set(scrollProgress)
-    const unsubscribe = virtualScroll.on('change', (latest) => {
-      const depthProgress = Math.max(0, Math.min(1, latest / maxVirtualScroll))
-      depthTransitionProgress.set(depthProgress)
-    })
-    return unsubscribe
-  }, [virtualScroll, depthTransitionProgress, maxVirtualScroll, scrollProgress])
-
-  useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      const x = (e.clientX / window.innerWidth - 0.5) * 2
-      const y = (e.clientY / window.innerHeight - 0.5) * 2
-      mouseX.set(x)
-      mouseY.set(y)
-    }
-
-    window.addEventListener('mousemove', handleMouseMove)
-    return () => window.removeEventListener('mousemove', handleMouseMove)
-  }, [mouseX, mouseY])
-
-  const textParallaxX = useTransform(smoothMouseX, [-1, 1], ANIMATION_CONFIG.parallax.text.x)
-  const textParallaxY = useTransform(smoothMouseY, [-1, 1], ANIMATION_CONFIG.parallax.text.y)
-
-  const textDepthZ = useSpring(useTransform(depthTransitionProgress, [0, 0.4], [0, 1500]), ANIMATION_CONFIG.virtualScrollSpring)
-  const imageDepthZ = useSpring(useTransform(depthTransitionProgress, [0, 0.4], [0, 2500]), ANIMATION_CONFIG.virtualScrollSpring)
-  const squareDepthZ = useSpring(useTransform(depthTransitionProgress, [0, 0.4], [0, 3500]), ANIMATION_CONFIG.virtualScrollSpring)
-
-  const obsessiveParallaxX = useTransform(smoothMouseX, [-1, 1], ANIMATION_CONFIG.parallax.obsessiveText.x)
-  const obsessiveParallaxY = useTransform(smoothMouseY, [-1, 1], ANIMATION_CONFIG.parallax.obsessiveText.y)
-  const placeholderParallaxX = useTransform(smoothMouseX, [-1, 1], ANIMATION_CONFIG.parallax.image.x)
-  const placeholderParallaxY = useTransform(smoothMouseY, [-1, 1], ANIMATION_CONFIG.parallax.image.y)
-  const boxParallaxX = useTransform(smoothMouseX, [-1, 1], ANIMATION_CONFIG.parallax.box.x)
-  const boxParallaxY = useTransform(smoothMouseY, [-1, 1], ANIMATION_CONFIG.parallax.box.y)
-  // Decorative elements between image and obsessive text: [-16, 16] (halfway between -12 and -20)
-  const decorativeBoxParallaxX = useTransform(smoothMouseX, [-1, 1], [-16, 16])
-  const decorativeBoxParallaxY = useTransform(smoothMouseY, [-1, 1], [-16, 16])
-  const decorativeTextParallaxX = useTransform(smoothMouseX, [-1, 1], [-16, 16])
-  const decorativeTextParallaxY = useTransform(smoothMouseY, [-1, 1], [-16, 16])
-  // Map parallax - subtle movement
-  const mapParallaxX = useTransform(smoothMouseX, [-1, 1], [-8, 8])
-  const mapParallaxY = useTransform(smoothMouseY, [-1, 1], [-8, 8])
-  // New image parallax - similar to placeholder image
-  const newImageParallaxX = useTransform(smoothMouseX, [-1, 1], ANIMATION_CONFIG.parallax.image.x)
-  const newImageParallaxY = useTransform(smoothMouseY, [-1, 1], ANIMATION_CONFIG.parallax.image.y)
-  // Third image parallax - similar to other images
-  const thirdImageParallaxX = useTransform(smoothMouseX, [-1, 1], ANIMATION_CONFIG.parallax.image.x)
-  const thirdImageParallaxY = useTransform(smoothMouseY, [-1, 1], ANIMATION_CONFIG.parallax.image.y)
-  const thirdImageTextParallaxX = useTransform(smoothMouseX, [-1, 1], [-16, 16])
-  const thirdImageTextParallaxY = useTransform(smoothMouseY, [-1, 1], [-16, 16])
-  // Fourth image parallax - matching AMBITIOUS phase pattern
-  const fourthImageBoxParallaxX = useTransform(smoothMouseX, [-1, 1], [-5, 5]) // Box speed (same as AMBITIOUS box)
-  const fourthImageBoxParallaxY = useTransform(smoothMouseY, [-1, 1], [-5, 5])
-  const fourthImageParallaxX = useTransform(smoothMouseX, [-1, 1], [-12, 12]) // Image speed (same as place2)
-  const fourthImageParallaxY = useTransform(smoothMouseY, [-1, 1], [-12, 12])
-  const buildersTextParallaxX = useTransform(smoothMouseX, [-1, 1], [-20, 20]) // Text speed (same as AMBITIOUS text)
-  const buildersTextParallaxY = useTransform(smoothMouseY, [-1, 1], [-20, 20])
-  const fourthDecorativeBoxParallaxX = useTransform(smoothMouseX, [-1, 1], [-16, 16]) // Decorative box speed
-  const fourthDecorativeBoxParallaxY = useTransform(smoothMouseY, [-1, 1], [-16, 16])
-  const fourthDecorativeTextParallaxX = useTransform(smoothMouseX, [-1, 1], [-16, 16]) // Decorative text speed
-  const fourthDecorativeTextParallaxY = useTransform(smoothMouseY, [-1, 1], [-16, 16])
-
+  // Track settled state for depth transition
   const [hasSettled, setHasSettled] = useState(!hasEnteredFromTransition)
 
   useEffect(() => {
@@ -265,452 +50,34 @@ export const LearnMore = () => {
     }
   }, [hasEnteredFromTransition, hasSettled])
 
-  const depthOpacityRaw = useTransform(depthTransitionProgress, [0, 0.2, 0.4], [1, 0.5, 0])
-  const depthOpacity = useSpring(depthOpacityRaw, { stiffness: 150, damping: 25 })
-  const settledOpacity = useMotionValue(1)
-  const finalDepthOpacity = useMemo(() => hasSettled ? settledOpacity : depthOpacity, [hasSettled, settledOpacity, depthOpacity])
+  // Use mouse parallax hook
+  const parallaxValues = useMouseParallax()
 
-  const openingSectionOpacity = useTransform(depthTransitionProgress, [0, 0.4, 0.6], [1, 0.3, 0])
-  const cardsInteractive = scrollProgress > ANIMATION_CONFIG.timing.cardsFadeIn.threshold
+  // Use virtual scroll hook
+  const virtualScrollValues = useVirtualScroll({ hasEnteredFromTransition, hasSettled })
 
-  // Background color for depth transition (header to quotes section) - DO NOT TOUCH
-  const backgroundColor = useTransform(depthTransitionProgress, (progress) => {
-    // Interpolate from #9E1B1E (158, 27, 30) to #590D0F (89, 13, 15)
-    const r = Math.round(158 - (158 - 89) * progress)
-    const g = Math.round(27 - (27 - 13) * progress)
-    const b = Math.round(30 - (30 - 15) * progress)
-    return `rgb(${r}, ${g}, ${b})`
-  })
+  // Depth Z transforms for opening section
+  const textDepthZ = useSpring(
+    useTransform(virtualScrollValues.depthTransitionProgress, [0, 0.4], [0, 1500]),
+    ANIMATION_CONFIG.virtualScrollSpring
+  )
+  const imageDepthZ = useSpring(
+    useTransform(virtualScrollValues.depthTransitionProgress, [0, 0.4], [0, 2500]),
+    ANIMATION_CONFIG.virtualScrollSpring
+  )
+  const squareDepthZ = useSpring(
+    useTransform(virtualScrollValues.depthTransitionProgress, [0, 0.4], [0, 3500]),
+    ANIMATION_CONFIG.virtualScrollSpring
+  )
 
-  // Separate background color state for Phase 5 transition
-  const [phase5BackgroundColor, setPhase5BackgroundColor] = useState('')
-
-  const [scrollWidth, setScrollWidth] = useState('100%')
-  const [scrollHeight, setScrollHeight] = useState('100vh')
-  const [imageWidth, setImageWidth] = useState('94.6%')
-  const [imageHeight, setImageHeight] = useState('86vh')
-  const [boxScrollProgress, setBoxScrollProgress] = useState(0)
-  const [boxOpacity, setBoxOpacity] = useState(1)
-  const [obsessiveY, setObsessiveY] = useState(100)
-  const [obsessiveOpacity, setObsessiveOpacity] = useState(0)
-  const [imageOpacity, setImageOpacity] = useState(0)
-  const [showDecorations, setShowDecorations] = useState(false)
-  
-  // New state for second scroll phase
-  const [elementsOpacity, setElementsOpacity] = useState(1)
-  const [boxPositionX, setBoxPositionX] = useState(0)
-  const [boxPositionY, setBoxPositionY] = useState(0)
-  const [boxRotation, setBoxRotation] = useState(0)
-  const [mapOpacity, setMapOpacity] = useState(0)
-  const [textRotation, setTextRotation] = useState(0)
-  const [textContent, setTextContent] = useState('OBSESSIVE')
-  const [textPositionX, setTextPositionX] = useState(0)
-  const [textPositionY, setTextPositionY] = useState(0)
-  const [newImageOpacity, setNewImageOpacity] = useState(0)
-  const [newImagePositionX, setNewImagePositionX] = useState(0)
-  const [newImagePositionY, setNewImagePositionY] = useState(0)
-  const [newImageScale, setNewImageScale] = useState(0.7)
-  const [decorativeOpacity, setDecorativeOpacity] = useState(0)
-  const [mapRotation, setMapRotation] = useState(0)
-  const [mapPositionX, setMapPositionX] = useState(0)
-  const [mapScale, setMapScale] = useState(1.95)
-  const [thirdImageOpacity, setThirdImageOpacity] = useState(0)
-  
-  // Phase 4 state
-  const [fourthImageOpacity, setFourthImageOpacity] = useState(0)
-
-  // Phase 5 state
-  const [ctaTextOpacity, setCtaTextOpacity] = useState(0)
-  const [horsesOpacity, setHorsesOpacity] = useState(0)
-  const [phase4Opacity, setPhase4Opacity] = useState(1)
-  const [footerOpacity, setFooterOpacity] = useState(0)
-  const [borderHeight, setBorderHeight] = useState(0) // Border animation: 0 → 100vh → 30vh
-
-  useEffect(() => {
-    let rafId: number | null = null
-    let lastScrollY = -1
-
-    const handleScroll = () => {
-      if (rafId !== null) return
-
-      rafId = requestAnimationFrame(() => {
-        const scrolled = window.scrollY
-
-        if (Math.abs(scrolled - lastScrollY) > 0.5) {
-          lastScrollY = scrolled
-
-          if (zScrollComplete) {
-            // Use single viewport height for maxScroll to work with normalized timing values
-            const maxScroll = window.innerHeight
-            const progress = Math.min(scrolled / maxScroll, 1)
-            setBoxScrollProgress(progress)
-
-            // =====================================================================
-            // NARRATIVE SCROLL STRUCTURE - Three Act Story
-            // =====================================================================
-            // Total duration: phase1 (1.5) + phase2 (2.0) + pause (0.2) + phase3 (2.0) = 5.7vh
-            // Phase calculations use maxScroll * duration to spread animations across viewport heights
-            // =====================================================================
-            // All phases use consistent easing (EASING.standard/out/inOut) for
-            // a smooth, professional feel that builds narrative momentum
-            // =====================================================================
-
-            const { start, end } = ANIMATION_CONFIG.timing.textImageFadeIn
-            const linearProgress = Math.max(0, Math.min(1, (progress - start) / (end - start)))
-            
-            // ========== PHASE 1: OBSESSIVE (Box-in-Box Reveal) ==========
-            // Reveal placeholder image & OBSESSIVE text with dramatic entrance
-            const easedProgress = EASING.standard(linearProgress)
-
-            setObsessiveY((1 - easedProgress) * 100)
-            setObsessiveOpacity(easedProgress >= 0.95 ? 1.0 : easedProgress)
-            setImageOpacity(easedProgress >= 0.95 ? 1.0 : easedProgress)
-
-            // Trigger decorations when both reach full opacity
-            if (easedProgress >= 0.95 && !showDecorations) {
-              setShowDecorations(true)
-            }
-
-            const boxSizeReduction = ANIMATION_CONFIG.box.startSize - ANIMATION_CONFIG.box.endSize
-            const boxSize = ANIMATION_CONFIG.box.startSize - (easedProgress * boxSizeReduction)
-
-            setScrollWidth(`${boxSize}%`)
-            setScrollHeight(`${boxSize}vh`)
-            setImageWidth(`${boxSize * 1.1 * 0.86 * ANIMATION_CONFIG.imageScale}%`)
-            setImageHeight(`${boxSize * 0.86 * ANIMATION_CONFIG.imageScale}vh`)
-            setBoxOpacity(1)
-            
-            // ========== PHASE 2: AMBITIOUS TRANSFORMATION ==========
-            // Transform box to rectangle + translate + reveal place2 image
-            const phase2Start = maxScroll * ANIMATION_CONFIG.scrollPhases.phase1Duration
-            if (scrolled > phase2Start) {
-              const phase2Scroll = scrolled - phase2Start
-              const phase2Max = maxScroll * ANIMATION_CONFIG.scrollPhases.phase2Duration
-              const totalProgress = Math.min(phase2Scroll / phase2Max, 1)
-              
-              // Split into two sequential sub-phases with smooth transitions
-              // Sub-phase 2a (0-0.5): Transform the box (fade out elements, reshape)
-              // Sub-phase 2b (0.5-1): Translate to position + reveal place2
-              const transformProgress = EASING.standard(Math.min(totalProgress * 2, 1))
-              const translateProgress = EASING.standard(Math.max(0, (totalProgress - 0.5) * 2))
-              
-              // Sub-phase 2a: Fade out image, boxes, and decorative text smoothly
-              setElementsOpacity(1 - transformProgress)
-              
-              // Sub-phase 2a: Reshape box into tall rectangle
-              // Width: 75% -> 30% (bring in the sides dramatically)
-              // Height: 75vh -> 50vh (moderate reduction to maintain presence)
-              const targetWidth = 75 - (transformProgress * 45)
-              const targetHeight = 75 - (transformProgress * 25)
-              setScrollWidth(`${targetWidth}%`)
-              setScrollHeight(`${targetHeight}vh`)
-              
-              // Update image size proportionally
-              setImageWidth(`${targetWidth * 1.1 * 0.86 * ANIMATION_CONFIG.imageScale}%`)
-              setImageHeight(`${targetHeight * 0.86 * ANIMATION_CONFIG.imageScale}vh`)
-              
-              // Sub-phase 2b: Translate box to final position (smooth, deliberate movement)
-              // X: 91% to the right from center (dramatic rightward shift)
-              // Y: 31% down from center (subtle descent for balance)
-              setBoxPositionX(translateProgress * 91)
-              setBoxPositionY(translateProgress * 31)
-              
-              // Sub-phase 2b: Move place2 image to reveal position (synchronized with box)
-              // From center (50%, 50%) to (73%, 49%) - left of center, creating balance
-              setNewImagePositionX(translateProgress * 18) // 18% right (was 23%, moved left by 5%)
-              setNewImagePositionY(translateProgress * 0) // At center (was 4%, moved up by 4% more)
-              
-              // Scale image from 70% to 120% (0.7 to 1.2) during translation
-              const scaleStart = 0.7 * 1.15 * 0.95 // Start at 76.5% (increased by 15%, then reduced by 5%)
-              const scaleEnd = 1.2 * 1.15 * 0.95 // End at 131% (increased by 15%, then reduced by 5%)
-              setNewImageScale(scaleStart + (translateProgress * (scaleEnd - scaleStart)))
-              
-              // No rotation during this phase
-              setBoxRotation(0)
-              
-              // Sub-phase 2b: Text transformation OBSESSIVE → AMBITIOUS (synchronized with rotation)
-              // Rotate from horizontal to vertical while changing text
-              setTextRotation(translateProgress * -90) // Rotate -90° (counterclockwise to vertical)
-              setTextPositionX(translateProgress * 39) // Move 39% rightward (balanced positioning)
-              setTextPositionY(translateProgress * 2) // Move 2% down (subtle vertical adjustment)
-              
-              // Letter-by-letter transformation during rotation (building narrative tension)
-              const fromText = 'OBSESSIVE'
-              const toText = 'AMBITIOUS'
-              const maxLength = Math.max(fromText.length, toText.length)
-              
-              // Apply easing to text transformation for smooth, deliberate reveal
-              const easedLetterProgress = EASING.out(translateProgress)
-              const letterIndex = Math.floor(easedLetterProgress * maxLength)
-              
-              // Build the text progressively (each letter transition feels intentional)
-              let displayText = ''
-              for (let i = 0; i < maxLength; i++) {
-                if (i < letterIndex) {
-                  // Reveal new letter (AMBITIOUS character)
-                  displayText += toText[i] || ''
-                } else {
-                  // Show remaining old letter (OBSESSIVE character)
-                  displayText += fromText[i] || ''
-                }
-              }
-              
-              setTextContent(displayText)
-              
-              // Fade in map on the left (during translation phase)
-              setMapOpacity(translateProgress)
-              
-              // Fade in new image during translation with smooth easing
-              // Start fading in from the beginning of translation for smooth appearance
-              const easedOpacity = EASING.standard(translateProgress)
-              setNewImageOpacity(easedOpacity)
-              
-              // Fade in decorative elements (rectangle and text) after place2 is halfway through
-              const decorativeT = Math.max(0, (translateProgress - 0.5) / 0.5) // Start at 50%, end at 100%
-              setDecorativeOpacity(EASING.out(decorativeT))
-              
-              // ========== PHASE 3: NEXT-GEN TRANSFORMATION ==========
-              // Rotate map + transform text to NEXT-GEN + reveal place3
-              const phase3Start = phase2Start + phase2Max + (maxScroll * ANIMATION_CONFIG.scrollPhases.pauseDuration)
-              
-              if (scrolled > phase3Start) {
-                const phase3Scroll = scrolled - phase3Start
-                const phase3Max = maxScroll * ANIMATION_CONFIG.scrollPhases.phase3Duration
-                const linearThirdProgress = Math.min(phase3Scroll / phase3Max, 1)
-                const thirdProgress = EASING.inOut(linearThirdProgress)
-                
-                // Split into two balanced sub-phases:
-                // Sub-phase 3a (0-0.5): Rotate & zoom map in place, fade out place2 elements
-                // Sub-phase 3b (0.5-1): Move map right, transform text AMBITIOUS->NEXT-GEN, reveal place3
-                const rotateZoomProgress = EASING.out(Math.min(thirdProgress * 2, 1))
-                const moveProgress = EASING.out(Math.max(0, (thirdProgress - 0.5) * 2))
-                
-                // Sub-phase 3a: Fade out place2 scene smoothly (making room for next act)
-                const fadeOutProgress = EASING.inOut(thirdProgress)
-                setNewImageOpacity(easedOpacity * (1 - fadeOutProgress))
-                setBoxOpacity(1 - fadeOutProgress)
-                setDecorativeOpacity(EASING.out(decorativeT) * (1 - fadeOutProgress))
-                
-                // Sub-phase 3a: Rotate and zoom map (dramatic reveal of detail)
-                setMapRotation(rotateZoomProgress * 126.82) // 126.82° rotation
-                setMapScale(1.95 + (rotateZoomProgress * 0.5)) // Zoom from 1.95 to 2.45
-                
-                // Sub-phase 3b: Move map to right side (creating space for place3)
-                setMapPositionX(moveProgress * 50) // Move 50% rightward
-                
-                // Sub-phase 3b: Transform AMBITIOUS text (shift left & up during transformation)
-                setTextPositionX(39 - (moveProgress * 5)) // From 39% to 34% (5% left shift)
-                setTextPositionY(-moveProgress * 3) // Move 3% higher (elevating the message)
-                
-                // Sub-phase 3b: Reveal third image (place3) as text transforms
-                setThirdImageOpacity(moveProgress)
-                
-                // Sub-phase 3b: Text transformation AMBITIOUS → NEXT-GEN
-                // Smooth letter-by-letter reveal synchronized with map movement
-                const toText = 'NEXT-GEN'
-                
-                if (moveProgress < 0.5) {
-                  // First half of movement: AMBITIOUS remains (building anticipation)
-                  setTextContent('AMBITIOUS')
-                } else if (moveProgress < 1) {
-                  // Second half: Progressive transformation to NEXT-GEN (climactic reveal)
-                  const transitionProgress = (moveProgress - 0.5) * 2 // 0 to 1 in second half
-                  const targetLength = Math.ceil(transitionProgress * toText.length)
-                  const displayText = toText.substring(0, Math.max(1, targetLength))
-                  setTextContent(displayText)
-                } else {
-                  // Fully transitioned
-                  setTextContent('NEXT-GEN')
-                }
-                
-                // ========== PHASE 4: STICKY BUILDERS + PLACE4 ==========
-                // Fade out map & place3, rotate text to horizontal & transform to BUILDERS, stick it high, reveal place4
-                const phase4Start = phase3Start + phase3Max
-
-                if (scrolled > phase4Start) {
-                  const phase4Scroll = scrolled - phase4Start
-                  const phase4Max = maxScroll * ANIMATION_CONFIG.scrollPhases.phase4Duration
-                  const linearFourthProgress = Math.min(phase4Scroll / phase4Max, 1)
-                  const fourthProgress = EASING.out(linearFourthProgress)
-
-                  // Fade out map and place3 image
-                  setMapOpacity(1 - fourthProgress)
-                  setThirdImageOpacity(1 - fourthProgress)
-
-                  // Rotate text from -90° (vertical) to 0° (horizontal)
-                  setTextRotation(-90 + (fourthProgress * 90))
-
-                  // Move text to high sticky position (40% higher than original)
-                  // From current position (34%, -3%) to top-left (3%, -85%)
-                  setTextPositionX(34 - (fourthProgress * 31)) // 34% to 3%
-                  setTextPositionY(-3 - (fourthProgress * 67)) // -3% to -85% (much higher)
-
-                  // Text transformation NEXT-GEN → BUILDERS during rotation
-                  // Complete the transformation earlier (at 70% of phase) so it finishes before positioning
-                  const fromText = 'NEXT-GEN'
-                  const toText = 'BUILDERS'
-                  const maxLength = Math.max(fromText.length, toText.length)
-
-                  // Apply easing to text transformation, complete at 70% of phase progress
-                  const textTransformProgress = Math.min(fourthProgress / 0.7, 1)
-                  const easedLetterProgress = EASING.out(textTransformProgress)
-                  const letterIndex = Math.floor(easedLetterProgress * maxLength)
-
-                  // Build the text progressively
-                  let displayText = ''
-                  for (let i = 0; i < maxLength; i++) {
-                    if (i < letterIndex) {
-                      // Reveal new letter (BUILDERS character)
-                      displayText += toText[i] || ''
-                    } else {
-                      // Show remaining old letter (NEXT-GEN character)
-                      displayText += fromText[i] || ''
-                    }
-                  }
-
-                  setTextContent(displayText)
-
-                  // Fade in place4 image below the text
-                  setFourthImageOpacity(fourthProgress)
-
-                  // ========== PHASE 5: FINAL CTA ==========
-                  // Fade out everything, transition background to dark red, fade in CTA
-                  const phase5Start = phase4Start + phase4Max
-
-                  if (scrolled > phase5Start) {
-                    const phase5Scroll = scrolled - phase5Start
-                    const phase5Max = maxScroll * ANIMATION_CONFIG.scrollPhases.phase5Duration
-                    const linearFifthProgress = Math.min(phase5Scroll / phase5Max, 1)
-                    const fifthProgress = EASING.out(linearFifthProgress)
-
-                    // Phase 4 fade out: Uses first half like other phases
-                    // Consistent with how Phase 4 fades out map/place3
-                    const fadeOutProgress = Math.min(fifthProgress * 2, 1) // 0 to 1 over first 50%
-                    setPhase4Opacity(1 - EASING.out(fadeOutProgress))
-
-                    // Animate border: Grows throughout first part of the phase
-                    // Starts at 25%, completes at 70% (leaves room for footer fade)
-                    const borderProgress = Math.max(0, Math.min(1, (fifthProgress - 0.25) / 0.45)) // 0 to 1 from 25% to 70%
-                    setBorderHeight(EASING.inOut(borderProgress) * 75) // 0vh to 75vh
-
-                    // Transition background color from #2B0A05 (43, 10, 5) to #590D0F (89, 13, 15)
-                    const r = Math.round(43 + (89 - 43) * fifthProgress)
-                    const g = Math.round(10 + (13 - 10) * fifthProgress)
-                    const b = Math.round(5 + (15 - 5) * fifthProgress)
-                    setPhase5BackgroundColor(`rgb(${r}, ${g}, ${b})`)
-
-                    // Fade in CTA text: Starts right as border begins (at 25%)
-                    // Scrolls in alongside the border animation
-                    const ctaProgress = Math.max(0, Math.min(1, (fifthProgress - 0.25) / 0.35)) // 0 to 1 from 25% to 60%
-                    setCtaTextOpacity(EASING.out(ctaProgress))
-
-                    // Fade in horses image: Starts shortly after text (at 35%)
-                    // Completes as border approaches completion
-                    const horsesProgress = Math.max(0, Math.min(1, (fifthProgress - 0.35) / 0.30)) // 0 to 1 from 35% to 65%
-                    setHorsesOpacity(EASING.out(horsesProgress))
-
-                    // Fade in footer: Starts RIGHT AFTER border settles (at 70%)
-                    // Border completes at 70%, footer fades from 70% to 90%
-                    const footerStartProgress = 0.70 // Border finishes at 70%
-                    const footerDuration = 0.20 // Fade in over 20% of phase duration (70% to 90%)
-                    const footerProgress = Math.max(0, Math.min(1, (fifthProgress - footerStartProgress) / footerDuration))
-                    setFooterOpacity(EASING.out(footerProgress))
-
-                  } else {
-                    // Reset phase 5 if not reached
-                    setPhase4Opacity(1)
-                    setPhase5BackgroundColor('')
-                    setBorderHeight(0)
-                    setCtaTextOpacity(0)
-                    setHorsesOpacity(0)
-                    setFooterOpacity(0)
-                  }
-                } else {
-                  // Reset phase 4 if not reached
-                  setFourthImageOpacity(0)
-                  setPhase4Opacity(1)
-                  setPhase5BackgroundColor('')
-                  setBorderHeight(0)
-                  setCtaTextOpacity(0)
-                  setHorsesOpacity(0)
-                }
-              } else {
-                // Reset third phase if not reached
-                setMapRotation(0)
-                setMapPositionX(0)
-                setMapScale(1.95)
-                setFourthImageOpacity(0)
-              }
-            } else {
-              setElementsOpacity(1)
-              setBoxPositionX(0)
-              setBoxPositionY(0)
-              setBoxRotation(0)
-              setMapOpacity(0)
-              setTextRotation(0)
-              setTextContent('OBSESSIVE')
-              setTextPositionX(0)
-              setTextPositionY(0)
-              setNewImageOpacity(0)
-              setNewImagePositionX(0)
-              setNewImagePositionY(0)
-              setNewImageScale(0.7)
-              setDecorativeOpacity(0)
-              setMapRotation(0)
-              setMapPositionX(0)
-              setMapScale(1.95)
-            }
-          } else {
-            setBoxScrollProgress(0)
-            setScrollWidth('100%')
-            setImageWidth('94.6%')
-            setScrollHeight('100vh')
-            setImageHeight('86vh')
-            setBoxOpacity(1)
-            setObsessiveY(100)
-            setObsessiveOpacity(0)
-            setImageOpacity(0)
-            setShowDecorations(false)
-            setElementsOpacity(1)
-            setBoxPositionX(0)
-            setBoxPositionY(0)
-            setBoxRotation(0)
-            setMapOpacity(0)
-            setTextRotation(0)
-            setTextContent('OBSESSIVE')
-            setTextPositionX(0)
-            setTextPositionY(0)
-            setNewImageOpacity(0)
-            setNewImagePositionX(0)
-            setNewImagePositionY(0)
-            setNewImageScale(0.7)
-            setDecorativeOpacity(0)
-            setMapRotation(0)
-            setMapPositionX(0)
-            setMapScale(1.95)
-            setFourthImageOpacity(0)
-          }
-        }
-
-        rafId = null
-      })
-    }
-
-    handleScroll()
-
-    window.addEventListener('scroll', handleScroll, { passive: true })
-    return () => {
-      window.removeEventListener('scroll', handleScroll)
-      if (rafId !== null) cancelAnimationFrame(rafId)
-    }
-  }, [zScrollComplete, showDecorations])
-
+  // Use box scroll phases hook
+  const scrollPhases = useBoxScrollPhases(virtualScrollValues.zScrollComplete, ANIMATION_CONFIG)
 
   return (
     <motion.div
       ref={containerRef}
       className="learn-more-container"
-      style={{ backgroundColor: phase5BackgroundColor || backgroundColor }}
+      style={{ backgroundColor: scrollPhases.phase5BackgroundColor || virtualScrollValues.backgroundColor }}
       initial={{ opacity: 1, backgroundColor: '#9E1B1E' }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 1 }}
@@ -722,103 +89,103 @@ export const LearnMore = () => {
       <OpeningSection
         showBackground={showBackground}
         hasEnteredFromTransition={hasEnteredFromTransition}
-        openingSectionOpacity={openingSectionOpacity}
-        textParallaxX={textParallaxX}
-        textParallaxY={textParallaxY}
+        openingSectionOpacity={virtualScrollValues.openingSectionOpacity}
+        textParallaxX={parallaxValues.textParallaxX}
+        textParallaxY={parallaxValues.textParallaxY}
         textDepthZ={textDepthZ}
-        finalDepthOpacity={finalDepthOpacity}
-        smoothMouseX={smoothMouseX}
-        smoothMouseY={smoothMouseY}
+        finalDepthOpacity={virtualScrollValues.finalDepthOpacity}
+        smoothMouseX={parallaxValues.smoothMouseX}
+        smoothMouseY={parallaxValues.smoothMouseY}
         imageDepthZ={imageDepthZ}
         squareDepthZ={squareDepthZ}
-        depthTransitionProgress={depthTransitionProgress}
+        depthTransitionProgress={virtualScrollValues.depthTransitionProgress}
         ANIMATION_CONFIG={ANIMATION_CONFIG}
         EASING={EASING}
       />
 
       <QuotesSection
-        scrollProgress={scrollProgress}
-        zScrollComplete={zScrollComplete}
-        boxScrollProgress={boxScrollProgress}
-        cardsInteractive={cardsInteractive}
+        scrollProgress={virtualScrollValues.scrollProgress}
+        zScrollComplete={virtualScrollValues.zScrollComplete}
+        boxScrollProgress={scrollPhases.boxScrollProgress}
+        cardsInteractive={virtualScrollValues.cardsInteractive}
         ANIMATION_CONFIG={ANIMATION_CONFIG}
         EASING={EASING}
       />
 
       <ScrollPhasesContainer
-        zScrollComplete={zScrollComplete}
+        zScrollComplete={virtualScrollValues.zScrollComplete}
         scrollContainerRef={scrollContainerRef}
-        scrollWidth={scrollWidth}
-        scrollHeight={scrollHeight}
-        boxParallaxX={boxParallaxX}
-        boxParallaxY={boxParallaxY}
-        boxOpacity={boxOpacity}
-        imageOpacity={imageOpacity}
-        imageWidth={imageWidth}
-        imageHeight={imageHeight}
-        placeholderParallaxX={placeholderParallaxX}
-        placeholderParallaxY={placeholderParallaxY}
-        decorativeBoxParallaxX={decorativeBoxParallaxX}
-        decorativeBoxParallaxY={decorativeBoxParallaxY}
-        decorativeTextParallaxX={decorativeTextParallaxX}
-        decorativeTextParallaxY={decorativeTextParallaxY}
-        showDecorations={showDecorations}
-        obsessiveParallaxX={obsessiveParallaxX}
-        obsessiveParallaxY={obsessiveParallaxY}
-        obsessiveY={obsessiveY}
-        obsessiveOpacity={obsessiveOpacity}
+        scrollWidth={scrollPhases.scrollWidth}
+        scrollHeight={scrollPhases.scrollHeight}
+        boxParallaxX={parallaxValues.boxParallaxX}
+        boxParallaxY={parallaxValues.boxParallaxY}
+        boxOpacity={scrollPhases.boxOpacity}
+        boxPositionX={scrollPhases.boxPositionX}
+        boxPositionY={scrollPhases.boxPositionY}
+        boxRotation={scrollPhases.boxRotation}
+        imageOpacity={scrollPhases.imageOpacity}
+        imageWidth={scrollPhases.imageWidth}
+        imageHeight={scrollPhases.imageHeight}
         imageTop={ANIMATION_CONFIG.positioning.imageTop}
+        placeholderParallaxX={parallaxValues.placeholderParallaxX}
+        placeholderParallaxY={parallaxValues.placeholderParallaxY}
+        showDecorations={scrollPhases.showDecorations}
+        elementsOpacity={scrollPhases.elementsOpacity}
+        decorativeBoxParallaxX={parallaxValues.decorativeBoxParallaxX}
+        decorativeBoxParallaxY={parallaxValues.decorativeBoxParallaxY}
+        decorativeTextParallaxX={parallaxValues.decorativeTextParallaxX}
+        decorativeTextParallaxY={parallaxValues.decorativeTextParallaxY}
+        obsessiveParallaxX={parallaxValues.obsessiveParallaxX}
+        obsessiveParallaxY={parallaxValues.obsessiveParallaxY}
+        obsessiveY={scrollPhases.obsessiveY}
+        obsessiveOpacity={scrollPhases.obsessiveOpacity}
         obsessiveBottom={ANIMATION_CONFIG.positioning.obsessiveBottom}
         obsessiveLeft={ANIMATION_CONFIG.positioning.obsessiveLeft}
-        elementsOpacity={elementsOpacity}
-        boxPositionX={boxPositionX}
-        boxPositionY={boxPositionY}
-        boxRotation={boxRotation}
-        mapOpacity={mapOpacity}
-        mapParallaxX={mapParallaxX}
-        mapParallaxY={mapParallaxY}
-        textRotation={textRotation}
-        textContent={textContent}
-        textPositionX={textPositionX}
-        textPositionY={textPositionY}
-        newImageOpacity={newImageOpacity}
-        newImageParallaxX={newImageParallaxX}
-        newImageParallaxY={newImageParallaxY}
-        newImagePositionX={newImagePositionX}
-        newImagePositionY={newImagePositionY}
-        newImageScale={newImageScale}
-        decorativeOpacity={decorativeOpacity}
-        mapRotation={mapRotation}
-        mapPositionX={mapPositionX}
-        mapScale={mapScale}
-        thirdImageOpacity={thirdImageOpacity}
-        thirdImageParallaxX={thirdImageParallaxX}
-        thirdImageParallaxY={thirdImageParallaxY}
-        thirdImageTextParallaxX={thirdImageTextParallaxX}
-        thirdImageTextParallaxY={thirdImageTextParallaxY}
-        fourthImageOpacity={fourthImageOpacity}
-        fourthImageParallaxX={fourthImageParallaxX}
-        fourthImageParallaxY={fourthImageParallaxY}
-        fourthImageBoxParallaxX={fourthImageBoxParallaxX}
-        fourthImageBoxParallaxY={fourthImageBoxParallaxY}
-        buildersTextParallaxX={buildersTextParallaxX}
-        buildersTextParallaxY={buildersTextParallaxY}
-        fourthDecorativeBoxParallaxX={fourthDecorativeBoxParallaxX}
-        fourthDecorativeBoxParallaxY={fourthDecorativeBoxParallaxY}
-        fourthDecorativeTextParallaxX={fourthDecorativeTextParallaxX}
-        fourthDecorativeTextParallaxY={fourthDecorativeTextParallaxY}
-        phase4Opacity={phase4Opacity}
+        textContent={scrollPhases.textContent}
+        textPositionX={scrollPhases.textPositionX}
+        textPositionY={scrollPhases.textPositionY}
+        textRotation={scrollPhases.textRotation}
+        mapOpacity={scrollPhases.mapOpacity}
+        mapRotation={scrollPhases.mapRotation}
+        mapPositionX={scrollPhases.mapPositionX}
+        mapScale={scrollPhases.mapScale}
+        mapParallaxX={parallaxValues.mapParallaxX}
+        mapParallaxY={parallaxValues.mapParallaxY}
+        newImageOpacity={scrollPhases.newImageOpacity}
+        newImageScale={scrollPhases.newImageScale}
+        newImagePositionX={scrollPhases.newImagePositionX}
+        newImagePositionY={scrollPhases.newImagePositionY}
+        newImageParallaxX={parallaxValues.newImageParallaxX}
+        newImageParallaxY={parallaxValues.newImageParallaxY}
+        decorativeOpacity={scrollPhases.decorativeOpacity}
+        thirdImageOpacity={scrollPhases.thirdImageOpacity}
+        thirdImageParallaxX={parallaxValues.thirdImageParallaxX}
+        thirdImageParallaxY={parallaxValues.thirdImageParallaxY}
+        thirdImageTextParallaxX={parallaxValues.thirdImageTextParallaxX}
+        thirdImageTextParallaxY={parallaxValues.thirdImageTextParallaxY}
+        fourthImageOpacity={scrollPhases.fourthImageOpacity}
+        fourthImageParallaxX={parallaxValues.fourthImageParallaxX}
+        fourthImageParallaxY={parallaxValues.fourthImageParallaxY}
+        fourthImageBoxParallaxX={parallaxValues.fourthImageBoxParallaxX}
+        fourthImageBoxParallaxY={parallaxValues.fourthImageBoxParallaxY}
+        buildersTextParallaxX={parallaxValues.buildersTextParallaxX}
+        buildersTextParallaxY={parallaxValues.buildersTextParallaxY}
+        fourthDecorativeBoxParallaxX={parallaxValues.fourthDecorativeBoxParallaxX}
+        fourthDecorativeBoxParallaxY={parallaxValues.fourthDecorativeBoxParallaxY}
+        fourthDecorativeTextParallaxX={parallaxValues.fourthDecorativeTextParallaxX}
+        fourthDecorativeTextParallaxY={parallaxValues.fourthDecorativeTextParallaxY}
+        phase4Opacity={scrollPhases.phase4Opacity}
       />
 
       {/* Animated Border from Top - Phase 5 transition */}
-      {zScrollComplete && borderHeight > 0 && (
+      {virtualScrollValues.zScrollComplete && scrollPhases.borderHeight > 0 && (
         <div
           style={{
             position: 'fixed',
             top: 0,
             left: 0,
             width: '100%',
-            height: `${borderHeight}vh`,
+            height: `${scrollPhases.borderHeight}vh`,
             background: '#590D0F',
             zIndex: 19,
             pointerEvents: 'none',
@@ -827,25 +194,27 @@ export const LearnMore = () => {
       )}
 
       <CTASection
-        zScrollComplete={zScrollComplete}
-        ctaTextOpacity={ctaTextOpacity}
-        horsesOpacity={horsesOpacity}
+        zScrollComplete={virtualScrollValues.zScrollComplete}
+        ctaTextOpacity={scrollPhases.ctaTextOpacity}
+        horsesOpacity={scrollPhases.horsesOpacity}
+        ctaTextY={scrollPhases.ctaTextY}
+        horsesY={scrollPhases.horsesY}
       />
 
       {/* Footer - Fixed position, independent of CTA scroll */}
-      {zScrollComplete && (
+      {virtualScrollValues.zScrollComplete && (
         <motion.div
           style={{
             position: 'fixed',
             bottom: 0,
             left: 0,
             width: '100vw',
-            opacity: footerOpacity,
+            opacity: scrollPhases.footerOpacity,
             zIndex: 25,
-            pointerEvents: footerOpacity > 0 ? 'auto' : 'none',
+            pointerEvents: scrollPhases.footerOpacity > 0 ? 'auto' : 'none',
           }}
         >
-          <Footer footerOpacity={footerOpacity} />
+          <Footer footerOpacity={scrollPhases.footerOpacity} />
         </motion.div>
       )}
     </motion.div>

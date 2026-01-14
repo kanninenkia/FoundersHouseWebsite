@@ -9,12 +9,16 @@ interface CTASectionProps {
   zScrollComplete: boolean
   ctaTextOpacity: number
   horsesOpacity: number
+  ctaTextY: number
+  horsesY: number
 }
 
 export const CTASection = ({
   zScrollComplete,
   ctaTextOpacity,
-  horsesOpacity
+  horsesOpacity,
+  ctaTextY,
+  horsesY
 }: CTASectionProps) => {
   if (!zScrollComplete) return null
 
@@ -38,6 +42,7 @@ export const CTASection = ({
       <motion.div
         style={{
           opacity: ctaTextOpacity,
+          transform: `translateY(${ctaTextY}vh)`,
           width: '95%',
           maxWidth: '1572px',
           textAlign: 'justify',
@@ -67,12 +72,12 @@ export const CTASection = ({
         alt="Horses"
         style={{
           opacity: horsesOpacity,
+          transform: `translateY(${horsesY}vh) scaleY(0.85)`,
           marginTop: '6vh',
           width: '100%',
           maxWidth: '1572px',
           height: 'auto',
           objectFit: 'contain',
-          transform: 'scaleY(0.85)',
         }}
       />
     </motion.section>

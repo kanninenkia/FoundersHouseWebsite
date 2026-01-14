@@ -3,12 +3,7 @@
  */
 
 import { useEffect, useState } from 'react'
-
-const EASING = {
-  standard: (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2),
-  out: (t: number) => 1 - Math.pow(1 - t, 3),
-  inOut: (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2),
-}
+import { EASING } from '../config/animationConfig'
 
 interface AnimationConfig {
   box: { startSize: number; endSize: number }
@@ -74,6 +69,8 @@ export const useBoxScrollPhases = (zScrollComplete: boolean, ANIMATION_CONFIG: A
   const [footerOpacity, setFooterOpacity] = useState(0)
   const [borderHeight, setBorderHeight] = useState(0)
   const [phase5BackgroundColor, setPhase5BackgroundColor] = useState('')
+  const [ctaTextY, setCtaTextY] = useState(25) // Start at 25vh (below footer)
+  const [horsesY, setHorsesY] = useState(25) // Start at 25vh (below footer)
 
   useEffect(() => {
     let rafId: number | null = null
@@ -180,27 +177,28 @@ export const useBoxScrollPhases = (zScrollComplete: boolean, ANIMATION_CONFIG: A
                 const linearThirdProgress = Math.min(phase3Scroll / phase3Max, 1)
                 const thirdProgress = EASING.inOut(linearThirdProgress)
 
-                const rotateZoomProgress = EASING.out(Math.min(thirdProgress * 2, 1))
-                const moveProgress = EASING.out(Math.max(0, (thirdProgress - 0.5) * 2))
+                // Both rotation and movement happen simultaneously throughout the entire phase
+                const simultaneousProgress = EASING.out(thirdProgress)
 
                 const fadeOutProgress = EASING.inOut(thirdProgress)
                 setNewImageOpacity(EASING.standard(translateProgress) * (1 - fadeOutProgress))
                 setBoxOpacity(1 - fadeOutProgress)
                 setDecorativeOpacity(EASING.out(decorativeT) * (1 - fadeOutProgress))
 
-                setMapRotation(rotateZoomProgress * 126.82)
-                setMapScale(1.95 + (rotateZoomProgress * 0.5))
-                setMapPositionX(moveProgress * 50)
-                setTextPositionX(39 - (moveProgress * 5))
-                setTextPositionY(-moveProgress * 3)
-                setThirdImageOpacity(moveProgress)
+                // Map rotates and moves at the same time
+                setMapRotation(simultaneousProgress * 126.82)
+                setMapScale(1.95 + (simultaneousProgress * 0.5))
+                setMapPositionX(simultaneousProgress * 50)
+                setTextPositionX(39 - (simultaneousProgress * 5))
+                setTextPositionY(-simultaneousProgress * 3)
+                setThirdImageOpacity(simultaneousProgress)
 
                 // Text transformation AMBITIOUS → NEXT-GEN
                 const toTextPhase3 = 'NEXT-GEN'
-                if (moveProgress < 0.5) {
+                if (simultaneousProgress < 0.5) {
                   setTextContent('AMBITIOUS')
-                } else if (moveProgress < 1) {
-                  const transitionProgress = (moveProgress - 0.5) * 2
+                } else if (simultaneousProgress < 1) {
+                  const transitionProgress = (simultaneousProgress - 0.5) * 2
                   const targetLength = Math.ceil(transitionProgress * toTextPhase3.length)
                   const displayText = toTextPhase3.substring(0, Math.max(1, targetLength))
                   setTextContent(displayText)
@@ -261,10 +259,16 @@ export const useBoxScrollPhases = (zScrollComplete: boolean, ANIMATION_CONFIG: A
                     setPhase5BackgroundColor(`rgb(${r}, ${g}, ${b})`)
 
                     const ctaProgress = Math.max(0, Math.min(1, (fifthProgress - 0.25) / 0.35))
-                    setCtaTextOpacity(EASING.out(ctaProgress))
+                    const easedCtaProgress = EASING.out(ctaProgress)
+                    setCtaTextOpacity(easedCtaProgress)
+                    // Fade up from 25vh to 0vh (final position)
+                    setCtaTextY(25 - (easedCtaProgress * 25))
 
                     const horsesProgress = Math.max(0, Math.min(1, (fifthProgress - 0.35) / 0.30))
-                    setHorsesOpacity(EASING.out(horsesProgress))
+                    const easedHorsesProgress = EASING.out(horsesProgress)
+                    setHorsesOpacity(easedHorsesProgress)
+                    // Fade up from 25vh to 0vh (final position)
+                    setHorsesY(25 - (easedHorsesProgress * 25))
 
                     const footerStartProgress = 0.70
                     const footerDuration = 0.20
@@ -277,6 +281,8 @@ export const useBoxScrollPhases = (zScrollComplete: boolean, ANIMATION_CONFIG: A
                     setCtaTextOpacity(0)
                     setHorsesOpacity(0)
                     setFooterOpacity(0)
+                    setCtaTextY(25)
+                    setHorsesY(25)
                   }
                 } else {
                   setFourthImageOpacity(0)
@@ -385,5 +391,7 @@ export const useBoxScrollPhases = (zScrollComplete: boolean, ANIMATION_CONFIG: A
     footerOpacity,
     borderHeight,
     phase5BackgroundColor,
+    ctaTextY,
+    horsesY,
   }
 }
