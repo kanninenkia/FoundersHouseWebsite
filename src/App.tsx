@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, useNavigate, useLocation } from 'react-ro
 import { LoadingScreen } from './components/LoadingScreen'
 import { LearnMore } from './components/learn-more'
 import { TransitionOverlay } from './components/transition'
+import AboutPage from './about/page'
 import Lenis from 'lenis'
 import 'lenis/dist/lenis.css'
 import './App.css'
@@ -20,23 +21,23 @@ function AppContent() {
   const [scrollProgress, setScrollProgress] = useState(() => {
     // Only restore from sessionStorage if this is NOT a page reload
     if (performance.navigation.type !== 1) { // 1 = TYPE_RELOAD
-      const saved = sessionStorage.getItem('scrollProgress')
-      return saved ? parseFloat(saved) : 0
+      const saved = sessionStorage.getItem('scrollProgress');
+      return saved ? parseFloat(saved) : 0;
     }
     // Clear sessionStorage on reload
-    sessionStorage.removeItem('scrollProgress')
-    sessionStorage.removeItem('animationStage')
-    return 0
-  })
+    sessionStorage.removeItem('scrollProgress');
+    sessionStorage.removeItem('animationStage');
+    return 0;
+  });
 
   // Save scroll progress to sessionStorage whenever it changes
   useEffect(() => {
     if (isInitialMount.current) {
-      isInitialMount.current = false
-      return
+      isInitialMount.current = false;
+      return;
     }
-    sessionStorage.setItem('scrollProgress', scrollProgress.toString())
-  }, [scrollProgress])
+    sessionStorage.setItem('scrollProgress', scrollProgress.toString());
+  }, [scrollProgress]);
 
   // Initialize Lenis smooth scroll
   useEffect(() => {
@@ -64,6 +65,8 @@ function AppContent() {
   // Handle navigation from map to learn more page
   const handleLearnMoreClick = () => {
     sessionStorage.setItem('transitioningToLearnMore', 'true')
+    // Set skipIntro flag so when user returns (back button or "back to map"), they see short sequence
+    sessionStorage.setItem('skipIntro', 'true')
 
     // Navigate immediately - timing is now controlled by HelsinkiViewer's callback
     navigate('/home')
@@ -92,6 +95,7 @@ function AppContent() {
               onScrollProgressChange={setScrollProgress}
             />} />
         <Route path="/home" element={<LearnMore />} />
+        <Route path="/about" element={<AboutPage />} />
       </Routes>
 
       {/* Transition overlay persists across route changes */}
@@ -109,4 +113,3 @@ function App() {
 }
 
 export default App
-

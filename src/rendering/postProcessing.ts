@@ -22,6 +22,7 @@ export function setupPostProcessing(renderTarget: THREE.WebGLRenderTarget, perli
       uTime: { value: 0 },
       uPencilStrength: { value: 1.0 },
       uResolution: { value: new THREE.Vector2(window.innerWidth * window.devicePixelRatio, window.innerHeight * window.devicePixelRatio) },
+      uContrast: { value: 3.0 }, // Default contrast
     },
     vertexShader: postProcessVertexShader,
     fragmentShader: postProcessFragmentShader,

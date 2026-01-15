@@ -39,7 +39,7 @@ export const HelsinkiViewer = ({ shouldLoad = true, shouldPause = false, scrollP
   const [heroTextOpacity, setHeroTextOpacity] = useState<number>(1) // Hero text opacity based on camera direction
   // New staged fade-in states
   const [showHeroText, setShowHeroText] = useState(false)
-  const [showUI, setShowUI] = useState(false)
+  const [showUIState, setShowUIState] = useState(false)
   const fadeTimers = useRef<{ hero?: NodeJS.Timeout; ui?: NodeJS.Timeout }>({})
 
   // Camera flying state for vignette effect
@@ -89,7 +89,7 @@ export const HelsinkiViewer = ({ shouldLoad = true, shouldPause = false, scrollP
     if (scrollProgress >= 1) {
       // Reset states in case of repeated triggers
       setShowHeroText(false)
-      setShowUI(false)
+      setShowUIState(false)
       // Clear any previous timers
       if (fadeTimers.current.hero) clearTimeout(fadeTimers.current.hero)
       if (fadeTimers.current.ui) clearTimeout(fadeTimers.current.ui)
@@ -99,12 +99,12 @@ export const HelsinkiViewer = ({ shouldLoad = true, shouldPause = false, scrollP
       }, 800)
       // UI after 1.8s (800ms + 1s - reduced from 2.2s)
       fadeTimers.current.ui = setTimeout(() => {
-        setShowUI(true)
+        setShowUIState(true)
       }, 1800)
     } else {
       // If user scrolls back, hide all and clear timers
       setShowHeroText(false)
-      setShowUI(false)
+      setShowUIState(false)
       if (fadeTimers.current.hero) clearTimeout(fadeTimers.current.hero)
       if (fadeTimers.current.ui) clearTimeout(fadeTimers.current.ui)
     }
@@ -341,6 +341,7 @@ export const HelsinkiViewer = ({ shouldLoad = true, shouldPause = false, scrollP
 
   // Wheel event listener to control grayscale slider - bidirectional and very gradual
   useEffect(() => {
+    if (!showUIState) return;
     const handleWheel = (event: WheelEvent) => {
       setGrayscaleAmount(prev => {
         // Scroll down (positive deltaY) = reduce grayscale
@@ -358,13 +359,12 @@ export const HelsinkiViewer = ({ shouldLoad = true, shouldPause = false, scrollP
 
   // Apply grayscale dynamically to canvas
   useEffect(() => {
-    if (!containerRef.current) return
-
-    const canvas = containerRef.current.querySelector('canvas')
+    if (!containerRef.current) return;
+    const canvas = containerRef.current.querySelector('canvas');
     if (canvas) {
       canvas.style.filter = `grayscale(${grayscaleAmount}%) brightness(1.50) contrast(0.88)` // BRIGHTNESS: Moderate 1.50 (was 1.38 too dark, 1.65 too bright)
     }
-  }, [grayscaleAmount])
+  }, [grayscaleAmount]);
 
 
   // Independent ticker animation - runs smoothly from 0-100 over ~2.5 seconds
@@ -376,21 +376,18 @@ export const HelsinkiViewer = ({ shouldLoad = true, shouldPause = false, scrollP
     const UPDATE_INTERVAL = 16 // ~60fps (16ms per frame)
 
     const tick = () => {
-      const elapsed = Date.now() - tickerStartTimeRef.current
-      const timeBasedProgress = Math.min((elapsed / TICKER_DURATION) * 100, 100)
-
+      const elapsed = Date.now() - tickerStartTimeRef.current;
+      const timeBasedProgress = Math.min((elapsed / TICKER_DURATION) * 100, 100);
       setTickerProgress((prev) => {
         // Smoothly interpolate towards time-based progress
-        const target = timeBasedProgress
-        const distance = target - prev
-
-        if (Math.abs(distance) < 0.1) return target
-
+        const target = timeBasedProgress;
+        const distance = target - prev;
+        if (Math.abs(distance) < 0.1) return target;
         // Smooth easing
-        const increment = distance * 0.1
-        return prev + increment
-      })
-    }
+        const increment = distance * 0.1;
+        return prev + increment;
+      });
+    };
 
     // Use setInterval instead of requestAnimationFrame to continue in background
     const intervalId = setInterval(tick, UPDATE_INTERVAL)
@@ -457,11 +454,11 @@ export const HelsinkiViewer = ({ shouldLoad = true, shouldPause = false, scrollP
       <MagneticElement
         className="logo-container"
         style={{
-          opacity: showUI && !isTransitionActive ? 1 : 0,
+          opacity: showUIState && !isTransitionActive ? 1 : 0,
           transition: isTransitionActive
             ? 'opacity 1.5s cubic-bezier(0.22, 1, 0.36, 1)'
             : 'opacity 0.8s cubic-bezier(0.22, 1, 0.36, 1)',
-          pointerEvents: showUI ? 'auto' : 'none',
+          pointerEvents: showUIState ? 'auto' : 'none',
         }}
         strength={0.25}
         range={120}
@@ -475,11 +472,11 @@ export const HelsinkiViewer = ({ shouldLoad = true, shouldPause = false, scrollP
       <MagneticElement
         className="hamburger-menu"
         style={{
-          opacity: showUI && !isTransitionActive ? 1 : 0,
+          opacity: showUIState && !isTransitionActive ? 1 : 0,
           transition: isTransitionActive
             ? 'opacity 1.5s cubic-bezier(0.22, 1, 0.36, 1)'
             : 'opacity 0.8s cubic-bezier(0.22, 1, 0.36, 1)',
-          pointerEvents: showUI ? 'auto' : 'none',
+          pointerEvents: showUIState ? 'auto' : 'none',
         }}
         strength={0.25}
         range={120}
@@ -494,7 +491,7 @@ export const HelsinkiViewer = ({ shouldLoad = true, shouldPause = false, scrollP
       <div
         className="ui-overlay"
         style={{
-          opacity: showUI ? 1 : 0,
+          opacity: showUIState ? 1 : 0,
           transition: 'opacity 0.4s cubic-bezier(0.22, 1, 0.36, 1)',
           pointerEvents: 'none',
         }}
@@ -595,8 +592,8 @@ export const HelsinkiViewer = ({ shouldLoad = true, shouldPause = false, scrollP
       </div>
 
       {/* POI Navigator - Bottom navigation bar */}
-      {/* Only render when showUI is true to trigger POI animations */}
-      {showUI && (
+      {/* Only render when showUIState is true to trigger POI animations */}
+      {showUIState && (
         <div className="poi-navigator-wrapper">
           <POINavigator onPOISelect={handlePOISelect} initialPOI="FOUNDERS_HOUSE" />
         </div>

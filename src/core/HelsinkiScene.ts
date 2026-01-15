@@ -132,7 +132,7 @@ export class HelsinkiScene {
       this.poiHighlightManager.setModel(result.mainMap)
       this.foundersHouseMarker.setModel(result.mainMap, this.camera)
 
-      // City lights removed - night mode disabled
+      // City lights removed - keeping your version without city lights
 
   // (Tram logic removed)
     }).catch(() => {

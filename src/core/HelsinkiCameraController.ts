@@ -106,7 +106,7 @@ export class HelsinkiCameraController {
   constructor(camera: THREE.PerspectiveCamera, domElement: HTMLElement) {
     this.camera = camera
     this.domElement = domElement
-    
+
     // Initialize base camera position from actual camera position
     // Start with OrbitControls as a safe default
     this.orbit = new OrbitControls(this.camera, this.domElement)
@@ -123,7 +123,7 @@ export class HelsinkiCameraController {
     this.orbit.zoomSpeed = this.zoomSpeed
     this.orbit.panSpeed = this.panSpeed
     this.orbit.target.copy(this.target)
-    
+
     // Disable OrbitControls rotation - we'll handle horizontal panning ourselves
     if (this.horizontalDragEnabled) {
       this.orbit.enableRotate = false
@@ -132,7 +132,7 @@ export class HelsinkiCameraController {
 
     // Listen for user interaction events
     this.setupInteractionListeners()
-    
+
     // Store base speeds
     this.baseZoomSpeed = this.zoomSpeed
     this.baseRotateSpeed = this.rotateSpeed

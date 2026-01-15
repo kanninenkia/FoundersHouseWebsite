@@ -38,11 +38,11 @@ type Stage = 'logo-loading' | 'logo-blur' | 'pixel-out-to-text1' | 'text1' | 'te
 export const LoadingScreen = ({ onComplete, duration, scrollProgress }: LoadingScreenProps) => {
   const [blocks, setBlocks] = useState<Block[]>([])
 
-  // Check if we should skip intro (returning from LearnMore)
+  // Check if we should skip intro (returning from LearnMore or browser back button)
   const shouldSkipIntro = sessionStorage.getItem('skipIntro') === 'true'
 
-  // If skipIntro flag is set, start at 'complete' stage, otherwise start fresh
-  const [stage, setStage] = useState<Stage>(shouldSkipIntro ? 'complete' : 'logo-loading')
+  // If skipIntro flag is set, start at 'logo-loading' for short sequence, otherwise start fresh
+  const [stage, setStage] = useState<Stage>('logo-loading')
   const [mapLoadingState, setMapLoadingState] = useState<MapLoadingState>({ isLoaded: false, progress: 0 })
   const [canProceedToBlur, setCanProceedToBlur] = useState(false)
   
@@ -213,28 +213,45 @@ export const LoadingScreen = ({ onComplete, duration, scrollProgress }: LoadingS
     const checkInterval = setInterval(() => {
       const elapsed = Date.now() - startTime
 
-      if (elapsed >= 500 && elapsed < 1300) {
-        setStage('logo-blur')
-      } else if (elapsed >= 1300 && elapsed < 2800) {
-        setStage('pixel-out-to-text1')
-      } else if (elapsed >= 2800 && elapsed < 6800) {
-        setStage('text1')
-      } else if (elapsed >= 6800 && elapsed < 9000) {
-        setStage('text2')
-      } else if (elapsed >= 9000 && elapsed < 9500) {
-        setStage('map-slide-in')
-      } else if (elapsed >= 11500 && elapsed < 13000) {
-        setStage('map-expand')
-      } else if (elapsed >= 13000) {
-        setStage('complete')
-        clearInterval(checkInterval) // Stop checking once we reach final stage
+      // SHORT SEQUENCE: When returning (skipIntro = true)
+      // Show: loading bar → logo blur → map slide-in → map expand (no pixelation, no text)
+      if (shouldSkipIntro) {
+        if (elapsed >= 500 && elapsed < 1300) {
+          setStage('logo-blur')
+        } else if (elapsed >= 1300 && elapsed < 3100) {
+          setStage('map-slide-in')
+        } else if (elapsed >= 3100 && elapsed < 4600) {
+          setStage('map-expand')
+        } else if (elapsed >= 4600) {
+          setStage('complete')
+          clearInterval(checkInterval)
+        }
+      }
+      // FULL SEQUENCE: First time visitors
+      else {
+        if (elapsed >= 500 && elapsed < 1300) {
+          setStage('logo-blur')
+        } else if (elapsed >= 1300 && elapsed < 2800) {
+          setStage('pixel-out-to-text1')
+        } else if (elapsed >= 2800 && elapsed < 6800) {
+          setStage('text1')
+        } else if (elapsed >= 6800 && elapsed < 9000) {
+          setStage('text2')
+        } else if (elapsed >= 9000 && elapsed < 9500) {
+          setStage('map-slide-in')
+        } else if (elapsed >= 11500 && elapsed < 13000) {
+          setStage('map-expand')
+        } else if (elapsed >= 13000) {
+          setStage('complete')
+          clearInterval(checkInterval)
+        }
       }
     }, 50) // Check every 50ms for smooth transitions
 
     return () => {
       clearInterval(checkInterval)
     }
-  }, [canProceedToBlur, scrollProgress, hasSkipped])
+  }, [canProceedToBlur, scrollProgress, hasSkipped, shouldSkipIntro])
 
   const showLogo = stage === 'logo-loading' || stage === 'logo-blur' || stage === 'pixel-out-to-text1'
   const showLoadingBar = stage === 'logo-loading'

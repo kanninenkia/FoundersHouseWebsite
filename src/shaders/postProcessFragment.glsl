@@ -11,6 +11,7 @@ uniform vec3 uPaperColor;
 uniform vec3 uBottomFogColor;         // Fog color for bottom vignette
 uniform float uTime;
 uniform float uPencilStrength;        // 0-1 effect intensity
+uniform float uContrast;              // Contrast adjustment (1.0 = normal)
 uniform vec2 uResolution;
 
 varying vec2 vUv;
