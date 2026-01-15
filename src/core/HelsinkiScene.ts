@@ -1,7 +1,6 @@
 /**
  * Helsinki 3D Scene
  * Three.js scene setup with Helsinki GLB model and pencil shader effect
- * Based on Chartogne-Taillet visual style
  */
 import * as THREE from 'three'
 import HelsinkiCameraController from './HelsinkiCameraController'
@@ -31,7 +30,7 @@ import { POINTS_OF_INTEREST } from '../constants/poi'
 export interface SceneConfig {
   container: HTMLElement
   helsinkiCenter: { lat: number; lng: number }
-  radius: number // km
+  radius: number
   isNightMode?: boolean
   onLoadProgress?: (progress: number) => void
   onLoadComplete?: () => void
@@ -52,13 +51,9 @@ export class HelsinkiScene {
   private isNightMode: boolean
   private poiAnimation: SmoothPOIAnimation | null = null
   private fog: THREE.Fog | null = null
-
-  // Managers
   private autoTourManager: AutoTourManager
   private poiHighlightManager: POIHighlightManager
   private foundersHouseMarker: FoundersHouseMarker
-
-  // Cleanup functions
   private _cleanupClickHandler: (() => void) | null = null
 
   public revealProgress: number = 0
@@ -69,52 +64,32 @@ export class HelsinkiScene {
     this.clock = new THREE.Clock()
     this.isNightMode = config.isNightMode !== undefined ? config.isNightMode : false
 
-    // Initialize scene
     this.scene = new THREE.Scene()
     this.scene.background = this.isNightMode
       ? new THREE.Color(COLORS.night.sky)
       : new THREE.Color(COLORS.day.sky)
 
-    // Create camera using helper
     this.camera = createCamera()
-
-    // Create renderer using helper
     this.renderer = createRenderer(config.container)
-
-    // Setup controls
     this.controls = new HelsinkiCameraController(this.camera, this.renderer.domElement)
     configureCameraControls(this.controls)
-
-    // Create render target using helper
     this.renderTarget = createRenderTarget()
-
-    // Generate Perlin texture
     this.perlinTexture = this.generatePerlinTexture()
 
-    // Setup post-processing
     const { material: ppMaterial } = setupPostProcessing(this.renderTarget, this.perlinTexture)
     this.postProcessMaterial = ppMaterial
     const composerResult = setupComposer(this.renderer, this.scene, this.camera, this.postProcessMaterial)
     this.composer = composerResult.composer
 
     setupSceneLighting(this.scene)
-
-    // Setup fog
     this.fog = setupSceneFog(this.scene, this.isNightMode)
-
-    // Stars removed - night mode disabled
-
-    // Initialize managers (model will be set after loading)
     this.poiHighlightManager = new POIHighlightManager(this.camera)
 
     this.autoTourManager = new AutoTourManager()
 
     this.foundersHouseMarker = new FoundersHouseMarker()
-
-    // Setup interaction event listeners
     this.setupInteractionListeners()
 
-    // Load main map
     loadDualModels({
       mainMapPath: '/models/map.glb',
       scene: this.scene,
@@ -126,22 +101,12 @@ export class HelsinkiScene {
       renderer: this.renderer,
     }).then((result) => {
       this.helsinkiModel = result.mainMap
-
-
-      // (Tram logic removed)
       this.poiHighlightManager.setModel(result.mainMap)
       this.foundersHouseMarker.setModel(result.mainMap, this.camera)
-
-      // City lights removed - keeping your version without city lights
-
-  // (Tram logic removed)
     }).catch(() => {
     })
 
-    // Setup click handler for debugging (model accessed via getter closure)
     this._cleanupClickHandler = setupClickHandler(this.renderer, this.camera, () => this.helsinkiModel)
-
-    // Setup window resize handler
     window.addEventListener('resize', this.onWindowResize)
   }
 
@@ -167,7 +132,6 @@ export class HelsinkiScene {
     )
   }
 
-  // Store event handler references for cleanup
   private _handlePointerDown = (ev: PointerEvent) => {
     if (ev.button !== 0) return
     this.autoTourManager.recordInteraction()
@@ -199,12 +163,10 @@ export class HelsinkiScene {
   private getMapBounds(): { min: THREE.Vector3; max: THREE.Vector3; radius: number } | null {
     if (!this.helsinkiModel) return null
 
-    // Calculate bounding box of the model
     const boundingBox = new THREE.Box3().setFromObject(this.helsinkiModel)
     const min = boundingBox.min
     const max = boundingBox.max
 
-    // Calculate approximate radius (largest horizontal extent)
     const sizeX = max.x - min.x
     const sizeZ = max.z - min.z
     const radius = Math.max(sizeX, sizeZ) / 2
@@ -212,24 +174,18 @@ export class HelsinkiScene {
     return { min, max, radius }
   }
 
-  /**
-   * Clamp a position to camera boundaries
-   * Returns a new clamped position object
-   */
   private clampPositionToBoundaries(position: { x: number; y: number; z: number }): { x: number; y: number; z: number } {
     if (!this.helsinkiModel) return position
 
     const bounds = this.getMapBounds()
     if (!bounds) return position
 
-    // Define safe zone - allow camera all the way to edges (100% of map bounds)
     const safetyMargin = 1.0
     const maxX = bounds.max.x * safetyMargin
     const minX = bounds.min.x * safetyMargin
     const maxZ = bounds.max.z * safetyMargin
     const minZ = bounds.min.z * safetyMargin
 
-    // Clamp position to boundaries
     return {
       x: Math.max(minX, Math.min(maxX, position.x)),
       y: position.y,
@@ -245,14 +201,12 @@ export class HelsinkiScene {
 
     const cameraTarget = this.controls.target || new THREE.Vector3(0, 0, 0)
 
-    // Define safe zone - allow camera all the way to edges (100% of map bounds)
     const safetyMargin = 1.0
     const maxX = bounds.max.x * safetyMargin
     const minX = bounds.min.x * safetyMargin
     const maxZ = bounds.max.z * safetyMargin
     const minZ = bounds.min.z * safetyMargin
 
-    // Clamp camera target to boundaries
     let clamped = false
     if (cameraTarget.x > maxX) {
       cameraTarget.x = maxX
@@ -271,7 +225,6 @@ export class HelsinkiScene {
       clamped = true
     }
 
-    // CRITICAL: Enforce camera height constraints (220-300)
     if (this.camera.position.y < 220) {
       this.camera.position.y = 220
       clamped = true
@@ -281,7 +234,6 @@ export class HelsinkiScene {
       clamped = true
     }
 
-    // Update controls target if clamped
     if (clamped) {
       this.controls.setTarget(cameraTarget.x, cameraTarget.y, cameraTarget.z)
     }
@@ -292,33 +244,24 @@ export class HelsinkiScene {
     const elapsed = this.clock.getElapsedTime()
     const delta = this.clock.getDelta()
 
-    // Enforce camera boundaries (keep camera within map bounds)
     this.enforceCameraBoundaries()
 
-    // ==========================================
-    // SMOOTH POI ANIMATION SYSTEM
-    // ==========================================
-
-    // Check for user interruption - this allows seamless handoff at ANY moment
+    // Smooth POI animation system
     if (this.controls.isUserInteracting()) {
       const wasAnimating = (this.poiAnimation && this.poiAnimation.isActive) || this.autoTourManager.isWaiting()
 
       if (wasAnimating) {
-        // Store velocity before interrupting (for smooth deceleration)
         const currentVelocity = this.poiAnimation?.currentVelocity?.clone() || new THREE.Vector3()
 
-        // Interrupt animation smoothly
         if (this.poiAnimation && this.poiAnimation.isActive) {
           interruptSmoothPOIAnimation(this.poiAnimation)
           this.poiAnimation = null
         }
 
-        // Stop auto-tour and clear highlights
         this.autoTourManager.setWaiting(false)
         this.autoTourManager.stop()
         this.poiHighlightManager.clearHighlights()
 
-        // Calculate smooth handoff target based on current camera direction
         const currentTarget = this.controls.target || new THREE.Vector3(0, 0, 0)
         const currentDistance = this.camera.position.distanceTo(currentTarget)
         const direction = new THREE.Vector3()
@@ -326,10 +269,8 @@ export class HelsinkiScene {
         const newTarget = this.camera.position.clone().add(direction.multiplyScalar(currentDistance))
         newTarget.y = Math.max(newTarget.y, 10)
 
-        // Hand off control to user with smooth deceleration
         this.controls.setTarget(newTarget.x, newTarget.y, newTarget.z)
 
-        // Apply velocity for smooth slowdown (instead of instant stop)
         if (this.controls.applyHandoffVelocity && currentVelocity.length() > 0) {
           this.controls.applyHandoffVelocity(currentVelocity)
         }
@@ -339,7 +280,6 @@ export class HelsinkiScene {
       this.autoTourManager.recordInteraction()
     }
 
-    // Update smooth POI animation if active
     let currentCameraTarget = this.controls.target || new THREE.Vector3(0, 0, 0)
 
     if (this.poiAnimation && this.poiAnimation.isActive) {
@@ -351,33 +291,22 @@ export class HelsinkiScene {
       }
     }
 
-    // Update controls
-    // During POI animation: DON'T call controls.update() to avoid fighting with animation
-    // After POI animation: Resume normal controls
     const isPOIAnimating = this.poiAnimation && this.poiAnimation.isActive
 
     if (!isPOIAnimating) {
-      // Normal controls operation
       this.controls.update(delta)
     } else {
-      // During animation: sync controls target without updating (prevents fighting)
       if (this.controls.target) {
         this.controls.target.copy(currentCameraTarget)
       }
     }
 
-    // City lights and stars animation removed - night mode disabled
-
-  // (Tram update removed)
-
     this.postProcessMaterial.uniforms.uTime.value = elapsed
     this.postProcessMaterial.uniforms.uPencilStrength.value = this.pencilStrength
 
-    // Render scene with post-processing effects (warm tint, film grain, bloom, etc.)
     if (this.composer) {
       this.composer.render()
     } else {
-      // Fallback if composer setup failed
       this.renderer.setRenderTarget(null)
       this.renderer.render(this.scene, this.camera)
     }
@@ -418,7 +347,6 @@ export class HelsinkiScene {
     this.poiHighlightManager.dispose()
     this.foundersHouseMarker.dispose()
 
-    // Remove all event listeners
     window.removeEventListener('resize', this.onWindowResize)
     this.removeInteractionListeners()
     if (this._cleanupClickHandler) {
@@ -431,7 +359,6 @@ export class HelsinkiScene {
     this.renderTarget.dispose()
     this.perlinTexture.dispose()
 
-    // Dispose post-processing
     if (this.postProcessMaterial) {
       this.postProcessMaterial.dispose()
     }
@@ -439,9 +366,7 @@ export class HelsinkiScene {
       this.composer.dispose()
     }
 
-    // Dispose helsinki model and edge geometries/materials
     if (this.helsinkiModel) {
-      // Dispose edge geometries and materials created in modelLoader
       const edgeGeometries = (this.helsinkiModel as any).__edgeGeometries as THREE.EdgesGeometry[] | undefined
       const edgeMaterials = (this.helsinkiModel as any).__edgeMaterials as THREE.LineBasicMaterial[] | undefined
 
@@ -455,12 +380,9 @@ export class HelsinkiScene {
       this.scene.remove(this.helsinkiModel)
     }
 
-    // Stars and city lights disposal removed - night mode disabled
-
     this.container.removeChild(this.renderer.domElement)
   }
 
-  // Getters
   public getCamera(): THREE.PerspectiveCamera {
     return this.camera
   }
@@ -527,7 +449,6 @@ export class HelsinkiScene {
     const poi = POINTS_OF_INTEREST[poiName]
     if (!poi) return
 
-    // HARDCODED: Oura POI endpoint (exact camera position)
     if (poiName === 'OURA' && animated) {
       this.poiHighlightManager.clearHighlights()
 
@@ -565,56 +486,36 @@ export class HelsinkiScene {
       return
     }
 
-    // Get desired values from parameters or POI config
     const desiredDistance = distance ?? poi.cameraView?.distance ?? 300
     const desiredAzimuth = azimuth ?? poi.cameraView?.azimuth ?? 90
     const desiredElevation = elevation ?? poi.cameraView?.elevation ?? 40
 
-    // Clamp distance to allow close POI views while preventing seeing model imperfections
-    // Distance: Allow 200-900 range (closer than general camera restrictions for POI close-ups)
     const finalDistance = Math.max(200, Math.min(900, desiredDistance))
-    // Azimuth: Allow full 360° rotation for POI viewing (no restriction)
     const finalAzimuth = desiredAzimuth
-    // Elevation: Clamp to restriction range (8-15° range)
     const finalElevation = Math.max(8, Math.min(15, desiredElevation))
 
     if (animated) {
-      // Clear existing highlights
       this.poiHighlightManager.clearHighlights()
 
-      // Cancel any existing animation
       if (this.poiAnimation && this.poiAnimation.isActive) {
         interruptSmoothPOIAnimation(this.poiAnimation)
       }
 
-      // Get current camera target
       const currentTarget = this.controls.target ? this.controls.target.clone() : new THREE.Vector3(0, 0, 0)
-
-      // Clamp POI target to camera boundaries to prevent snap-back
       const clampedPOITarget = this.clampPositionToBoundaries(poi.worldCoords)
 
-      // For direct zoom, calculate end position by moving camera toward POI along its current direction
       if (directZoom) {
-        // Calculate direction from current camera position to POI
         const poiVec = new THREE.Vector3(clampedPOITarget.x, clampedPOITarget.y, clampedPOITarget.z)
-        
-        // Calculate current distance to POI
         const currentDistance = this.camera.position.distanceTo(poiVec)
-        
-        // FIXED: Only use directZoom logic if we're zooming IN (getting closer)
-        // If finalDistance >= currentDistance, it means we'd be moving away, so use standard spherical approach
+
         if (finalDistance < currentDistance) {
-          // We're zooming in - maintain current viewing angle
           const currentCameraPos = this.camera.position.clone()
           const directionFromPOI = new THREE.Vector3().subVectors(currentCameraPos, poiVec).normalize()
-          
-          // Calculate end camera position: start at POI, move outward along direction by finalDistance
           const endCameraPosition = new THREE.Vector3().addVectors(
             poiVec,
             directionFromPOI.multiplyScalar(finalDistance)
           )
 
-          // Create direct zoom animation (no spherical recalculation)
           this.poiAnimation = {
             isActive: true,
             startTime: performance.now() / 1000,
@@ -640,10 +541,7 @@ export class HelsinkiScene {
           }
           return
         }
-        // If we reach here, finalDistance >= currentDistance, so fall through to standard animation
       }
-        // Standard POI animation with spherical coordinates
-        // Create smooth POI animation
         this.poiAnimation = createSmoothPOIAnimation(
           this.camera,
           currentTarget,
@@ -653,18 +551,10 @@ export class HelsinkiScene {
           finalElevation,
           duration,
           () => {
-            // On complete: highlight POI
             this.poiHighlightManager.highlightPOI(poiName, 200)
-
-            // CRITICAL: Set controls to EXACT final position (prevents drift)
-            // Use clamped target to stay within boundaries
             this.controls.setTarget(clampedPOITarget.x, clampedPOITarget.y, clampedPOITarget.z)
-
-            // CRITICAL: Restore camera constraints after POI animation
-            // Reset minDistance to respect camera constraints (700 minimum)
             this.controls.minDistance = 700
 
-            // Sync all internal camera state to prevent any movement
             if (this.controls.syncInternalState) {
               this.controls.syncInternalState()
             }
@@ -674,12 +564,10 @@ export class HelsinkiScene {
             }
           },
           () => {
-            // On interrupt: clear highlights
             this.poiHighlightManager.clearHighlights()
           }
         )
     } else {
-      // Instant teleport (no animation)
       const config: CameraConfig = {
         targetX: poi.worldCoords.x,
         targetY: poi.worldCoords.y,
@@ -728,8 +616,6 @@ export class HelsinkiScene {
       )
     }
 
-    // Stars and city lights toggle removed - night mode disabled
-
     this.scene.traverse((child) => {
       if (child instanceof THREE.PointLight) {
         child.visible = this.isNightMode
@@ -738,15 +624,12 @@ export class HelsinkiScene {
           child.material instanceof THREE.MeshBasicMaterial &&
           child.geometry instanceof THREE.SphereGeometry) {
         const sphere = child.geometry
-        // @ts-ignore
         if (sphere.parameters && sphere.parameters.radius < 20) {
           child.visible = this.isNightMode
         }
       }
     })
   }
-
-  // City lights methods removed - night mode disabled
 
   public highlightPOI(poiName: keyof typeof POINTS_OF_INTEREST, maxMeshes: number = 20): void {
     this.poiHighlightManager.highlightPOI(poiName, maxMeshes)
@@ -760,14 +643,9 @@ export class HelsinkiScene {
     return this.poiHighlightManager.getHighlightedPOI()
   }
 
-  /**
-   * Enable or disable camera parallax effect
-   */
   public setParallaxEnabled(enabled: boolean): void {
     if (this.controls && typeof this.controls.setParallaxEnabled === 'function') {
       this.controls.setParallaxEnabled(enabled)
     }
   }
-
-  // (No-op: removed obsolete single-tram public API methods)
 }

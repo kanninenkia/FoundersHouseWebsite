@@ -15,7 +15,6 @@ interface MapLoadingState {
   progress: number
 }
 
-// Animated text component with fade-in or fade-up effect and optional fade-out (Jason's version)
 const AnimatedText = ({ text, fadeUp = false, fadeOut = false }: { text: string; fadeUp?: boolean; fadeOut?: boolean; duration?: number }) => {
   let className = "fade-in-text";
   if (fadeUp) className = "fade-up-text";
@@ -32,25 +31,16 @@ interface Block {
   delay: number
 }
 
-// Jason's stages: map-slide-in and map-expand instead of lines-connect and slide-up-start
 type Stage = 'logo-loading' | 'logo-blur' | 'pixel-out-to-text1' | 'text1' | 'text2' | 'map-slide-in' | 'map-expand' | 'complete'
 
 export const LoadingScreen = ({ onComplete, duration, scrollProgress }: LoadingScreenProps) => {
   const [blocks, setBlocks] = useState<Block[]>([])
-
-  // Check if we should skip intro (returning from LearnMore or browser back button)
   const shouldSkipIntro = sessionStorage.getItem('skipIntro') === 'true'
-
-  // If skipIntro flag is set, start at 'logo-loading' for short sequence, otherwise start fresh
   const [stage, setStage] = useState<Stage>('logo-loading')
   const [mapLoadingState, setMapLoadingState] = useState<MapLoadingState>({ isLoaded: false, progress: 0 })
   const [canProceedToBlur, setCanProceedToBlur] = useState(false)
-  
-  // Direct DOM manipulation for loading bar - bypasses React re-renders
   const loadingBarRef = useRef<HTMLDivElement>(null)
 
-  // YOUR IMAGE CYCLING - All images now optimized as WebP
-  // Select ONE random image on component mount
   const [loadingImage] = useState(() => {
     const images = [
       '/images/LoadInImage-min.webp',
@@ -60,23 +50,19 @@ export const LoadingScreen = ({ onComplete, duration, scrollProgress }: LoadingS
       '/images/Legends Day Still 002.webp',
       '/images/Legends Day Still 014.webp'
     ]
-    // Pick one random image
     const randomIndex = Math.floor(Math.random() * images.length)
     return images[randomIndex]
   })
 
-  // Skip intro button state
   const [showSkipButton, setShowSkipButton] = useState(false)
   const [hasSkipped, setHasSkipped] = useState(false)
 
-  // Clear skipIntro flag after component mounts
   useEffect(() => {
     if (shouldSkipIntro) {
       sessionStorage.removeItem('skipIntro')
     }
   }, [shouldSkipIntro])
 
-  // Show skip button when pixelation stage completes and we enter text1
   useEffect(() => {
     if (stage === 'text1' || stage === 'text2') {
       setShowSkipButton(true)
@@ -85,23 +71,19 @@ export const LoadingScreen = ({ onComplete, duration, scrollProgress }: LoadingS
     }
   }, [stage])
 
-  // Skip intro handler - jumps directly to map slide-in and then expand
   const handleSkip = () => {
     setShowSkipButton(false)
     setHasSkipped(true)
     setStage('map-slide-in')
 
-    // Wait for slide-in animation to almost complete (1.6s of 1.8s total)
-    // This shows the map nearly fully slid in before expanding
     setTimeout(() => {
       setStage('map-expand')
       setTimeout(() => {
         setStage('complete')
-      }, 1500) // Duration of expand animation
-    }, 1600) // 1.6s to let map slide to ~90% before expanding
+      }, 1500)
+    }, 1600)
   }
 
-  // Keyboard shortcut for skip (Space or Enter)
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
       if ((e.key === ' ' || e.key === 'Enter') && showSkipButton && stage !== 'complete') {
@@ -114,26 +96,21 @@ export const LoadingScreen = ({ onComplete, duration, scrollProgress }: LoadingS
     return () => window.removeEventListener('keydown', handleKeyPress)
   }, [showSkipButton, stage])
 
-  // REMOVED: Time-based image cycling - now using single random image
-
-  // ULTRA-SMOOTH LOADING BAR - Direct DOM manipulation, zero React interference
   useEffect(() => {
     if (scrollProgress > 0 || stage !== 'logo-loading') return
 
     const startTime = performance.now()
-    const duration = 3000 // 3 seconds
+    const duration = 3000
     let animationFrameId: number
 
     const animate = (currentTime: number) => {
       const elapsed = currentTime - startTime
       const progress = Math.min((elapsed / duration) * 100, 100)
-      
-      // Direct DOM update - bypasses React state and re-renders
+
       if (loadingBarRef.current) {
         loadingBarRef.current.style.width = `${progress}%`
       }
 
-      // Continue until we hit 100%
       if (progress < 100) {
         animationFrameId = requestAnimationFrame(animate)
       }
@@ -148,30 +125,24 @@ export const LoadingScreen = ({ onComplete, duration, scrollProgress }: LoadingS
     }
   }, [scrollProgress, stage])
 
-  // SAFETY CHECK - Wait for map to load, then allow progression
   useEffect(() => {
     if (scrollProgress > 0) return
 
-    // When map fully loads, allow proceeding to blur
     if (mapLoadingState.isLoaded && mapLoadingState.progress >= 100) {
       setCanProceedToBlur(true)
     }
   }, [scrollProgress, mapLoadingState])
 
   useEffect(() => {
-    // Generate random blocks with natural dissolve timing
     const generatedBlocks: Block[] = []
-    // JASON'S GRID SIZE: 18x10 (reduced from your 24x16)
-    const cols = 18 // Reduced columns for cleaner pixelation
-    const rows = 10 // Reduced rows
+    const cols = 18
+    const rows = 10
     const blockWidth = 100 / cols
     const blockHeight = 100 / rows
 
-    // Create blocks with edge-filling logic (Jason's overlap approach)
     const blockPositions: Block[] = []
     for (let i = 0; i < cols; i++) {
       for (let j = 0; j < rows; j++) {
-        // Overlap amount in percent
         const overlap = 0.15;
         blockPositions.push({
           id: i * rows + j,
@@ -184,37 +155,28 @@ export const LoadingScreen = ({ onComplete, duration, scrollProgress }: LoadingS
       }
     }
 
-    // Shuffle blocks and assign truly random delays, rotation, and scale for natural dissolve
     const shuffled = blockPositions.sort(() => Math.random() - 0.5)
-    const maxDelay = 1200 // Spread dissolve over 1.2 seconds
+    const maxDelay = 1200
     shuffled.forEach((block) => {
       generatedBlocks.push({
         ...block,
-        delay: Math.random() * maxDelay // Completely random delay for natural effect
+        delay: Math.random() * maxDelay
       })
     })
 
     setBlocks(generatedBlocks)
 
-    return () => {
-      // No timers to clean up
-    }
+    return () => {}
   }, [duration, onComplete])
 
-  // JASON'S STAGE TRANSITIONS - map-slide-in and map-expand timing
-  // Runs continuously regardless of tab visibility
   useEffect(() => {
     if (!canProceedToBlur || hasSkipped) return
 
-    // Record start time for time-based stage transitions
     const startTime = Date.now()
 
-    // Use setInterval to check elapsed time continuously
     const checkInterval = setInterval(() => {
       const elapsed = Date.now() - startTime
 
-      // SHORT SEQUENCE: When returning (skipIntro = true)
-      // Show: loading bar → logo blur → map slide-in → map expand (no pixelation, no text)
       if (shouldSkipIntro) {
         if (elapsed >= 500 && elapsed < 1300) {
           setStage('logo-blur')
@@ -227,7 +189,6 @@ export const LoadingScreen = ({ onComplete, duration, scrollProgress }: LoadingS
           clearInterval(checkInterval)
         }
       }
-      // FULL SEQUENCE: First time visitors
       else {
         if (elapsed >= 500 && elapsed < 1300) {
           setStage('logo-blur')
@@ -246,7 +207,7 @@ export const LoadingScreen = ({ onComplete, duration, scrollProgress }: LoadingS
           clearInterval(checkInterval)
         }
       }
-    }, 50) // Check every 50ms for smooth transitions
+    }, 50)
 
     return () => {
       clearInterval(checkInterval)
@@ -257,19 +218,16 @@ export const LoadingScreen = ({ onComplete, duration, scrollProgress }: LoadingS
   const showLoadingBar = stage === 'logo-loading'
   const showBackgroundImage = stage === 'logo-loading' || stage === 'logo-blur' || stage === 'pixel-out-to-text1'
   const showPixelTransition = stage === 'pixel-out-to-text1'
-  // JASON'S DELAYED TEXT1 APPEARANCE
   const [showText1Delayed, setShowText1Delayed] = useState(false)
   const showText1 = stage === 'text1' && showText1Delayed
   const [fadeOutText1, setFadeOutText1] = useState(false)
   const shouldBlurLogo = stage === 'logo-blur' || stage === 'pixel-out-to-text1'
 
-  // JASON'S TEXT DELAY AND FADE-OUT LOGIC
   useEffect(() => {
     let showTimeout: ReturnType<typeof setTimeout> | undefined
     let fadeOutTimeout: ReturnType<typeof setTimeout> | undefined
     if (stage === 'text1') {
       showTimeout = setTimeout(() => setShowText1Delayed(true), 300)
-      // Fade out text1 just before switching to text2
       fadeOutTimeout = setTimeout(() => setFadeOutText1(true), 3400)
     } else {
       setShowText1Delayed(false)
@@ -295,9 +253,7 @@ export const LoadingScreen = ({ onComplete, duration, scrollProgress }: LoadingS
       transition={{ duration: 0 }}
     >
       <div className="loading-content">
-        {/* Persistent dark red background layer */}
         <div className={`loading-text text-page${stage === 'map-slide-in' ? ' text-pushed-by-box' : ''}`} style={{ pointerEvents: 'none', zIndex: 0, position: 'fixed', inset: 0 }}>
-          {/* Corner labels absolutely positioned, not wrapped, so they stay in corners */}
           {(stage === 'text1' || stage === 'text2' || stage === 'map-slide-in' || stage === 'map-expand') && <>
             <span
               className={`corner-label top-left${stage === 'text1' ? ' fade-in' : ''}${stage !== 'text1' ? ' fade-in-persist' : ''}`}
@@ -306,9 +262,7 @@ export const LoadingScreen = ({ onComplete, duration, scrollProgress }: LoadingS
               className={`corner-label top-right${stage === 'text1' ? ' fade-in' : ''}${stage !== 'text1' ? ' fade-in-persist' : ''}`}
             >HELSINKI, FINLAND</span>
           </>}
-          {/* Text content in its own container for independent animation */}
           <div className={`text-centered align-left${stage === 'map-slide-in' ? ' text-pushed-by-box' : ''}${stage === 'map-expand' ? ' text-pushed-expand' : ''}`} style={{ opacity: (stage === 'text1' || stage === 'text2' || stage === 'map-slide-in' || stage === 'map-expand' || stage === 'complete') ? 1 : 0 }}>
-            {/* Always render both text1 and text2, but control their visibility with stage */}
             <div style={{ display: stage === 'text1' && showText1 ? 'block' : 'none' }}>
               <div className="fade-up-wrapper"><AnimatedText text="FOR THE NEXT" fadeUp={true} fadeOut={fadeOutText1} /></div>
               <div className="fade-up-wrapper"><AnimatedText text="FOUNDER GENERATION" fadeUp={true} fadeOut={fadeOutText1} /></div>
@@ -322,7 +276,6 @@ export const LoadingScreen = ({ onComplete, duration, scrollProgress }: LoadingS
           </div>
         </div>
 
-        {/* Background layer: Single random loading image - Always visible during initial stages */}
         {showBackgroundImage && (
           <div className="loading-background-image">
             <img
@@ -335,7 +288,6 @@ export const LoadingScreen = ({ onComplete, duration, scrollProgress }: LoadingS
           </div>
         )}
 
-        {/* Stage 1 & 2: Logo + Loading Bar (on top of background) */}
         {showLogo && (
           <div
             className={`loading-logo ${shouldBlurLogo ? 'blur-out' : ''}`}
@@ -350,7 +302,6 @@ export const LoadingScreen = ({ onComplete, duration, scrollProgress }: LoadingS
           </div>
         )}
 
-        {/* Cream blocks that pixelate out the image to reveal text */}
         {showPixelTransition && (
           <div className="blocks-container">
             {blocks.map((block) => (
@@ -369,7 +320,6 @@ export const LoadingScreen = ({ onComplete, duration, scrollProgress }: LoadingS
           </div>
         )}
 
-        {/* Always mount HelsinkiViewer so it can trigger loading state */}
         <div
           className={`map-container${stage === 'map-slide-in' ? ' slide-in' : ''}${stage === 'map-expand' ? ' expand' : ''}`}
           style={{
@@ -398,7 +348,6 @@ export const LoadingScreen = ({ onComplete, duration, scrollProgress }: LoadingS
           </div>
         </div>
 
-        {/* Skip intro button - appears after pixelation (2.8s) */}
         {showSkipButton && stage !== 'complete' && stage !== 'map-slide-in' && stage !== 'map-expand' && (
           <button
             className="skip-intro-button"

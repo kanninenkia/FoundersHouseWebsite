@@ -10,11 +10,10 @@ interface POINavigatorProps {
 
 export const POINavigator = ({ onPOISelect, initialPOI = 'FOUNDERS_HOUSE' }: POINavigatorProps) => {
   const [selectedPOI, setSelectedPOI] = useState<string>(initialPOI)
-  const [focusedIndex, setFocusedIndex] = useState(5) // Start at Founders House (center)
+  const [focusedIndex, setFocusedIndex] = useState(5)
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null)
   const [isInitialAnimationComplete, setIsInitialAnimationComplete] = useState(false)
 
-  // Convert POI object to array for easier mapping
   const poiList = Object.entries(POINTS_OF_INTEREST).map(([key, poi]) => ({
     key,
     ...poi
@@ -25,7 +24,6 @@ export const POINavigator = ({ onPOISelect, initialPOI = 'FOUNDERS_HOUSE' }: POI
     onPOISelect?.(poi)
   }
 
-  // Silent keyboard navigation - discoverable easter egg
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       switch (e.key) {
@@ -55,7 +53,6 @@ export const POINavigator = ({ onPOISelect, initialPOI = 'FOUNDERS_HOUSE' }: POI
           break
         case 'Escape':
           e.preventDefault()
-          // Reset to Founders House
           const foundersHouse = poiList.find(p => p.key === 'FOUNDERS_HOUSE')
           if (foundersHouse) {
             handlePOIClick(foundersHouse.key, foundersHouse)
@@ -137,7 +134,6 @@ export const POINavigator = ({ onPOISelect, initialPOI = 'FOUNDERS_HOUSE' }: POI
         isReady={isInitialAnimationComplete}
       />
 
-      {/* Gradual blur overlay */}
       <motion.div
         className="gradient-blur"
         initial={{ opacity: 0 }}
@@ -189,11 +185,9 @@ const POIButton = ({
 }: POIButtonProps) => {
   const buttonRef = useRef<HTMLButtonElement>(null)
 
-  // Magnetic cursor effect with Olivier Larose's refined physics
   const mouseX = useMotionValue(0)
   const mouseY = useMotionValue(0)
 
-  // Optimized spring config: buttery smooth motion with minimal overshoot
   const springConfig = { damping: 28, stiffness: 400, mass: 0.5 }
   const x = useSpring(mouseX, springConfig)
   const y = useSpring(mouseY, springConfig)
@@ -204,16 +198,13 @@ const POIButton = ({
     const centerX = rect.left + rect.width / 2
     const centerY = rect.top + rect.height / 2
 
-    // Calculate distance from button center
     const distanceX = e.clientX - centerX
     const distanceY = e.clientY - centerY
 
-    // Enhanced magnetic pull with distance-based strength
     const distance = Math.sqrt(distanceX * distanceX + distanceY * distanceY)
-    const maxDistance = 100 // Magnetic field radius
+    const maxDistance = 100
     const strength = Math.max(0, 1 - distance / maxDistance)
 
-    // Stronger pull when closer, max 12px
     mouseX.set(distanceX * 0.2 * strength)
     mouseY.set(distanceY * 0.2 * strength)
   }
@@ -224,7 +215,6 @@ const POIButton = ({
     onHoverEnd()
   }
 
-  // Delay calculation for initial expand animation
   const delay = isCenter ? 0 : 0.2
 
   return (
@@ -296,7 +286,7 @@ const VectorPath = ({ selectedIndex, totalItems, isReady }: VectorPathProps) => 
   const svgRef = useRef<SVGSVGElement>(null)
 
   useEffect(() => {
-    if (!isReady) return // Don't calculate until buttons are done animating
+    if (!isReady) return
 
     const updatePath = () => {
       const buttons = document.querySelectorAll('.poi-item')
@@ -336,7 +326,6 @@ const VectorPath = ({ selectedIndex, totalItems, isReady }: VectorPathProps) => 
       setPath(pathData.trim().replace(/\s+/g, ' '))
     }
 
-    // Run immediately when ready
     updatePath()
 
     window.addEventListener('resize', updatePath)

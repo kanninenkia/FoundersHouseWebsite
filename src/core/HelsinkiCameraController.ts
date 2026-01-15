@@ -2,33 +2,20 @@ import * as THREE from 'three'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
 import { clampToMapBounds } from '../constants/mapBoundaries'
 
-/**
- * Super smooth ease-out using quartic (power of 4)
- * Provides very gentle deceleration near boundaries
- */
 function easeOutQuart(t: number): number {
   return 1 - Math.pow(1 - t, 4)
 }
 
-/**
- * Thin wrapper that dynamically upgrades OrbitControls to camera-controls when available.
- * Keeps a stable API used by HelsinkiScene: update(delta?), target, dispose, setLookAt, fitToBox, flyTo
- */
 export class HelsinkiCameraController {
-  // --- Parallax drag-release freeze/ease-in state ---
   private parallaxFreezeActive = false;
   private parallaxFreezeStart = 0;
-  private parallaxFreezeDuration = 0; // ms (no freeze, only ease-in)
+  private parallaxFreezeDuration = 0;
   private parallaxEaseInActive = false;
   private parallaxEaseInStart = 0;
-  private parallaxEaseInDuration = 600; // ms (ease-in duration)
-    // Optional bounding box for camera limits
-    private boundingBox: THREE.Box3 | null = null
+  private parallaxEaseInDuration = 600;
+  private boundingBox: THREE.Box3 | null = null
 
-    /**
-     * Set the bounding box for camera movement limits
-     */
-    public setBoundingBox(box: THREE.Box3) {
+  public setBoundingBox(box: THREE.Box3) {
       this.boundingBox = box.clone()
     }
   private camera: THREE.PerspectiveCamera
@@ -38,11 +25,10 @@ export class HelsinkiCameraController {
   private installedAdvanced = false
   public parallax: THREE.Vector2 = new THREE.Vector2()
 
-  // Proxyable properties
   public enableDamping: boolean = true
   public dampingFactor: number = 0.05
   public screenSpacePanning: boolean = false
-  public minDistance: number = 700  // Increased to prevent seeing model imperfections
+  public minDistance: number = 700
   public maxDistance: number = 50000
   public maxPolarAngle: number = Math.PI / 2
   public minPolarAngle: number = 0
@@ -53,51 +39,33 @@ export class HelsinkiCameraController {
   public panSpeed: number = 1.0
   public target: THREE.Vector3 = new THREE.Vector3(0, 0, 0)
   private userInteracting: boolean = false
-
-  // Soft boundary easing settings
   private softBoundaryEnabled: boolean = true
-  private softBoundaryZone: number = 0.20 // 20% of range near edges gets easing
-  
-  // Store base speeds for easing calculations
+  private softBoundaryZone: number = 0.20
   private baseZoomSpeed: number = 1.0
   private baseRotateSpeed: number = 1.0
-  
-  // Hybrid drag settings (rotation + pan)
   private horizontalDragEnabled: boolean = true
   private isDragging: boolean = false
-  private panSensitivity: number = 0.28 // Lower = slower, smoother up/down drag
-  private rotateSensitivity: number = 0.0012 // Lower = slower, smoother left/right drag
-  
-  // Momentum/inertia settings for smooth easing
+  private panSensitivity: number = 0.28
+  private rotateSensitivity: number = 0.0012
   private velocity: THREE.Vector3 = new THREE.Vector3()
-  private rotationVelocity: number = 0 // Angular velocity for rotation momentum
-  private friction: number = 0.96 // Higher = more easing, smoother stop
-  private velocityThreshold: number = 0.008 // Slightly lower for more subtle stop
-  private rotationThreshold: number = 0.00008 // Slightly lower for more subtle stop
-  private smoothingFactor: number = 0.32 // Higher = more smoothing/easing
-
-  // --- Parallax effect state ---
+  private rotationVelocity: number = 0
+  private friction: number = 0.96
+  private velocityThreshold: number = 0.008
+  private rotationThreshold: number = 0.00008
+  private smoothingFactor: number = 0.32
   private mouseNormalizedX = 0;
   private mouseNormalizedY = 0;
   private parallaxOffsetX = 0;
   private parallaxOffsetY = 0;
-  private parallaxStrength = 30; // units
+  private parallaxStrength = 30;
   private parallaxEasing = 0.04;
   private baseCameraPosition: THREE.Vector3 = new THREE.Vector3();
-  private parallaxEnabled = true; // Control to enable/disable parallax
-
-  // --- Smoothed camera state ---
+  private parallaxEnabled = true;
   private cameraTargetPosition: THREE.Vector3 = new THREE.Vector3();
   private desiredCameraPosition: THREE.Vector3 = new THREE.Vector3();
-  private cameraLerpAlpha: number = 0.08; // Lower = smoother
-
-  // internal clock for delta when needed
+  private cameraLerpAlpha: number = 0.08;
   private _last = performance.now()
-
-  // Add a new property for the drag target position
   private dragTargetPosition: THREE.Vector3 = new THREE.Vector3();
-
-  // Reusable objects to eliminate allocations during interaction (PERFORMANCE CRITICAL)
   private _tempSpherical: THREE.Spherical = new THREE.Spherical();
   private _tempVector3: THREE.Vector3 = new THREE.Vector3();
   private _tempVector3_2: THREE.Vector3 = new THREE.Vector3();
@@ -107,8 +75,6 @@ export class HelsinkiCameraController {
     this.camera = camera
     this.domElement = domElement
 
-    // Initialize base camera position from actual camera position
-    // Start with OrbitControls as a safe default
     this.orbit = new OrbitControls(this.camera, this.domElement)
     this.orbit.enableDamping = this.enableDamping
     this.orbit.dampingFactor = this.dampingFactor
@@ -124,37 +90,21 @@ export class HelsinkiCameraController {
     this.orbit.panSpeed = this.panSpeed
     this.orbit.target.copy(this.target)
 
-    // Disable OrbitControls rotation - we'll handle horizontal panning ourselves
     if (this.horizontalDragEnabled) {
       this.orbit.enableRotate = false
-      this.orbit.enablePan = false // We handle panning manually
+      this.orbit.enablePan = false
     }
 
-    // Listen for user interaction events
     this.setupInteractionListeners()
-
-    // Store base speeds
     this.baseZoomSpeed = this.zoomSpeed
     this.baseRotateSpeed = this.rotateSpeed
-
-    // Add mousemove listener for parallax effect (only once)
     this.baseCameraPosition.copy(camera.position);
     this.domElement.addEventListener('mousemove', this._handleParallaxMouseMove);
     this.domElement.addEventListener('mouseleave', this._handleParallaxMouseLeave);
-    // In constructor, initialize dragTargetPosition
     this.dragTargetPosition.copy(this.camera.position);
-    // In constructor, initialize desiredCameraPosition
     this.desiredCameraPosition.copy(this.camera.position);
   }
 
-  /**
-   * Calculate easing factor for any boundary using smooth bezier ease-out
-   * @param currentValue - Current value
-   * @param minValue - Minimum boundary
-   * @param maxValue - Maximum boundary
-   * @param movingTowardsMin - Whether movement is towards the minimum
-   * @returns Easing factor 0-1 (0 = at boundary, 1 = full speed)
-   */
   private calculateBoundaryEasingGeneric(
     currentValue: number, 
     minValue: number, 
@@ -165,29 +115,24 @@ export class HelsinkiCameraController {
     if (range <= 0) return 1.0
     
     const softZoneSize = range * this.softBoundaryZone
-    
+
     if (movingTowardsMin) {
-      // Moving towards minimum boundary
       const distanceFromMin = currentValue - minValue
       if (distanceFromMin < softZoneSize && distanceFromMin >= 0) {
         const t = distanceFromMin / softZoneSize
-        return easeOutQuart(t) // Super smooth ease-out
+        return easeOutQuart(t)
       }
     } else {
-      // Moving towards maximum boundary
       const distanceFromMax = maxValue - currentValue
       if (distanceFromMax < softZoneSize && distanceFromMax >= 0) {
         const t = distanceFromMax / softZoneSize
-        return easeOutQuart(t) // Super smooth ease-out
+        return easeOutQuart(t)
       }
     }
-    
-    return 1.0 // Full speed when not near boundaries
+
+    return 1.0
   }
 
-  /**
-   * Calculate combined easing for zoom (distance)
-   */
   private calculateZoomEasing(zoomingIn: boolean): number {
     if (!this.orbit) return 1.0
     const currentDistance = this.camera.position.distanceTo(this.orbit.target)
@@ -195,21 +140,16 @@ export class HelsinkiCameraController {
       currentDistance,
       this.minDistance,
       this.maxDistance,
-      zoomingIn // zoomingIn means moving towards minDistance
+      zoomingIn
     )
   }
 
-  /**
-   * Calculate combined easing for polar angle (vertical rotation / elevation)
-   */
   private calculatePolarEasing(movingUp: boolean): number {
     if (!this.orbit) return 1.0
-    // Get current polar angle from OrbitControls (reuse objects)
     this._tempVector3.copy(this.camera.position).sub(this.orbit.target)
     this._tempSpherical.setFromVector3(this._tempVector3)
     const currentPolar = this._tempSpherical.phi
 
-    // movingUp means decreasing polar angle (towards minPolarAngle)
     return this.calculateBoundaryEasingGeneric(
       currentPolar,
       this.minPolarAngle,
@@ -218,17 +158,12 @@ export class HelsinkiCameraController {
     )
   }
 
-  /**
-   * Calculate combined easing for azimuth angle (horizontal rotation)
-   * Only applies if azimuth is constrained (not -Infinity to Infinity)
-   */
   private calculateAzimuthEasing(movingLeft: boolean): number {
     if (!this.orbit) return 1.0
     if (this.minAzimuthAngle === -Infinity || this.maxAzimuthAngle === Infinity) {
-      return 1.0 // No easing for unconstrained rotation
+      return 1.0
     }
 
-    // Reuse objects to avoid allocation
     this._tempVector3.copy(this.camera.position).sub(this.orbit.target)
     this._tempSpherical.setFromVector3(this._tempVector3)
     const currentAzimuth = this._tempSpherical.theta
@@ -241,27 +176,21 @@ export class HelsinkiCameraController {
     )
   }
 
-  /**
-   * Apply all boundary easing based on current movement
-   */
   private applyBoundaryEasing(deltaX: number, deltaY: number, deltaZoom: number): void {
     if (!this.softBoundaryEnabled || !this.orbit) return
 
-    // Calculate easing factors for each constraint
     const zoomEasing = deltaZoom !== 0
       ? this.calculateZoomEasing(deltaZoom > 0)
       : 1.0
-    
-    const polarEasing = deltaY !== 0 
-      ? this.calculatePolarEasing(deltaY < 0) // negative deltaY = moving up
+
+    const polarEasing = deltaY !== 0
+      ? this.calculatePolarEasing(deltaY < 0)
       : 1.0
-    
-    const azimuthEasing = deltaX !== 0 
-      ? this.calculateAzimuthEasing(deltaX < 0) // negative deltaX = moving left
+
+    const azimuthEasing = deltaX !== 0
+      ? this.calculateAzimuthEasing(deltaX < 0)
       : 1.0
-    
-    // Apply combined easing to speeds
-    // Use minimum easing factor to ensure smooth stopping at any boundary
+
     const rotationEasing = Math.min(polarEasing, azimuthEasing)
     
     this.orbit.zoomSpeed = this.baseZoomSpeed * zoomEasing

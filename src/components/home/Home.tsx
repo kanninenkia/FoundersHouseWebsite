@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { motion, useTransform, useSpring } from 'framer-motion'
 import Lenis from '@studio-freight/lenis'
-import { LearnMoreHeader, OpeningSection } from './sections/header'
+import { HomeHeader, OpeningSection } from './sections/header'
 import { QuotesSection } from './sections/quotes'
 import { ScrollPhasesContainer } from './sections/scroll-phases'
 import { CTASection } from './sections/cta'
@@ -10,9 +10,9 @@ import { ANIMATION_CONFIG, EASING } from './config/animationConfig'
 import { useMouseParallax } from './hooks/useMouseParallax'
 import { useVirtualScroll } from './hooks/useVirtualScroll'
 import { useBoxScrollPhases } from './hooks/useBoxScrollPhases'
-import './LearnMore.css'
+import './Home.css'
 
-export const LearnMore = () => {
+export const Home = () => {
   const containerRef = useRef<HTMLDivElement>(null)
   const scrollContainerRef = useRef<HTMLDivElement>(null)
   const lenisRef = useRef<Lenis | null>(null)
@@ -84,7 +84,7 @@ export const LearnMore = () => {
       transition={{ duration: 0 }}
       layout={false}
     >
-      <LearnMoreHeader />
+      <HomeHeader />
 
       <OpeningSection
         showBackground={showBackground}

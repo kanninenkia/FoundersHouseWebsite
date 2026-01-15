@@ -1,5 +1,5 @@
 /**
- * LearnMoreHeader - Reusable header component for LearnMore page
+ * HomeHeader - Reusable header component for Home page
  * Contains logo, menu icon, and back to map button
  * Handles all entry animation logic internally
  */
@@ -8,7 +8,7 @@ import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 
-export const LearnMoreHeader = () => {
+export const HomeHeader = () => {
   const navigate = useNavigate()
 
   // Entry animation state - initialize immediately to prevent flash
