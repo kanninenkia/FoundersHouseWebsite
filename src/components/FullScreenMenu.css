@@ -47,11 +47,6 @@
   justify-content: space-between;
   align-items: center;
   z-index: 10000;
-  pointer-events: none;
-}
-
-.menu-header > * {
-  pointer-events: auto;
 }
 
 .menu-logo {
@@ -204,7 +199,7 @@
 }
 
 .menu-right {
-  flex: 1;
+  flex: 2;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -213,8 +208,9 @@
 .menu-map-container {
   position: relative;
   width: 100%;
-  max-width: 1000px;
+  max-width: 2340px;
   aspect-ratio: 1;
+  margin-top: -15%;
 }
 
 .menu-map {
@@ -222,24 +218,34 @@
   height: 100%;
   object-fit: contain;
   mix-blend-mode: multiply;
+  opacity: 0.9;
+  mask-image:
+    linear-gradient(to bottom, transparent 0%, black 15%, black 85%, transparent 100%),
+    radial-gradient(circle at center, black 35%, rgba(0,0,0,0.6) 50%, rgba(0,0,0,0.2) 60%, transparent 70%);
+  -webkit-mask-image:
+    linear-gradient(to bottom, transparent 0%, black 15%, black 85%, transparent 100%),
+    radial-gradient(circle at center, black 35%, rgba(0,0,0,0.6) 50%, rgba(0,0,0,0.2) 60%, transparent 70%);
+  mask-composite: intersect;
+  -webkit-mask-composite: source-in;
 }
 
 .menu-radar {
   position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 40px;
-  height: 40px;
-  transform: translate(-50%, -50%);
-  animation: radar-spin 4s linear infinite;
+  top: 14%;
+  left: 4.2%;
+  width: 86.25%;
+  height: auto;
+  pointer-events: none;
+  z-index: 10;
+  animation: radar-pulse 3s ease-in-out infinite;
 }
 
-@keyframes radar-spin {
-  0% {
-    transform: translate(-50%, -50%) rotate(0deg);
+@keyframes radar-pulse {
+  0%, 100% {
+    opacity: 0.5;
   }
-  100% {
-    transform: translate(-50%, -50%) rotate(360deg);
+  50% {
+    opacity: 1;
   }
 }
 
