@@ -20,11 +20,6 @@
 /* ==================== BACK TO MAP BUTTON ==================== */
 
 .back-to-map-button {
-  position: fixed;
-  top: 2rem;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 1001;
   padding: 0;
   font-size: 0.9rem;
   font-weight: 600;
@@ -52,6 +47,11 @@
   align-items: center;
   z-index: 1000;
   opacity: 0;
+}
+
+.learn-more-header > :nth-child(2) {
+  margin-left: auto;
+  margin-right: 1.5rem;
 }
 
 .header-logo {

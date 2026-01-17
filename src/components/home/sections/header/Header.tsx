@@ -7,16 +7,17 @@
 import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
+import { AnimatedHamburger } from '../../../AnimatedHamburger'
+import { FullScreenMenu } from '../../../FullScreenMenu'
 
 export const HomeHeader = () => {
   const navigate = useNavigate()
+  const [isMenuOpen, setIsMenuOpen] = useState(false)
 
-  // Entry animation state - initialize immediately to prevent flash
   const fromTransition = sessionStorage.getItem('transitioningToLearnMore') === 'true'
   const [hasEnteredFromTransition] = useState(fromTransition)
   const [showBackground] = useState(true)
 
-  // Clear the flag after component mounts
   useEffect(() => {
     if (fromTransition) {
       setTimeout(() => {
@@ -27,7 +28,6 @@ export const HomeHeader = () => {
 
   return (
     <>
-      {/* Header */}
       <motion.header
         className="learn-more-header"
         initial={{ opacity: 0 }}
@@ -39,36 +39,37 @@ export const HomeHeader = () => {
         }}
       >
         <img src="/logos/logoWhite.png" alt="Founders House" className="header-logo" />
-        <img src="/icons/hamburgerWhite.svg" alt="Menu" className="header-menu" />
+        <motion.button
+          className="back-to-map-button"
+          onClick={() => {
+            sessionStorage.setItem('skipIntro', 'true')
+            sessionStorage.removeItem('transitioningToLearnMore')
+            navigate('/')
+          }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: showBackground ? 1 : 0 }}
+          transition={{
+            delay: hasEnteredFromTransition ? 2.2 : 1.0,
+            duration: 0.6,
+            ease: [0.22, 1, 0.36, 1]
+          }}
+          whileHover={{
+            scale: 1.05,
+            transition: { duration: 0.3, ease: [0.22, 1, 0.36, 1] }
+          }}
+          whileTap={{
+            scale: 0.95,
+            transition: { duration: 0.2, ease: [0.22, 1, 0.36, 1] }
+          }}
+        >
+          ← Map
+        </motion.button>
+        <div onClick={() => setIsMenuOpen(!isMenuOpen)}>
+          <AnimatedHamburger isOpen={isMenuOpen} onClick={() => setIsMenuOpen(!isMenuOpen)} />
+        </div>
       </motion.header>
 
-      {/* Back to Map Button */}
-      <motion.button
-        className="back-to-map-button"
-        onClick={() => {
-          // Set flag to skip intro when returning to map
-          sessionStorage.setItem('skipIntro', 'true')
-          sessionStorage.removeItem('transitioningToLearnMore')
-          navigate('/')
-        }}
-        initial={{ opacity: 0, y: -12 }}
-        animate={{ opacity: showBackground ? 1 : 0, y: showBackground ? 0 : -12 }}
-        transition={{
-          delay: hasEnteredFromTransition ? 2.2 : 1.0,
-          duration: 0.6,
-          ease: [0.22, 1, 0.36, 1]
-        }}
-        whileHover={{ 
-          scale: 1.02,
-          transition: { duration: 0.3, ease: [0.22, 1, 0.36, 1] }
-        }}
-        whileTap={{ 
-          scale: 0.98,
-          transition: { duration: 0.2, ease: [0.22, 1, 0.36, 1] }
-        }}
-      >
-        ← Back to Map
-      </motion.button>
+      <FullScreenMenu isOpen={isMenuOpen} onClose={() => setIsMenuOpen(false)} />
     </>
   )
 }
