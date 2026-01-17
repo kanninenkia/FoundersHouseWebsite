@@ -8,13 +8,13 @@ import "./page.css";
 import { HelsinkiViewer } from "../components/HelsinkiViewer.tsx";
 import HelsinkiViewerSimple from "../components/HelsinkiViewerSimple.tsx";
 
-const HEADER_IMG_SRC = "/The Legends Day.webp";
-const SECTION2_IMG_SRC = "/Wave x Maki Photo (2).webp";
-const SECTION3_IMG_1_SRC = "/Legends Day Still 002.webp";
-const SECTION3_IMG_2_SRC = "/Wave x Maki Photo.webp";
-const SECTION3_IMG_3_SRC = "/LoadInImage-min.webp";
-const SECTION4_IMG_SRC = "/Legends Day Still 014.webp";
-const SECTION5_MAP_IMG_SRC = "/2D_map.png";
+const HEADER_IMG_SRC = "/images/The Legends Day.webp";
+const SECTION2_IMG_SRC = "/images/Wave x Maki Photo (2).webp";
+const SECTION3_IMG_1_SRC = "/images/Legends Day Still 002.webp";
+const SECTION3_IMG_2_SRC = "/images/Wave x Maki Photo.webp";
+const SECTION3_IMG_3_SRC = "/images/LoadInImage-min.webp";
+const SECTION4_IMG_SRC = "/images/Legends Day Still 014.webp";
+const SECTION5_MAP_IMG_SRC = "/models/birdseyemaps.webp";
 
 export default function AboutPage() {
   const [stage, setStage] = useState(1);
