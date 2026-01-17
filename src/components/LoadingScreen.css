@@ -1,5 +1,13 @@
 @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;600;700&display=swap');
 
+/* Disable text selection on loading page */
+.loading-screen * {
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
+
 /* Zoom wrapper for HelsinkiViewer zoom-out effect */
 .helsinki-zoom-wrapper {
   width: 100%;

@@ -79,6 +79,7 @@
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
+  margin-top: -10%;
 }
 
 .menu-nav-item {
@@ -96,6 +97,11 @@
   display: inline-block;
   width: fit-content;
   transition: color 0.3s ease;
+}
+
+.menu-nav-item.active {
+  color: rgba(216, 46, 17, 0.6);
+  opacity: 1;
 }
 
 .menu-nav-item-text {

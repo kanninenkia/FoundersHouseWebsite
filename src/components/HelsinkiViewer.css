@@ -10,6 +10,14 @@
 
 /* Removed - using global noise overlay instead */
 
+/* Disable text selection on map page */
+.helsinki-container * {
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
+
 /* Container */
 .helsinki-container {
   width: 100%;

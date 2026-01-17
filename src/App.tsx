@@ -13,6 +13,7 @@ function AppContent() {
   const location = useLocation()
   const isInitialMount = useRef(true)
   const [isTransitionActive, setIsTransitionActive] = useState(false)
+  const [isReturnVisit, setIsReturnVisit] = useState(false)
 
   const [scrollProgress, setScrollProgress] = useState(() => {
     if (performance.navigation.type !== 1) {
@@ -23,6 +24,14 @@ function AppContent() {
     sessionStorage.removeItem('animationStage');
     return 0;
   });
+
+  // Check if this is a return visit whenever we navigate to '/'
+  useEffect(() => {
+    if (location.pathname === '/') {
+      const hasVisited = sessionStorage.getItem('hasVisitedMap') === 'true'
+      setIsReturnVisit(hasVisited)
+    }
+  }, [location.pathname])
 
   useEffect(() => {
     if (isInitialMount.current) {
@@ -57,6 +66,7 @@ function AppContent() {
   const handleLearnMoreClick = () => {
     sessionStorage.setItem('transitioningToLearnMore', 'true')
     sessionStorage.setItem('skipIntro', 'true')
+    sessionStorage.setItem('hasVisitedMap', 'true')
     navigate('/home')
   }
 
@@ -74,10 +84,13 @@ function AppContent() {
     <div className="App">
       <Routes location={location}>
         <Route path="/" element={<LoadingScreen
-              onComplete={() => {}}
+              onComplete={() => {
+                sessionStorage.setItem('hasVisitedMap', 'true')
+              }}
               duration={6000}
               scrollProgress={scrollProgress}
               onScrollProgressChange={setScrollProgress}
+              isReturnVisit={isReturnVisit}
             />} />
         <Route path="/home" element={<Home />} />
         <Route path="/about" element={<AboutPage />} />

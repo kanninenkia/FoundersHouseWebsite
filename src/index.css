@@ -26,6 +26,17 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Custom text selection colors */
+::selection {
+  background-color: #FFF8F2;
+  color: #D82E11;
+}
+
+::-moz-selection {
+  background-color: #FFF8F2;
+  color: #D82E11;
+}
+
 body {
   margin: 0;
   display: flex;

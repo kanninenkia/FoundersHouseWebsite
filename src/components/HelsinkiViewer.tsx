@@ -11,6 +11,7 @@ import { POINTS_OF_INTEREST } from '../constants/poi'
 import { POINavigator } from './POINavigator'
 import { MagneticElement } from './MagneticElement'
 import { AnimatedHamburger } from './AnimatedHamburger'
+import { FullScreenMenu } from './FullScreenMenu'
 import './HelsinkiViewer.css'
 
 interface MapLoadingState {
@@ -369,11 +370,11 @@ export const HelsinkiViewer = ({ shouldLoad = true, shouldPause = false, scrollP
       <MagneticElement
         className="logo-container"
         style={{
-          opacity: showUIState && !isTransitionActive ? 1 : 0,
+          opacity: showUIState && !isTransitionActive && !isMenuOpen ? 1 : 0,
           transition: isTransitionActive
             ? 'opacity 1.5s cubic-bezier(0.22, 1, 0.36, 1)'
             : 'opacity 0.8s cubic-bezier(0.22, 1, 0.36, 1)',
-          pointerEvents: showUIState ? 'auto' : 'none',
+          pointerEvents: showUIState && !isMenuOpen ? 'auto' : 'none',
         }}
         strength={0.25}
         range={120}
@@ -386,11 +387,11 @@ export const HelsinkiViewer = ({ shouldLoad = true, shouldPause = false, scrollP
       <MagneticElement
         className="hamburger-menu"
         style={{
-          opacity: showUIState && !isTransitionActive ? 1 : 0,
+          opacity: showUIState && !isTransitionActive && !isMenuOpen ? 1 : 0,
           transition: isTransitionActive
             ? 'opacity 1.5s cubic-bezier(0.22, 1, 0.36, 1)'
             : 'opacity 0.8s cubic-bezier(0.22, 1, 0.36, 1)',
-          pointerEvents: showUIState ? 'auto' : 'none',
+          pointerEvents: showUIState && !isMenuOpen ? 'auto' : 'none',
         }}
         strength={0.25}
         range={120}
@@ -398,6 +399,7 @@ export const HelsinkiViewer = ({ shouldLoad = true, shouldPause = false, scrollP
         <AnimatedHamburger
           isOpen={isMenuOpen}
           onClick={() => setIsMenuOpen(!isMenuOpen)}
+          color="#D82E11"
         />
       </MagneticElement>
 
@@ -519,6 +521,8 @@ export const HelsinkiViewer = ({ shouldLoad = true, shouldPause = false, scrollP
           <div className="cursor-label">EXPLORE</div>
         </div>
       )}
+
+      <FullScreenMenu isOpen={isMenuOpen} onClose={() => setIsMenuOpen(false)} />
     </>
   )
 }

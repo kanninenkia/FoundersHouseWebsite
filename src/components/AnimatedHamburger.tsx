@@ -3,9 +3,10 @@ import { motion } from 'framer-motion'
 interface AnimatedHamburgerProps {
   isOpen: boolean
   onClick: () => void
+  color?: string
 }
 
-export const AnimatedHamburger = ({ isOpen, onClick }: AnimatedHamburgerProps) => {
+export const AnimatedHamburger = ({ isOpen, onClick, color = '#FFF8F2' }: AnimatedHamburgerProps) => {
   return (
     <button
       onClick={onClick}
@@ -35,7 +36,7 @@ export const AnimatedHamburger = ({ isOpen, onClick }: AnimatedHamburgerProps) =
           y1="2"
           x2="32"
           y2="2"
-          stroke="#FFF8F2"
+          stroke={color}
           strokeWidth="2"
           strokeLinecap="round"
           animate={{
@@ -57,7 +58,7 @@ export const AnimatedHamburger = ({ isOpen, onClick }: AnimatedHamburgerProps) =
           y1="12"
           x2="32"
           y2="12"
-          stroke="#FFF8F2"
+          stroke={color}
           strokeWidth="2"
           strokeLinecap="round"
           animate={{
@@ -78,7 +79,7 @@ export const AnimatedHamburger = ({ isOpen, onClick }: AnimatedHamburgerProps) =
           y1="22"
           x2="32"
           y2="22"
-          stroke="#FFF8F2"
+          stroke={color}
           strokeWidth="2"
           strokeLinecap="round"
           animate={{

@@ -8,6 +8,7 @@ interface LoadingScreenProps {
   duration: number
   scrollProgress: number
   onScrollProgressChange: (progress: number) => void
+  isReturnVisit?: boolean
 }
 
 interface MapLoadingState {
@@ -33,13 +34,14 @@ interface Block {
 
 type Stage = 'logo-loading' | 'logo-blur' | 'pixel-out-to-text1' | 'text1' | 'text2' | 'map-slide-in' | 'map-expand' | 'complete'
 
-export const LoadingScreen = ({ onComplete, duration, scrollProgress }: LoadingScreenProps) => {
+export const LoadingScreen = ({ onComplete, duration, scrollProgress, isReturnVisit = false }: LoadingScreenProps) => {
   const [blocks, setBlocks] = useState<Block[]>([])
   const shouldSkipIntro = sessionStorage.getItem('skipIntro') === 'true'
-  const [stage, setStage] = useState<Stage>('logo-loading')
+  const [stage, setStage] = useState<Stage>(isReturnVisit ? 'logo-loading' : 'logo-loading')
   const [mapLoadingState, setMapLoadingState] = useState<MapLoadingState>({ isLoaded: false, progress: 0 })
   const [canProceedToBlur, setCanProceedToBlur] = useState(false)
   const loadingBarRef = useRef<HTMLDivElement>(null)
+  const returnLoadingDuration = 2000
 
   const [loadingImage] = useState(() => {
     const images = [
@@ -177,7 +179,16 @@ export const LoadingScreen = ({ onComplete, duration, scrollProgress }: LoadingS
     const checkInterval = setInterval(() => {
       const elapsed = Date.now() - startTime
 
-      if (shouldSkipIntro) {
+      if (isReturnVisit) {
+        if (elapsed >= returnLoadingDuration && elapsed < returnLoadingDuration + 500) {
+          setStage('map-slide-in')
+        } else if (elapsed >= returnLoadingDuration + 500 && elapsed < returnLoadingDuration + 2000) {
+          setStage('map-expand')
+        } else if (elapsed >= returnLoadingDuration + 2000) {
+          setStage('complete')
+          clearInterval(checkInterval)
+        }
+      } else if (shouldSkipIntro) {
         if (elapsed >= 500 && elapsed < 1300) {
           setStage('logo-blur')
         } else if (elapsed >= 1300 && elapsed < 3100) {
@@ -214,12 +225,16 @@ export const LoadingScreen = ({ onComplete, duration, scrollProgress }: LoadingS
     }
   }, [canProceedToBlur, scrollProgress, hasSkipped, shouldSkipIntro])
 
-  const showLogo = stage === 'logo-loading' || stage === 'logo-blur' || stage === 'pixel-out-to-text1'
+  const showLogo = isReturnVisit
+    ? (stage === 'logo-loading' || stage === 'map-slide-in' || stage === 'map-expand')
+    : (stage === 'logo-loading' || stage === 'logo-blur' || stage === 'pixel-out-to-text1')
   const showLoadingBar = stage === 'logo-loading'
-  const showBackgroundImage = stage === 'logo-loading' || stage === 'logo-blur' || stage === 'pixel-out-to-text1'
-  const showPixelTransition = stage === 'pixel-out-to-text1'
+  const showBackgroundImage = isReturnVisit
+    ? (stage === 'logo-loading' || stage === 'map-slide-in' || stage === 'map-expand')
+    : (stage === 'logo-loading' || stage === 'logo-blur' || stage === 'pixel-out-to-text1')
+  const showPixelTransition = !isReturnVisit && stage === 'pixel-out-to-text1'
   const [showText1Delayed, setShowText1Delayed] = useState(false)
-  const showText1 = stage === 'text1' && showText1Delayed
+  const showText1 = !isReturnVisit && stage === 'text1' && showText1Delayed
   const [fadeOutText1, setFadeOutText1] = useState(false)
   const shouldBlurLogo = stage === 'logo-blur' || stage === 'pixel-out-to-text1'
 
@@ -254,7 +269,7 @@ export const LoadingScreen = ({ onComplete, duration, scrollProgress }: LoadingS
     >
       <div className="loading-content">
         <div className={`loading-text text-page${stage === 'map-slide-in' ? ' text-pushed-by-box' : ''}`} style={{ pointerEvents: 'none', zIndex: 0, position: 'fixed', inset: 0 }}>
-          {(stage === 'text1' || stage === 'text2' || stage === 'map-slide-in' || stage === 'map-expand') && <>
+          {!isReturnVisit && (stage === 'text1' || stage === 'text2' || stage === 'map-slide-in' || stage === 'map-expand') && <>
             <span
               className={`corner-label top-left${stage === 'text1' ? ' fade-in' : ''}${stage !== 'text1' ? ' fade-in-persist' : ''}`}
             >FOUNDERS HOUSE</span>
@@ -262,13 +277,13 @@ export const LoadingScreen = ({ onComplete, duration, scrollProgress }: LoadingS
               className={`corner-label top-right${stage === 'text1' ? ' fade-in' : ''}${stage !== 'text1' ? ' fade-in-persist' : ''}`}
             >HELSINKI, FINLAND</span>
           </>}
-          <div className={`text-centered align-left${stage === 'map-slide-in' ? ' text-pushed-by-box' : ''}${stage === 'map-expand' ? ' text-pushed-expand' : ''}`} style={{ opacity: (stage === 'text1' || stage === 'text2' || stage === 'map-slide-in' || stage === 'map-expand' || stage === 'complete') ? 1 : 0 }}>
+          <div className={`text-centered align-left${stage === 'map-slide-in' ? ' text-pushed-by-box' : ''}${stage === 'map-expand' ? ' text-pushed-expand' : ''}`} style={{ opacity: !isReturnVisit && (stage === 'text1' || stage === 'text2' || stage === 'map-slide-in' || stage === 'map-expand' || stage === 'complete') ? 1 : 0 }}>
             <div style={{ display: stage === 'text1' && showText1 ? 'block' : 'none' }}>
               <div className="fade-up-wrapper"><AnimatedText text="FOR THE NEXT" fadeUp={true} fadeOut={fadeOutText1} /></div>
               <div className="fade-up-wrapper"><AnimatedText text="FOUNDER GENERATION" fadeUp={true} fadeOut={fadeOutText1} /></div>
             </div>
             <div
-              style={{ display: (stage === 'text2' || stage === 'map-slide-in' || stage === 'map-expand' || stage === 'complete') ? 'block' : 'none' }}
+              style={{ display: !isReturnVisit && (stage === 'text2' || stage === 'map-slide-in' || stage === 'map-expand' || stage === 'complete') ? 'block' : 'none' }}
             >
               <div className="fade-up-wrapper"><AnimatedText text="WHERE BUILDERS CONVERGE," fadeUp /></div>
               <div className="fade-up-wrapper"><AnimatedText text="WHERE POTENTIAL MULTIPLIES" fadeUp /></div>
@@ -340,7 +355,7 @@ export const LoadingScreen = ({ onComplete, duration, scrollProgress }: LoadingS
           <div className={`helsinki-zoom-wrapper${stage === 'map-slide-in' ? ' zoomed-in' : ''}${stage === 'map-expand' ? ' zooming-out' : ''}`}
             style={{width: '100%', height: '100%'}}>
             <HelsinkiViewer
-              shouldLoad={true}
+              shouldLoad={isReturnVisit ? true : (stage === 'map-slide-in' || stage === 'map-expand' || stage === 'complete')}
               shouldPause={false}
               onMapLoadingChange={setMapLoadingState}
               scrollProgress={(stage === 'map-expand' || stage === 'complete') ? 1 : 0}

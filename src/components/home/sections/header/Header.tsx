@@ -43,6 +43,7 @@ export const HomeHeader = () => {
           className="back-to-map-button"
           onClick={() => {
             sessionStorage.setItem('skipIntro', 'true')
+            sessionStorage.setItem('hasVisitedMap', 'true')
             sessionStorage.removeItem('transitioningToLearnMore')
             navigate('/')
           }}
