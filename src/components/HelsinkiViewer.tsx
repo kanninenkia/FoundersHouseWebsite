@@ -3,8 +3,7 @@
  * React + TypeScript component with Three.js and pencil shader effect
  */
 
-import { useEffect, useRef, useState } from 'react'
-import * as THREE from 'three'
+import { useEffect, useRef, useState, useCallback } from 'react'
 import { HelsinkiScene } from '../core'
 import type { PointOfInterest } from '../constants/poi'
 import { POINTS_OF_INTEREST } from '../constants/poi'
@@ -53,7 +52,6 @@ export const HelsinkiViewer = ({
   const [isCameraFlying, setIsCameraFlying] = useState(false)
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const lastInteractionTime = useRef<number>(Date.now())
-  const initialLoadTime = useRef<number>(Date.now())
   const [isDragging, setIsDragging] = useState(false)
   const [cursorPosition, setCursorPosition] = useState({ x: 0, y: 0 })
   const [showDragIndicator, setShowDragIndicator] = useState(true)
@@ -105,6 +103,10 @@ export const HelsinkiViewer = ({
 
   const isDemoNightMode = false
 
+  const handleHeroTextOpacityChange = useCallback((opacity: number) => {
+    setHeroTextOpacity(opacity)
+  }, [])
+
   useEffect(() => {
     if (!containerRef.current || !shouldLoad || shouldPause) return
 
@@ -133,6 +135,8 @@ export const HelsinkiViewer = ({
         },
         staticMode,
         environmentColor,
+        enableAutoCentering: scrollProgress >= 1,
+        onHeroTextOpacityChange: handleHeroTextOpacityChange,
       })
       sceneRef.current = scene
 
@@ -141,62 +145,6 @@ export const HelsinkiViewer = ({
       const animate = () => {
         if (sceneRef.current) {
           sceneRef.current.update()
-
-          const camera = sceneRef.current.getCamera()
-          const foundersHousePos = new THREE.Vector3(30.77, -20.14, -533.42)
-          const screenPos = foundersHousePos.clone()
-          screenPos.project(camera)
-
-          const viewportX = (screenPos.x + 1) * 50
-          const viewportY = (1 - screenPos.y) * 50
-
-          const centerX = 50
-          const centerY = 65
-          const distanceFromCenterX = Math.abs(viewportX - centerX)
-          const distanceFromCenterY = Math.abs(viewportY - centerY)
-
-          const threshold = 13
-          const isInCenter = distanceFromCenterX <= threshold && distanceFromCenterY <= threshold
-
-          const opacity = isInCenter ? 1 : 0
-          setHeroTextOpacity(opacity)
-
-          const now = Date.now()
-          const timeSinceLastInteraction = now - lastInteractionTime.current
-          const timeSinceLoad = now - initialLoadTime.current
-          const idleThreshold = 3000
-          const initialLoadDelay = 15000
-
-          if (isInCenter && timeSinceLastInteraction >= idleThreshold && timeSinceLoad >= initialLoadDelay) {
-            const offsetX = viewportX - centerX
-            const offsetY = viewportY - centerY
-
-            const maxSafeOffset = 20
-            if ((Math.abs(offsetX) > 2 || Math.abs(offsetY) > 2) &&
-                Math.abs(offsetX) < maxSafeOffset && Math.abs(offsetY) < maxSafeOffset) {
-              const controls = sceneRef.current.getControls()
-              if (controls && controls.target) {
-                const currentTarget = controls.target.clone()
-
-                const right = new THREE.Vector3()
-                const worldUp = new THREE.Vector3(0, 1, 0)
-                camera.getWorldDirection(right)
-                right.crossVectors(worldUp, right).normalize()
-
-                const cameraUp = new THREE.Vector3()
-                cameraUp.crossVectors(right, camera.getWorldDirection(new THREE.Vector3())).normalize()
-
-                const driftSpeed = 0.3
-                const worldAdjustment = new THREE.Vector3()
-                worldAdjustment.addScaledVector(right, -offsetX * driftSpeed)
-                worldAdjustment.addScaledVector(cameraUp, offsetY * driftSpeed)
-
-                const newTarget = currentTarget.add(worldAdjustment)
-                controls.setTarget(newTarget.x, newTarget.y, newTarget.z)
-              }
-            }
-          }
-
           animationFrameRef.current = requestAnimationFrame(animate)
         }
       }
@@ -229,6 +177,7 @@ export const HelsinkiViewer = ({
   useEffect(() => {
     if (!sceneRef.current) return
     sceneRef.current.setParallaxEnabled(scrollProgress >= 1)
+    sceneRef.current.setAutoCenteringEnabled(scrollProgress >= 1)
   }, [scrollProgress])
 
   useEffect(() => {

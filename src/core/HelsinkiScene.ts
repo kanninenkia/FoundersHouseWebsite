@@ -25,7 +25,7 @@ import {
 } from '../helpers'
 import { AutoTourManager, POIHighlightManager, FoundersHouseMarker } from './managers'
 import { COLORS } from '../constants/designSystem'
-import { POINTS_OF_INTEREST } from '../constants/poi'
+import { POINTS_OF_INTEREST, FOUNDERS_HOUSE_SCREEN_POS } from '../constants/poi'
 
 export interface SceneConfig {
   container: HTMLElement
@@ -36,6 +36,8 @@ export interface SceneConfig {
   onLoadComplete?: () => void
   staticMode?: boolean
   environmentColor?: string
+  enableAutoCentering?: boolean
+  onHeroTextOpacityChange?: (opacity: number) => void
 }
 
 export class HelsinkiScene {
@@ -57,6 +59,11 @@ export class HelsinkiScene {
   private poiHighlightManager: POIHighlightManager
   private foundersHouseMarker: FoundersHouseMarker
   private _cleanupClickHandler: (() => void) | null = null
+  private enableAutoCentering: boolean = false
+  private onHeroTextOpacityChange?: (opacity: number) => void
+  private lastInteractionTime: number = Date.now()
+  private initialLoadTime: number = Date.now()
+  private lastHeroTextOpacity: number = -1
 
   public revealProgress: number = 0
   public pencilStrength: number = 1.0
@@ -65,6 +72,8 @@ export class HelsinkiScene {
     this.container = config.container
     this.clock = new THREE.Clock()
     this.isNightMode = config.isNightMode !== undefined ? config.isNightMode : false
+    this.enableAutoCentering = config.enableAutoCentering ?? false
+    this.onHeroTextOpacityChange = config.onHeroTextOpacityChange
 
     this.scene = new THREE.Scene()
     this.scene.background = this.isNightMode
@@ -141,14 +150,17 @@ export class HelsinkiScene {
   private _handlePointerDown = (ev: PointerEvent) => {
     if (ev.button !== 0) return
     this.autoTourManager.recordInteraction()
+    this.lastInteractionTime = Date.now()
   }
 
   private _handleTouchStart = () => {
     this.autoTourManager.recordInteraction()
+    this.lastInteractionTime = Date.now()
   }
 
   private _handleWheel = () => {
     this.autoTourManager.recordInteraction()
+    this.lastInteractionTime = Date.now()
   }
 
   /**
@@ -310,11 +322,80 @@ export class HelsinkiScene {
     this.postProcessMaterial.uniforms.uTime.value = elapsed
     this.postProcessMaterial.uniforms.uPencilStrength.value = this.pencilStrength
 
+    // Auto-centering drift logic for Founders House
+    if (this.enableAutoCentering) {
+      this.updateAutoCentering()
+    }
+
     if (this.composer) {
       this.composer.render()
     } else {
       this.renderer.setRenderTarget(null)
       this.renderer.render(this.scene, this.camera)
+    }
+  }
+
+  /**
+   * Auto-centering drift: Smoothly adjusts camera to keep Founders House centered
+   * This creates a subtle auto-correction effect when the user is idle
+   */
+  private updateAutoCentering(): void {
+    if (!this.helsinkiModel) return // Don't run until model is loaded
+
+    const screenPos = FOUNDERS_HOUSE_SCREEN_POS.clone()
+    screenPos.project(this.camera)
+
+    const viewportX = (screenPos.x + 1) * 50
+    const viewportY = (1 - screenPos.y) * 50
+
+    const centerX = 50
+    const centerY = 65
+    const distanceFromCenterX = Math.abs(viewportX - centerX)
+    const distanceFromCenterY = Math.abs(viewportY - centerY)
+
+    const threshold = 13
+    const isInCenter = distanceFromCenterX <= threshold && distanceFromCenterY <= threshold
+
+    const opacity = isInCenter ? 1 : 0
+    // Only call callback if opacity changed to avoid triggering React re-renders every frame
+    if (this.onHeroTextOpacityChange && opacity !== this.lastHeroTextOpacity) {
+      this.lastHeroTextOpacity = opacity
+      this.onHeroTextOpacityChange(opacity)
+    }
+
+    const now = Date.now()
+    const timeSinceLastInteraction = now - this.lastInteractionTime
+    const timeSinceLoad = now - this.initialLoadTime
+    const idleThreshold = 3000
+    const initialLoadDelay = 15000
+
+    if (isInCenter && timeSinceLastInteraction >= idleThreshold && timeSinceLoad >= initialLoadDelay) {
+      const offsetX = viewportX - centerX
+      const offsetY = viewportY - centerY
+
+      const maxSafeOffset = 20
+      if ((Math.abs(offsetX) > 2 || Math.abs(offsetY) > 2) &&
+          Math.abs(offsetX) < maxSafeOffset && Math.abs(offsetY) < maxSafeOffset) {
+        if (this.controls && this.controls.target) {
+          const currentTarget = this.controls.target.clone()
+
+          const right = new THREE.Vector3()
+          const worldUp = new THREE.Vector3(0, 1, 0)
+          this.camera.getWorldDirection(right)
+          right.crossVectors(worldUp, right).normalize()
+
+          const cameraUp = new THREE.Vector3()
+          cameraUp.crossVectors(right, this.camera.getWorldDirection(new THREE.Vector3())).normalize()
+
+          const driftSpeed = 0.3
+          const worldAdjustment = new THREE.Vector3()
+          worldAdjustment.addScaledVector(right, -offsetX * driftSpeed)
+          worldAdjustment.addScaledVector(cameraUp, offsetY * driftSpeed)
+
+          const newTarget = currentTarget.add(worldAdjustment)
+          this.controls.setTarget(newTarget.x, newTarget.y, newTarget.z)
+        }
+      }
     }
   }
 
@@ -653,5 +734,9 @@ export class HelsinkiScene {
     if (this.controls && typeof this.controls.setParallaxEnabled === 'function') {
       this.controls.setParallaxEnabled(enabled)
     }
+  }
+
+  public setAutoCenteringEnabled(enabled: boolean): void {
+    this.enableAutoCentering = enabled
   }
 }

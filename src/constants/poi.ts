@@ -1,14 +1,14 @@
 /**
  * Points of Interest (POI) Configuration
  * Centralized location definitions for the entire site
- * 
+ *
  * USAGE - Smooth Camera Transitions to POIs:
- * 
+ *
  * From browser console:
  *   window.helsinkiScene.focusPOI('FOUNDERS_HOUSE')           // Fly to Founders House (2s animation)
  *   window.helsinkiScene.focusPOI('OURA', 600, 45, 12, 1.5)   // Fly to Oura, custom distance/angle/duration
  *   window.helsinkiScene.focusPOI('WOLT', 800)                 // Fly to Wolt at 800m distance
- * 
+ *
  * Parameters:
  *   - poiName: POI key (e.g., 'FOUNDERS_HOUSE', 'OURA', 'WOLT')
  *   - distance: Camera distance from POI in meters (default: 700)
@@ -16,12 +16,14 @@
  *   - elevation: Vertical viewing angle in degrees (default: 15)
  *   - duration: Animation duration in seconds (default: 2.0)
  *   - animated: Whether to animate or jump instantly (default: true)
- * 
+ *
  * Features:
  *   - Smooth ease-in-out animation
  *   - User can interrupt by clicking/dragging
  *   - Callback on arrival
  */
+
+import * as THREE from 'three'
 
 export interface PointOfInterest {
   id: string
@@ -66,6 +68,12 @@ export const FOUNDERS_HOUSE_POI: PointOfInterest = {
     elevation: 10
   }
 }
+
+/**
+ * Founders House Screen Tracking Position
+ * Used for auto-centering drift and hero text visibility
+ */
+export const FOUNDERS_HOUSE_SCREEN_POS = new THREE.Vector3(30.77, -20.14, -533.42)
 
 /**
  * Oura Ring HQ

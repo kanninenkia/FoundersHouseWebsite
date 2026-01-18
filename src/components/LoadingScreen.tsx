@@ -355,7 +355,7 @@ export const LoadingScreen = ({ onComplete, duration, scrollProgress, isReturnVi
           <div className={`helsinki-zoom-wrapper${stage === 'map-slide-in' ? ' zoomed-in' : ''}${stage === 'map-expand' ? ' zooming-out' : ''}`}
             style={{width: '100%', height: '100%'}}>
             <HelsinkiViewer
-              shouldLoad={isReturnVisit ? true : (stage === 'map-slide-in' || stage === 'map-expand' || stage === 'complete')}
+              shouldLoad={true}
               shouldPause={false}
               onMapLoadingChange={setMapLoadingState}
               scrollProgress={(stage === 'map-expand' || stage === 'complete') ? 1 : 0}

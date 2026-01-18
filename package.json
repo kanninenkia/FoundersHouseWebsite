@@ -21,7 +21,6 @@
   "license": "MIT",
   "dependencies": {
     "@studio-freight/lenis": "^1.0.42",
-    "@studio-freight/lenis": "^1.0.42",
     "@types/three": "^0.181.0",
     "camera-controls": "^3.1.2",
     "framer-motion": "^12.23.26",
