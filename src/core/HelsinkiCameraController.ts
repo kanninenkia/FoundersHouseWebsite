@@ -71,7 +71,7 @@ export class HelsinkiCameraController {
   private _tempVector3_2: THREE.Vector3 = new THREE.Vector3();
   private _tempVector3_3: THREE.Vector3 = new THREE.Vector3();
 
-  constructor(camera: THREE.PerspectiveCamera, domElement: HTMLElement) {
+  constructor(camera: THREE.PerspectiveCamera, domElement: HTMLElement, mouseMoveOnly: boolean = false) {
     this.camera = camera
     this.domElement = domElement
 
@@ -95,7 +95,9 @@ export class HelsinkiCameraController {
       this.orbit.enablePan = false
     }
 
-    this.setupInteractionListeners()
+    if (!mouseMoveOnly) {
+      this.setupInteractionListeners()
+    }
     this.baseZoomSpeed = this.zoomSpeed
     this.baseRotateSpeed = this.rotateSpeed
     this.baseCameraPosition.copy(camera.position);

@@ -34,6 +34,8 @@ export interface SceneConfig {
   isNightMode?: boolean
   onLoadProgress?: (progress: number) => void
   onLoadComplete?: () => void
+  staticMode?: boolean
+  environmentColor?: string
 }
 
 export class HelsinkiScene {
@@ -71,8 +73,10 @@ export class HelsinkiScene {
 
     this.camera = createCamera()
     this.renderer = createRenderer(config.container)
-    this.controls = new HelsinkiCameraController(this.camera, this.renderer.domElement)
-    configureCameraControls(this.controls)
+    this.controls = new HelsinkiCameraController(this.camera, this.renderer.domElement, config.staticMode)
+    if (!config.staticMode) {
+      configureCameraControls(this.controls)
+    }
     this.renderTarget = createRenderTarget()
     this.perlinTexture = this.generatePerlinTexture()
 
@@ -88,7 +92,9 @@ export class HelsinkiScene {
     this.autoTourManager = new AutoTourManager()
 
     this.foundersHouseMarker = new FoundersHouseMarker()
-    this.setupInteractionListeners()
+    if (!config.staticMode) {
+      this.setupInteractionListeners()
+    }
 
     loadDualModels({
       mainMapPath: '/models/map.glb',

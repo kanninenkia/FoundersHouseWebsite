@@ -14,7 +14,7 @@ const ParallaxMotion = ({
   children,
   speedX = 20,
   speedY = 20,
-  easing = [0.32, 0.26, 0, 1],
+  easing = [0.12, 0.26, 0, 1],
   delay = 0,
   ...rest
 }: ParallaxMotionProps) => {
@@ -41,13 +41,13 @@ const ParallaxMotion = ({
     const unsubX = mouseX.on("change", (v) => {
       if (timeoutX) clearTimeout(timeoutX);
       timeoutX = setTimeout(() => {
-        animate(parallaxX, v * speedX, { ease: easing as any, duration: 0.6 });
+        animate(parallaxX, v * speedX, { ease: easing as any, duration: 1.4 });
       }, delay);
     });
     const unsubY = mouseY.on("change", (v) => {
       if (timeoutY) clearTimeout(timeoutY);
       timeoutY = setTimeout(() => {
-        animate(parallaxY, v * speedY, { ease: easing as any, duration: 0.6 });
+        animate(parallaxY, v * speedY, { ease: easing as any, duration: 1.4 });
       }, delay);
     });
     return () => {
