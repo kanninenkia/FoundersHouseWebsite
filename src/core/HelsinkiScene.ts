@@ -1,6 +1,6 @@
 /**
  * Helsinki 3D Scene
- * Three.js scene setup with Helsinki GLB model and pencil shader effect
+ * Three.js scene setup with Helsinki GLB model (baked textures) and post-processing effects
  */
 import * as THREE from 'three'
 import HelsinkiCameraController from './HelsinkiCameraController'

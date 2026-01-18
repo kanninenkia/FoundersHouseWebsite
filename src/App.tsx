@@ -1,12 +1,14 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, lazy, Suspense } from 'react'
 import { BrowserRouter, Routes, Route, useNavigate, useLocation } from 'react-router-dom'
 import { LoadingScreen } from './components/LoadingScreen'
-import { Home } from './components/home'
 import { TransitionOverlay } from './components/transition'
-import AboutPage from './about/page'
 import Lenis from 'lenis'
 import 'lenis/dist/lenis.css'
 import './App.css'
+
+// Lazy load route components
+const Home = lazy(() => import('./components/home').then(module => ({ default: module.Home })))
+const AboutPage = lazy(() => import('./about/page'))
 
 function AppContent() {
   const navigate = useNavigate()
@@ -82,19 +84,21 @@ function AppContent() {
 
   return (
     <div className="App">
-      <Routes location={location}>
-        <Route path="/" element={<LoadingScreen
-              onComplete={() => {
-                sessionStorage.setItem('hasVisitedMap', 'true')
-              }}
-              duration={6000}
-              scrollProgress={scrollProgress}
-              onScrollProgressChange={setScrollProgress}
-              isReturnVisit={isReturnVisit}
-            />} />
-        <Route path="/home" element={<Home />} />
-        <Route path="/about" element={<AboutPage />} />
-      </Routes>
+      <Suspense fallback={<div style={{ background: '#000', width: '100vw', height: '100vh' }} />}>
+        <Routes location={location}>
+          <Route path="/" element={<LoadingScreen
+                onComplete={() => {
+                  sessionStorage.setItem('hasVisitedMap', 'true')
+                }}
+                duration={6000}
+                scrollProgress={scrollProgress}
+                onScrollProgressChange={setScrollProgress}
+                isReturnVisit={isReturnVisit}
+              />} />
+          <Route path="/home" element={<Home />} />
+          <Route path="/about" element={<AboutPage />} />
+        </Routes>
+      </Suspense>
 
       <TransitionOverlay isActive={isTransitionActive} />
     </div>

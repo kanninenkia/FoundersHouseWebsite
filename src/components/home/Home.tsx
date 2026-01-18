@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { motion, useTransform, useSpring } from 'framer-motion'
-import Lenis from '@studio-freight/lenis'
+import Lenis from 'lenis'
 import { HomeHeader, OpeningSection } from './sections/header'
 import { QuotesSection } from './sections/quotes'
 import { ScrollPhasesContainer } from './sections/scroll-phases'

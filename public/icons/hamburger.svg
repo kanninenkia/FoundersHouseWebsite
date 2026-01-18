@@ -1,5 +1,1 @@
-<svg width="35" height="26" viewBox="0 0 35 26" fill="none" xmlns="http://www.w3.org/2000/svg">
-<line y1="1" x2="35" y2="1" stroke="#9E1B1E" stroke-width="2"/>
-<line y1="13" x2="35" y2="13" stroke="#9E1B1E" stroke-width="2"/>
-<line y1="25" x2="35" y2="25" stroke="#9E1B1E" stroke-width="2"/>
-</svg>
+<svg xmlns="http://www.w3.org/2000/svg" width="35" height="26" fill="none"><path stroke="#9E1B1E" stroke-width="2" d="M0 1h35M0 13h35M0 25h35"/></svg>

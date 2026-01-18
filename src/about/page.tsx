@@ -6,7 +6,7 @@ import GridDistortion from '../effects/GridDistortion.tsx';
 import ParallaxMotion from '../effects/ParallaxMotion.tsx';
 import "./page.css";
 import { HelsinkiViewer } from "../components/HelsinkiViewer.tsx";
-import HelsinkiViewerSimple from "../components/HelsinkiViewerSimple.tsx";
+// import HelsinkiViewerSimple from "../components/HelsinkiViewerSimple.tsx";
 
 const HEADER_IMG_SRC = "/images/The Legends Day.webp";
 const SECTION2_IMG_SRC = "/images/Wave x Maki Photo (2).webp";

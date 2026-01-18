@@ -1,6 +1,6 @@
 /**
  * Helsinki 3D Viewer Component
- * React + TypeScript component with Three.js and pencil shader effect
+ * React + TypeScript component with Three.js - displays 3D Helsinki map with baked textures
  */
 
 import { useEffect, useRef, useState, useCallback } from 'react'

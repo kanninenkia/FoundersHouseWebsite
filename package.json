@@ -1,7 +1,7 @@
 {
   "name": "helsinki-3d-viewer",
   "version": "1.0.0",
-  "description": "WebGL-based 3D visualization of Helsinki with custom pencil-sketch rendering effects",
+  "description": "WebGL-based 3D visualization of Helsinki with baked building textures and interactive navigation",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -20,7 +20,6 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
-    "@studio-freight/lenis": "^1.0.42",
     "@types/three": "^0.181.0",
     "camera-controls": "^3.1.2",
     "framer-motion": "^12.23.26",
@@ -28,7 +27,6 @@
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "react-router-dom": "^7.11.0",
-    "react-transition-group": "^4.4.5",
     "three": "^0.181.2"
   },
   "devDependencies": {
