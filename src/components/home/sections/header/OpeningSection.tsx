@@ -90,9 +90,9 @@ const DecorativeSquare = ({
         z: finalZ,
       }}
       transition={{
-        duration: 1.2 + (index * 0.08),
+        duration: 1.0 + (index * 0.06),
         ease: EASING.bezier.out,
-        delay: 0.1 + (index * 0.04)
+        delay: 0.2 + (index * 0.06)
       }}
     />
   )
@@ -199,7 +199,7 @@ export const OpeningSection = ({
         )
       })}
 
-      {[...Array(12)].map((_, i) => (
+      {[...Array(10)].map((_, i) => (
         <DecorativeSquare
           key={`square-${i}`}
           index={i}

@@ -4,16 +4,18 @@
   background: transparent;
   color: rgba(255, 248, 242, 0.4);
   font-family: 'IBM Plex Sans', sans-serif;
-  padding: 2vh 0 1.5vh;
-  max-height: 25vh;
+  padding: 4% 0 3.5% 0;
+  /*max-height: 25vh;*/
   display: flex;
   flex-direction: column;
+  gap: 40px;
   justify-content: space-between;
+  border-top: solid 2px rgba(255, 248, 242, 0.1);
 }
 
 /* Section 1: Sponsor Logos Row */
 .footer-sponsors {
-  width: 85%;
+  width: 89%;
   margin: 0 auto;
   flex-shrink: 0;
 }
@@ -38,16 +40,16 @@
 
 /* Divider */
 .footer-divider {
-  width: 85%;
+  width: 89%;
   margin: 1vh auto;
-  height: 1px;
-  background: rgba(255, 248, 242, 0.15);
+  height: 0.5px;
+  background: rgba(255, 248, 242, 0.1);
   flex-shrink: 0;
 }
 
 /* Section 2: Footer Content Area */
 .footer-content {
-  width: 85%;
+  width: 89%;
   margin: 0 auto;
   padding: 1.5vh 0 0;
   display: grid;

@@ -1,13 +1,10 @@
-
 import React, { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence, useScroll, useAnimation } from "framer-motion";
 import { useMotionValue, useTransform } from "framer-motion";
 import GridDistortion from '../effects/GridDistortion.tsx';
 import ParallaxMotion from '../effects/ParallaxMotion.tsx';
 import "./page.css";
-import { HelsinkiViewer } from "../components/HelsinkiViewer.tsx";
-// import HelsinkiViewerSimple from "../components/HelsinkiViewerSimple.tsx";
-
+import Footer from "../components/Footer.tsx";
 const HEADER_IMG_SRC = "/images/The Legends Day.webp";
 const SECTION2_IMG_SRC = "/images/Wave x Maki Photo (2).webp";
 const SECTION3_IMG_1_SRC = "/images/Legends Day Still 002.webp";
@@ -15,12 +12,30 @@ const SECTION3_IMG_2_SRC = "/images/Wave x Maki Photo.webp";
 const SECTION3_IMG_3_SRC = "/images/LoadInImage-min.webp";
 const SECTION4_IMG_SRC = "/images/Legends Day Still 014.webp";
 const SECTION5_MAP_IMG_SRC = "/models/birdseyemaps.webp";
+const SECTION5_MAP_TOP_IMG_SRC = "/models/radar.webp";
+const FOUNDERS_HOUSE_TEAM_IMG_SRC = "/images/Founders House BW.webp";  
 
 export default function AboutPage() {
   const [stage, setStage] = useState(1);
+  // For team hover effect
+  const [hoveredMember, setHoveredMember] = useState<string | null>(null);
+  const teamRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!hoveredMember) return;
+    function handleClickOutside(event: MouseEvent) {
+      if (teamRef.current && !teamRef.current.contains(event.target as Node)) {
+        setHoveredMember(null);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [hoveredMember]);
   // Ref for section-5
   const section5Ref = useRef<HTMLDivElement>(null);
-  const [imgScale, setImgScale] = useState(2);
+  const [imgScale, setImgScale] = useState(1.5);
   const [imgSkew, setImgSkew] = useState(-50); // degrees, negative for backward tilt
     // Use rAF for scale animation (Lenis compatible)
     useEffect(() => {
@@ -34,7 +49,7 @@ export default function AboutPage() {
           const visible = windowHeight - rect.top;
           let progress = visible / total;
           progress = Math.max(0, Math.min(1, progress));
-          const scale = 2 - 0.5 * progress;
+          const scale = 1.5 - 0.5 * progress;
           setImgScale(scale);
           // Skew from -50deg (backward tilt) to 0deg
           const skew = -50 + 50 * progress;
@@ -70,6 +85,10 @@ export default function AboutPage() {
   const section4 = useTransform(scrollY, [0, 0], [0, 0]);
   const section4BG = useTransform(scrollY, [0, 2500], [-500, -50]);
   const section4Content = useTransform(scrollY, [0, 2500], [-100, 100]);
+  /* Section 5 */
+  const section5Content = useTransform(scrollY, [0, 3000], [0, -300]);
+  /* Last Section */
+  const floatingRedBorderY = useTransform(scrollY, [0, 3000], [0, 150]);
 
   const section3Ref = useRef<HTMLDivElement>(null);
   const revealerControls = useAnimation();
@@ -102,7 +121,9 @@ export default function AboutPage() {
 
   return (
     <div style={{ position: "relative", maxWidth: "100%", minHeight: "100vh", background: "#2B0906" }}>
+      {/*---------------------------------------------------------------------*/}
       {/* Persistent animated image container */}
+      {/*---------------------------------------------------------------------*/}
       <motion.div
         className="stage1-img-container"
         initial={false}
@@ -145,9 +166,9 @@ export default function AboutPage() {
               animate={
                 stage === 1
                 ? { y: 0 }
-                : { y: 80 }
+                : { y: 0, filter: "blur(20px)", opacity: 0 }
               }
-              transition={{ delay: 1.5, duration: 0.6, ease: [0.17, 0.22, 0.20, 0.99] }}
+              transition={{ delay: 0.8, duration: 0.8, ease: [0.42, 0.00, 1.00, 1.00] }}
               >
                 <span>NEXT</span> <span>GENERATION</span>
             </motion.h2>
@@ -159,9 +180,9 @@ export default function AboutPage() {
               animate={
                 stage === 1
                 ? { y: 0 }
-                : { y: 80 }
+                : { y: 0, filter: "blur(20px)", opacity: 0 }
               }
-              transition={{ delay: 1.55, duration: 0.6, ease: [0.17, 0.22, 0.20, 0.99] }}
+              transition={{ delay: 0.8, duration: 0.8, ease: [0.42, 0.00, 1.00, 1.00] }}
               >
                 <span>OF</span> <span>OBSESSED</span>
             </motion.h2>
@@ -173,9 +194,9 @@ export default function AboutPage() {
               animate={
                 stage === 1
                 ? { y: 0 }
-                : { y: 80 }
+                : { y: 0, filter: "blur(20px)", opacity: 0 }
               }
-              transition={{ delay: 1.6, duration: 0.6, ease: [0.17, 0.22, 0.20, 0.99] }}
+              transition={{ delay: 0.8, duration: 0.8, ease: [0.42, 0.00, 1.00, 1.00] }}
               >
                 <span>BUILDERS</span>
             </motion.h2>
@@ -183,7 +204,9 @@ export default function AboutPage() {
         </motion.div>
       </motion.div>
 
+      {/*---------------------------------------------------------------------*/}
       {/* Stage 1 content */}
+      {/*---------------------------------------------------------------------*/}
       <AnimatePresence>
         {stage === 1 && (
           <motion.div
@@ -252,20 +275,7 @@ export default function AboutPage() {
             </div>
 
             <div className="section-2">
-              <motion.div
-                className="section-2-bg-container"
-                style={{ y: section2BG }}
-              >
-                {/*  
-                <GridDistortion
-                  imageSrc={SECTION2_IMG_SRC}
-                  grid={20}
-                  mouse={0.1}
-                  strength={0.04}
-                  relaxation={0.96}
-                  className="section-2-bg"
-                />
-                */}
+              <motion.div className="section-2-bg-container" style={{ y: section2BG }}>
                 <ParallaxMotion speedX={20} speedY={15} easing={[0.22, 0.67, 0.3, 0.99]} delay={12}>
                   <motion.img
                     className="section-2-bg"
@@ -332,25 +342,194 @@ export default function AboutPage() {
             <motion.div className="section-5" ref={section5Ref}>
               <div className="section-5-content">
                 <div className="content-img-container">
-                  <div className="img-container-fade">
-                      <div className="img-gradient-left" />
-                      <div className="img-gradient-right" />
-                      <div className="img-gradient-top" />
-                      <div className="img-gradient-bottom" />
+                    <div className="img-container-fade">
+                        <div className="img-gradient-left" />
+                        <div className="img-gradient-right" />
+                        <div className="img-gradient-top" />
+                        <div className="img-gradient-bottom" />
+                    </div>
+                    <div style={{ mixBlendMode: "multiply" }}>
+                      <ParallaxMotion background="#2B0906" speedX={16} speedY={16} easing={[0.17, 0.67, 0.3, 0.99]}>
+                        <motion.img
+                          className="section-5-map-img"
+                          src={SECTION5_MAP_IMG_SRC}
+                          alt="2D Map"
+                          style={{ mixBlendMode: "multiply", width: "100%", height: "auto", transform: `skewY(${imgSkew}deg)`, top: "10%" }}
+                          animate={{ scale: imgScale }}
+                          transition={{ duration: 0.6, ease: [0.17, 0.67, 0.3, 0.99] }}
+                        />
+                    </ParallaxMotion>
                   </div>
-                  <motion.img
-                    src={SECTION5_MAP_IMG_SRC}
-                    alt="2D Map"
-                    style={{ width: "100%", height: "auto", transform: `skewY(${imgSkew}deg)` }}
-                    animate={{ scale: imgScale }}
-                    transition={{ duration: 0.6, ease: [0.17, 0.67, 0.3, 0.99] }}
-                  />
+                  <ParallaxMotion speedX={16} speedY={16} easing={[0.17, 0.67, 0.3, 0.99]}>
+                    <motion.img
+                      className="section-5-map-img"
+                      src={SECTION5_MAP_TOP_IMG_SRC}
+                      alt="2D Map Pin"
+                      style={{ width: "100%", height: "auto", transform: `skewY(${imgSkew}deg)`, top: "10%" }}
+                      animate={{ scale: imgScale }}
+                      transition={{ duration: 0.6, ease: [0.17, 0.67, 0.3, 0.99] }}
+                    />
+                  </ParallaxMotion>
                 </div>
+                <motion.div className="content-text" style={{ y: section5Content }}>
+                  <ParallaxMotion speedX={40} speedY={45} easing={[0.17, 0.67, 0.3, 0.99]}>
+                    <p>Founders House Helsinki is more than a workspace. It’s a standard and the place where the next generation builds before the rest of the world realizes who they are. The next wave of Finland’s unicorns will have their roots here.</p>
+                  </ParallaxMotion>
+                </motion.div>
               </div>
             </motion.div>
+
+            <motion.div className="last-section">
+              <div className="team-img-wrapper">
+                <ParallaxMotion speedX={15} speedY={15} easing={[0.17, 0.67, 0.3, 0.99]}>
+                  <div className="team-img-container">
+                    {/*
+                    <img src={FOUNDERS_HOUSE_TEAM_IMG_SRC} alt="" />
+                    */}
+                    <GridDistortion
+                      imageSrc={FOUNDERS_HOUSE_TEAM_IMG_SRC}
+                      grid={20}
+                      mouse={0.25}
+                      strength={0.01}
+                      relaxation={0.95}
+                      className="team-distortion-img"
+                    />
+                  </div>
+                </ParallaxMotion>
+              </div>
+              <motion.div className="floating-red-border-wrapper">
+                <ParallaxMotion speedX={40} speedY={20} easing={[0.17, 0.67, 0.3, 0.99]}>
+                  <div className="floating-red-border"></div>
+                </ParallaxMotion>
+              </motion.div>
+              <div className="team-text-wrapper">
+                <ParallaxMotion speedX={25} speedY={25} delay={10} easing={[0.17, 0.67, 0.3, 0.99]}>
+                  <h3>THE TEAM</h3>
+                </ParallaxMotion>
+              </div>
+            </motion.div>
+
+            <div className="team-individuals-wrapper" ref={teamRef}>
+              <ParallaxMotion speedX={25} speedY={25} delay={10} easing={[0.17, 0.67, 0.3, 0.99]}>
+                <div className="individuals">
+                  <div
+                    className={`individual-name${hoveredMember === "camilla" ? " active" : ""}`}
+                    onMouseEnter={() => setHoveredMember("camilla")}
+                  >
+                    <h4>Camilla Komulainen</h4>
+                  </div>
+                  <div
+                    className={`individual-name${hoveredMember === "kia" ? " active" : ""}`}
+                    onMouseEnter={() => setHoveredMember("kia")}
+                  >
+                    <h4>Kia Kanninen</h4>
+                  </div>
+                  <div
+                    className={`individual-name${hoveredMember === "niklas" ? " active" : ""}`}
+                    onMouseEnter={() => setHoveredMember("niklas")}
+                  >
+                    <h4>Niklas Kervinen</h4>
+                  </div>
+                  <div
+                    className={`individual-name${hoveredMember === "johannes" ? " active" : ""}`}
+                    onMouseEnter={() => setHoveredMember("johannes")}
+                  >
+                    <h4>Johannes Korpela</h4>
+                  </div>
+                  <div
+                    className={`individual-name${hoveredMember === "robin" ? " active" : ""}`}
+                    onMouseEnter={() => setHoveredMember("robin")}
+                  >
+                    <h4>Robin Hansson</h4>
+                  </div>
+                </div>
+              </ParallaxMotion>
+              <ParallaxMotion speedX={10} speedY={10} delay={10} easing={[0.17, 0.67, 0.3, 0.99]}>
+                <div className="individuals-profiles">
+                  <AnimatePresence mode="wait">
+                    {hoveredMember === "camilla" && (
+                      <motion.div
+                        key="camilla"
+                        className="profiles-card card-camilla"
+                        initial={{ opacity: 0, y: 5 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: 5 }}
+                        transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
+                      >
+                        <img src="images/camilla.webp" alt="Camilla Komulainen" />
+                        <h5>started to like horses</h5>
+                        <a className="card-email" href="mailto:camilla@wave.ventures">camilla@wave.ventures</a>
+                        <a className="card-linkedin" href="https://www.linkedin.com/in/camillakomulainen/">linkedin</a>
+                      </motion.div>
+                    )}
+                    {hoveredMember === "kia" && (
+                      <motion.div
+                        key="kia"
+                        className="profiles-card card-kia"
+                        initial={{ opacity: 0, y: 5 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: 5 }}
+                        transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
+                      >
+                        <img src="images/kia.webp" alt="Kia Kanninen" />
+                        <h5>Likes horses</h5>
+                        <a className="card-email" href="mailto:kia@wave.ventures">kia@wave.ventures</a>
+                        <a className="card-linkedin" href="https://www.linkedin.com/in/kiakanninen/">linkedin</a>
+                      </motion.div>
+                    )}
+                    {hoveredMember === "niklas" && (
+                      <motion.div
+                        key="niklas"
+                        className="profiles-card card-niklas"
+                        initial={{ opacity: 0, y: 5 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: 5 }}
+                        transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
+                      >
+                        <img src="images/niklas.webp" alt="Niklas Kervinen" />
+                        <h5>Likes horses</h5>
+                        <a className="card-email" href="mailto:niklas@wave.ventures">niklas@wave.ventures</a>
+                        <a className="card-linkedin" href="https://www.linkedin.com/in/niklas-kervinen/">linkedin</a>
+                      </motion.div>
+                    )}
+                    {hoveredMember === "johannes" && (
+                      <motion.div
+                        key="johannes"
+                        className="profiles-card card-johannes"
+                        initial={{ opacity: 0, y: 5 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: 5 }}
+                        transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
+                      >
+                        <img src="images/johannes.webp" alt="Johannes Korpela" />
+                        <h5>Likes horses</h5>
+                        <a className="card-email" href="mailto:johannes@wave.ventures">johannes@wave.ventures</a>
+                        <a className="card-linkedin" href="https://www.linkedin.com/in/korpelajohannes/">linkedin</a>
+                      </motion.div>
+                    )}
+                    {hoveredMember === "robin" && (
+                      <motion.div
+                        key="robin"
+                        className="profiles-card card-robin"
+                        initial={{ opacity: 0, y: 5 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: 5 }}
+                        transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
+                      >
+                        <img src="images/robin.webp" alt="Robin Hansson" />
+                        <h5>Likes horses</h5>
+                        <a className="card-email" href="mailto:robin@wave.ventures">robin@wave.ventures</a>
+                        <a className="card-linkedin" href="https://www.linkedin.com/in/robin-hansson-/">linkedin</a>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              </ParallaxMotion>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
+      <Footer />
     </div>
   );
 }

@@ -266,24 +266,23 @@
 
 .section-5 {
     position: relative;
-    padding: 8% 8%;
+    padding: 8% 8% 0 8%;
     background: #2B0906;
 }
 
 .section-5 .content-img-container {
     overflow: hidden;
     position: relative;
-    height: 1000px;
+    height: 800px;
 }
 
-.section-5 .content-img-container img {
+.section-5-map-img {
     position: absolute;
-    top: 0;
     left: 0;
     width: 100%;
     height: auto;
-    mix-blend-mode: multiply;
     filter: brightness(1) contrast(2);
+    transform-origin: center center;
     z-index: 1;
 }
 
@@ -331,6 +330,169 @@
     left: 0;
     bottom: 0;
     width: 100%;
-    height: 260px;
+    height: 450px;
     background: linear-gradient(to top, #2B0906 0%, rgba(43,9,6,0) 100%);
+}
+
+.section-5 .content-text {
+    position: absolute;
+    z-index: 5;
+    bottom: -10%;
+    width: 60%;
+    left: 20%;
+}
+
+.section-5 .content-text p {
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 1.4rem;
+    letter-spacing: -0.04rem;
+    line-height: 2rem;
+    font-weight: 500;
+    color: #D82E11;
+    text-wrap: balance;
+    text-transform: uppercase;
+}
+
+
+.last-section {
+    position: relative;
+    background-color: #2B0906;
+    overflow: hidden;
+    padding: 8%;
+}
+
+.last-section .team-img-wrapper {
+    overflow: hidden;
+}
+
+.last-section .team-img-container {
+    height: 80vh;
+    width: 100%;
+    overflow: hidden;
+    transform: scale(1.1);
+    transform-origin: center;
+}
+
+/*.team-img-container img {
+    width: 70%;
+}*/
+
+.team-distortion-img {
+    position: relative;
+    width: 100%;
+    filter: brightness(0.8);
+}
+
+.last-section .floating-red-border-wrapper {
+    position: absolute;
+    z-index: 10;
+    height: 75%;
+    width: 85%;
+    top: 18%;
+    left: 10%;
+    pointer-events: none;
+}
+
+.last-section .floating-red-border {
+    height: 100%;
+    width: 100%;
+    border: solid 5px #D82E11;
+}
+
+.last-section .team-text-wrapper {
+    position: absolute;
+    z-index: 15;
+    top: 10%;
+}
+
+.last-section .team-text-wrapper h3 {
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 7rem;
+    letter-spacing: -0.04rem;
+    line-height: 1rem;
+    font-weight: 800;
+    color: #D82E11;
+    text-wrap: balance;
+    text-transform: uppercase;
+}
+
+.team-individuals-wrapper {
+    position: relative;
+    padding: 2% 0 5% 0;
+    width: 80%;
+    margin-left: 10%;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 50px;
+}
+
+.team-individuals-wrapper .individuals {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 20px;
+}
+
+.team-individuals-wrapper .individual-name {
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 1.8rem;
+    letter-spacing: -0.04rem;
+    line-height: 2rem;
+    font-weight: 600;
+    color: #D82E11;
+    text-wrap: balance;
+    text-transform: uppercase;
+    margin-top: 15px;
+    cursor: pointer;
+    transition: 
+        color 0.25s cubic-bezier(.4,0,.2,1),
+        background 0.25s cubic-bezier(.4,0,.2,1),
+        transform 0.25s cubic-bezier(.4,0,.2,1);
+    padding: 0.2em 0.7em;
+    display: inline-block;
+}
+
+.team-individuals-wrapper .individual-name:hover,
+.team-individuals-wrapper .individual-name.active {
+    background: #D82E11;
+    color: #FFF8F2;
+    transform: scale(1.05);
+}
+
+.individuals-profiles {
+    min-height: 500px;
+}
+
+.individuals-profiles .profiles-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 5px;
+}
+
+.individuals-profiles .profiles-card img {
+    height: 500px;
+    margin-bottom: 20px;
+}
+
+.individuals-profiles .profiles-card h5 {
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 1.6rem;
+    letter-spacing: -0.04rem;
+    line-height: 2rem;
+    font-weight: 600;
+    color: #D82E11;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+}
+
+.individuals-profiles .profiles-card a {
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 1.1rem;
+    font-weight: 400;
+    text-decoration: none;
+    color: #FFF8F2;
 }
