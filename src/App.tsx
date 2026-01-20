@@ -9,6 +9,7 @@ import './App.css'
 // Lazy load route components
 const Home = lazy(() => import('./components/home').then(module => ({ default: module.Home })))
 const AboutPage = lazy(() => import('./about/page'))
+const JoinPage = lazy(() => import('./join/page'))
 
 function AppContent() {
   const navigate = useNavigate()
@@ -97,6 +98,8 @@ function AppContent() {
               />} />
           <Route path="/home" element={<Home />} />
           <Route path="/about" element={<AboutPage />} />
+          <Route path="/join" element={<JoinPage />} />
+
         </Routes>
       </Suspense>
 

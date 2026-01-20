@@ -4,7 +4,10 @@ import { useMotionValue, useTransform } from "framer-motion";
 import GridDistortion from '../effects/GridDistortion.tsx';
 import ParallaxMotion from '../effects/ParallaxMotion.tsx';
 import "./page.css";
+import { HelsinkiViewer } from "../components/HelsinkiViewer.tsx";
 import Footer from "../components/Footer.tsx";
+// import HelsinkiViewerSimple from "../components/HelsinkiViewerSimple.tsx";
+
 const HEADER_IMG_SRC = "/images/The Legends Day.webp";
 const SECTION2_IMG_SRC = "/images/Wave x Maki Photo (2).webp";
 const SECTION3_IMG_1_SRC = "/images/Legends Day Still 002.webp";
@@ -354,7 +357,7 @@ export default function AboutPage() {
                           className="section-5-map-img"
                           src={SECTION5_MAP_IMG_SRC}
                           alt="2D Map"
-                          style={{ mixBlendMode: "multiply", width: "100%", height: "auto", transform: `skewY(${imgSkew}deg)`, top: "10%" }}
+                          style={{ mixBlendMode: "multiply", width: "100%", height: "auto", transform: `skewY(${imgSkew}deg)` }}
                           animate={{ scale: imgScale }}
                           transition={{ duration: 0.6, ease: [0.17, 0.67, 0.3, 0.99] }}
                         />
@@ -365,7 +368,7 @@ export default function AboutPage() {
                       className="section-5-map-img"
                       src={SECTION5_MAP_TOP_IMG_SRC}
                       alt="2D Map Pin"
-                      style={{ width: "100%", height: "auto", transform: `skewY(${imgSkew}deg)`, top: "10%" }}
+                      style={{ width: "100%", height: "auto", transform: `skewY(${imgSkew}deg)`, top: "0%" }}
                       animate={{ scale: imgScale }}
                       transition={{ duration: 0.6, ease: [0.17, 0.67, 0.3, 0.99] }}
                     />
