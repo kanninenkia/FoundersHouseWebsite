@@ -145,23 +145,12 @@ export const useBoxScrollPhases = (zScrollComplete: boolean, ANIMATION_CONFIG: A
               setTextPositionX(translateProgress * 39)
               setTextPositionY(translateProgress * 2)
 
-              // Text transformation OBSESSIVE → AMBITIOUS
-              const fromText = 'OBSESSIVE'
-              const toText = 'AMBITIOUS'
-              const maxLength = Math.max(fromText.length, toText.length)
-              const easedLetterProgress = EASING.out(translateProgress)
-              const letterIndex = Math.floor(easedLetterProgress * maxLength)
-
-              let displayText = ''
-              for (let i = 0; i < maxLength; i++) {
-                if (i < letterIndex) {
-                  displayText += toText[i] || ''
-                } else {
-                  displayText += fromText[i] || ''
-                }
+              // Text fade transition OBSESSIVE → AMBITIOUS
+              if (translateProgress < 0.5) {
+                setTextContent('OBSESSIVE')
+              } else {
+                setTextContent('AMBITIOUS')
               }
-
-              setTextContent(displayText)
               setMapOpacity(translateProgress)
               setNewImageOpacity(EASING.standard(translateProgress))
 
@@ -193,15 +182,9 @@ export const useBoxScrollPhases = (zScrollComplete: boolean, ANIMATION_CONFIG: A
                 setTextPositionY(-simultaneousProgress * 3)
                 setThirdImageOpacity(simultaneousProgress)
 
-                // Text transformation AMBITIOUS → NEXT-GEN
-                const toTextPhase3 = 'NEXT-GEN'
+                // Text fade transition AMBITIOUS → NEXT-GEN
                 if (simultaneousProgress < 0.5) {
                   setTextContent('AMBITIOUS')
-                } else if (simultaneousProgress < 1) {
-                  const transitionProgress = (simultaneousProgress - 0.5) * 2
-                  const targetLength = Math.ceil(transitionProgress * toTextPhase3.length)
-                  const displayText = toTextPhase3.substring(0, Math.max(1, targetLength))
-                  setTextContent(displayText)
                 } else {
                   setTextContent('NEXT-GEN')
                 }
@@ -220,23 +203,13 @@ export const useBoxScrollPhases = (zScrollComplete: boolean, ANIMATION_CONFIG: A
                   setTextPositionX(34 - (fourthProgress * 31))
                   setTextPositionY(-3 - (fourthProgress * 67))
 
-                  // Text transformation NEXT-GEN → BUILDERS
-                  const fromTextPhase4 = 'NEXT-GEN'
-                  const toTextPhase4 = 'BUILDERS'
-                  const maxLengthPhase4 = Math.max(fromTextPhase4.length, toTextPhase4.length)
+                  // Text fade transition NEXT-GEN → BUILDERS
                   const textTransformProgress = Math.min(fourthProgress / 0.7, 1)
-                  const easedLetterProgressPhase4 = EASING.out(textTransformProgress)
-                  const letterIndexPhase4 = Math.floor(easedLetterProgressPhase4 * maxLengthPhase4)
-
-                  let displayTextPhase4 = ''
-                  for (let i = 0; i < maxLengthPhase4; i++) {
-                    if (i < letterIndexPhase4) {
-                      displayTextPhase4 += toTextPhase4[i] || ''
-                    } else {
-                      displayTextPhase4 += fromTextPhase4[i] || ''
-                    }
+                  if (textTransformProgress < 0.5) {
+                    setTextContent('NEXT-GEN')
+                  } else {
+                    setTextContent('BUILDERS')
                   }
-                  setTextContent(displayTextPhase4)
                   setFourthImageOpacity(fourthProgress)
 
                   // Phase 5: Final CTA

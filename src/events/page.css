@@ -1,0 +1,305 @@
+body *,
+body *:hover,
+body *:active {
+    user-select: none !important;
+    -webkit-user-select: none !important;
+    -moz-user-select: none !important;
+    -ms-user-select: none !important;
+    cursor: none !important;
+}
+
+.stage1-wrapper {
+    position: absolute;
+    width: 100vw;
+    height: 100%;
+    z-index: 1;
+    background-color: #2B0906;
+}
+
+.corner-elements {
+    position: absolute;
+    width: 100%;
+}
+
+.corner-element {
+    position: absolute;
+}
+
+.corner-element p {
+    font-family: 'IBMPlexSans', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: #D82E11;
+}
+
+.stage1-img-container .stage1-img {
+    will-change: transform
+}
+
+.stage1-text-overlay {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+    color: #D82E11;
+    z-index: 2;
+    margin-top: 5%;
+}
+
+.stage1-text-overlay .stage1-text-overlay-wrapper {
+    height: 80px;
+    width: 100%;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+}
+
+.stage1-text-overlay .stage1-text-overlay-h2 {
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 6rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    width: 90%;
+    margin-left: 5%;
+    line-height: 4.5rem;
+}
+
+.header-wrapper {
+    position: sticky;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+}
+
+.header-content {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    width: 92%;
+    height: 70%;
+    margin-left: 4%;
+    justify-content: flex-start;
+    align-items: flex-start;
+    margin-top: 11%;
+    gap: 43vh;
+}
+
+.header-h1-wrapper {
+    height: 119px;
+    overflow: hidden;
+}
+
+.header-h1-wrapper .header-h1 {
+    font-family: 'Outfit', sans-serif;
+    font-size: 9.1rem;
+    line-height: 7rem;
+    font-weight: 600;
+    color: #D82E11;
+    margin: 0;
+}
+
+.header-date-location {
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 3.01rem;
+    font-weight: 700;
+    color: #FFF8F2;
+    margin: 0;
+    position: absolute;
+    top: 119px;
+    left: 0;
+    letter-spacing: 0.05rem;
+}
+
+.header-h3-wrapper {
+    width: 35%;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
+.calendar-button {
+    display: inline-block;
+    transition: transform 0.3s ease;
+    width: fit-content;
+}
+
+.calendar-button:hover {
+    transform: scale(1.1);
+}
+
+.calendar-button img {
+    width: 315px;
+    height: 70px;
+}
+
+.header-h3-wrapper .header-h3 {
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 1.54rem;
+    line-height: 1.75rem;
+    letter-spacing: -0.04rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    color: #D82E11;
+    margin: 0;
+    text-wrap: balance;
+}
+
+/*----------------------------------------------*/
+
+.section-2 {
+    position: relative;
+    width: 100vw;
+    background-color: #2B0906;
+    overflow: hidden;
+    padding: 3% 0 25% 0;
+    z-index: 5;
+}
+
+/*----------------------------------------------*/
+
+/* Events Header */
+.events-header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 2rem;
+    pointer-events: none;
+}
+
+.events-header > * {
+    pointer-events: auto;
+}
+
+.events-header .header-logo {
+    height: 24px;
+    width: auto;
+}
+
+
+/*----------------------------------------------*/
+/* Horizontal Scrolling Events Section */
+/*----------------------------------------------*/
+
+.events-scroll-container {
+    position: fixed;
+    bottom: -5vh;
+    left: 60vw;
+    width: 40vw;
+    height: 70vh;
+    z-index: 5;
+    overflow: hidden;
+    pointer-events: auto;
+    cursor: none;
+}
+
+.events-scroll-container:active {
+    cursor: none;
+}
+
+.events-scroll-track {
+    display: flex;
+    gap: 0;
+    padding: 0 2rem 1rem 0;
+    height: 100%;
+    width: max-content;
+    align-items: center;
+}
+
+.event-card {
+    position: relative;
+    width: 35vw;
+    height: 21vw;
+    flex-shrink: 0;
+    margin-left: -14vw;
+    padding: 20px 0;
+}
+
+.event-card-inner {
+    width: 100%;
+    height: 100%;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    will-change: transform, filter;
+}
+
+/* Dynamic sizing and positioning variations */
+.event-card:nth-child(1) {
+    margin-top: 0vh;
+}
+
+.event-card:nth-child(2) {
+    width: 37vw;
+    height: 22vw;
+    margin-top: 15vh;
+}
+
+.event-card:nth-child(3) {
+    width: 33vw;
+    height: 20vw;
+    margin-top: -8vh;
+}
+
+.event-card:nth-child(4) {
+    width: 36vw;
+    height: 21.5vw;
+    margin-top: 12vh;
+}
+
+.event-card:first-child {
+    margin-left: 0;
+}
+
+.event-card:hover {
+    transform: translateY(-10px) scale(1.03);
+    z-index: 10 !important;
+}
+
+.event-card-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: grayscale(0.4) brightness(0.9);
+    will-change: transform;
+}
+
+/*----------------------------------------------*/
+/* Custom Cursor */
+/*----------------------------------------------*/
+
+.custom-cursor {
+    position: fixed;
+    pointer-events: none;
+    z-index: 10000;
+    transform: translate(-50%, -50%);
+}
+
+.cursor-circle {
+    position: relative;
+    width: 50px;
+    height: 50px;
+}
+
+.cursor-circle svg {
+    filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.3));
+}
+
+.cursor-text {
+    position: absolute;
+    bottom: 2px;
+    right: -12px;
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 0.7rem;
+    font-weight: 500;
+    color: #D82E11;
+    white-space: nowrap;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}

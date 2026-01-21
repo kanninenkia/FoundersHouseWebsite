@@ -10,6 +10,7 @@ import './App.css'
 const Home = lazy(() => import('./components/home').then(module => ({ default: module.Home })))
 const AboutPage = lazy(() => import('./about/page'))
 const JoinPage = lazy(() => import('./join/page'))
+const EventsPage = lazy(() => import('./events/page'))
 
 function AppContent() {
   const navigate = useNavigate()
@@ -99,6 +100,7 @@ function AppContent() {
           <Route path="/home" element={<Home />} />
           <Route path="/about" element={<AboutPage />} />
           <Route path="/join" element={<JoinPage />} />
+          <Route path="/events" element={<EventsPage />} />
 
         </Routes>
       </Suspense>

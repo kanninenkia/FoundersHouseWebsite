@@ -38,6 +38,14 @@ export const SharedTextElement = ({
 }: SharedTextProps) => {
   return (
     <motion.div
+      key={textContent}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: textContent === 'BUILDERS' ? obsessiveOpacity * phase4Opacity : obsessiveOpacity }}
+      exit={{ opacity: 0 }}
+      transition={{
+        duration: 0.4,
+        ease: [0.22, 1, 0.36, 1]
+      }}
       style={{
         position: 'fixed',
         bottom: obsessiveBottom,
@@ -46,7 +54,6 @@ export const SharedTextElement = ({
         y: textContent === 'BUILDERS' ? buildersTextParallaxY : obsessiveParallaxY,
         translateX: `calc(${textPositionX}vw + 3%)`,
         translateY: `calc(${obsessiveY}% + ${textPositionY}vh)`,
-        opacity: textContent === 'BUILDERS' ? obsessiveOpacity * phase4Opacity : obsessiveOpacity,
         rotate: textRotation,
         scale: 1.09, // Increased by 15% from 0.95 (0.95 * 1.15 = 1.0925)
         transformOrigin: 'left center',
@@ -57,7 +64,7 @@ export const SharedTextElement = ({
         fontWeight: 700,
         color: '#D82E11',
         textTransform: 'uppercase',
-        letterSpacing: '0.05em',
+        letterSpacing: '-0.04rem',
         whiteSpace: 'nowrap',
         maxHeight: '85vh',
       }}

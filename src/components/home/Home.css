@@ -97,9 +97,10 @@
 .opening-content {
   position: relative;
   z-index: 10;
-  max-width: 900px; /* Fixed width */
+  max-width: 1181px; /* Match Figma dimensions */
+  width: 80vw; /* Responsive fallback */
   text-align: left;
-  margin-left: 8rem; /* Fixed margin */
+  margin-left: 5%; /* Moved 10% to the left (was 15%) */
   /* Force GPU layer for smooth Z transforms */
   transform-style: preserve-3d;
   -webkit-transform-style: preserve-3d;
@@ -107,12 +108,13 @@
 }
 
 .opening-headline {
-  font-size: clamp(1.5rem, 3vw, 2.6rem);
-  font-weight: 900;
-  line-height: 1.2;
+  font-family: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 61px;
+  font-weight: 700;
+  line-height: 1.1;
   letter-spacing: -0.02em;
   text-transform: uppercase;
-  color: #FFFFFF;
+  color: #FFF8F2;
   margin: 0;
   /* Removed text-shadow during 3D transforms - causes jitter */
   transform-style: flat;
@@ -157,51 +159,50 @@
 
 .floating-image-1 {
   top: 8%;
-  left: 25%;
-  width: 224px; /* Fixed size - 280 * 0.8 */
-  height: 291px; /* Fixed size - 364 * 0.8 */
+  left: 20%;
+  width: 220px;
+  height: 220px;
   background-image: url('/images/Wave x Maki Photo.webp');
 }
 
 .floating-image-2 {
-  top: 12%;
-  right: 8%;
-  width: 258px; /* Fixed size - 322 * 0.8 */
-  height: 190px; /* Fixed size - 238 * 0.8 */
+  top: 5%;
+  right: 15%;
+  width: 240px;
+  height: 240px;
   background-image: url('/images/Legends Day Still 002.webp');
 }
 
 .floating-image-3 {
-  bottom: 22%;
+  top: 45%;
   left: 5%;
-  width: 241px; /* Fixed size - 301 * 0.8 */
-  height: 190px; /* Fixed size - 238 * 0.8 */
+  width: 240px;
+  height: 240px;
   background-image: url('/images/Wave x Maki Photo (2).webp');
 }
 
 .floating-image-4 {
-  bottom: 18%;
+  top: 50%;
   right: 8%;
-  width: 274px; /* Fixed size - 343 * 0.8 */
-  height: 207px; /* Fixed size - 259 * 0.8 */
+  width: 280px;
+  height: 280px;
   background-image: url('/images/Legends Day Still 014.webp');
 }
 
 .floating-image-5 {
-  bottom: 28%;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 241px; /* Fixed size - 301 * 0.8 */
-  height: 179px; /* Fixed size - 224 * 0.8 */
+  bottom: 12%;
+  left: 38%;
+  width: 240px;
+  height: 240px;
   background-image: url('/images/The Legends Day.webp');
   z-index: 2;
 }
 
 .floating-image-6 {
-  bottom: 45%;
-  left: 12%;
-  width: 207px; /* Fixed size - 259 * 0.8 */
-  height: 162px; /* Fixed size - 203 * 0.8 */
+  bottom: 8%;
+  left: 10%;
+  width: 200px;
+  height: 200px;
   background-image: url('/images/LoadInImage-min.webp');
 }
 
@@ -219,42 +220,34 @@
   background-color: #590D0F;
   z-index: 3;
   transform-style: preserve-3d;
-  box-shadow:
-    0 1px 3px rgba(0, 0, 0, 0.2),
-    0 2px 6px rgba(0, 0, 0, 0.15),
-    inset -1px -1px 1px rgba(0, 0, 0, 0.2),
-    inset 1px 1px 1px rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(0, 0, 0, 0.15);
   opacity: 0;
   /* Browser-specific 3D rendering hints */
   -webkit-transform-style: preserve-3d;
   -webkit-backface-visibility: hidden;
 }
 
-/* Subtle lighting for squares */
-.decorative-square::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(135deg, 
-    rgba(255, 255, 255, 0.04) 0%, 
-    transparent 50%, 
-    rgba(0, 0, 0, 0.08) 100%);
-  pointer-events: none;
-}
+/* Removed subtle lighting gradient for cleaner flat design */
 
-.square-0 { top: 8%; left: 10%; width: 77px; height: 77px; opacity: 1; }
-.square-1 { top: 5%; left: 15%; width: 56px; height: 56px; opacity: 0.4; }
-.square-2 { top: 15%; right: 28%; width: 98px; height: 98px; opacity: 1; }
-.square-3 { top: 18%; right: 32%; width: 67px; height: 67px; opacity: 0.4; }
-.square-4 { bottom: 35%; left: 35%; width: 63px; height: 63px; opacity: 0.4; }
-.square-5 { bottom: 20%; left: 28%; width: 91px; height: 91px; opacity: 1; }
-.square-6 { top: 45%; right: 12%; width: 73px; height: 73px; opacity: 1; }
-.square-7 { top: 48%; right: 15%; width: 53px; height: 53px; opacity: 0.4; }
-.square-8 { bottom: 10%; right: 25%; width: 112px; height: 112px; opacity: 1; }
-.square-9 { bottom: 8%; right: 18%; width: 77px; height: 77px; opacity: 0.4; }
-.square-10 { bottom: 50%; left: 8%; width: 84px; height: 84px; opacity: 1; }
-.square-11 { bottom: 48%; left: 5%; width: 63px; height: 63px; opacity: 0.4; }
+/* Decorative squares positioned around content */
+/* Small light squares (opacity 0.4) */
+.square-0 { top: 10%; left: 8%; width: 60px; height: 60px; opacity: 0.4 !important; }
+.square-1 { top: 35%; right: 5%; width: 50px; height: 50px; opacity: 0.4 !important; }
+.square-2 { bottom: 18%; left: 28%; width: 55px; height: 55px; opacity: 0.4 !important; }
+
+/* Medium dark squares (full opacity) */
+.square-3 { top: 25%; left: 45%; width: 100px; height: 100px; opacity: 1 !important; }
+.square-4 { top: 55%; left: 32%; width: 90px; height: 90px; opacity: 1 !important; }
+.square-5 { bottom: 15%; right: 12%; width: 120px; height: 120px; opacity: 1 !important; }
+
+/* Large dark squares (full opacity) */
+.square-6 { top: 15%; right: 25%; width: 140px; height: 140px; opacity: 1 !important; }
+.square-7 { bottom: 25%; left: 5%; width: 110px; height: 110px; opacity: 1 !important; }
+
+/* Hide remaining squares */
+.square-8 { display: none !important; }
+.square-9 { display: none !important; }
+.square-10 { display: none !important; }
+.square-11 { display: none !important; }
 
 /* ==================== 2. PORTRAIT GRID SECTION ==================== */
 
@@ -402,7 +395,8 @@
 /* Responsive adjustments - keep quote cards at fixed scale */
 @media (max-width: 1200px) {
   .opening-content {
-    margin-left: 4rem;
+    margin-left: 10%;
+    max-width: 80%;
   }
 }
 
@@ -424,7 +418,8 @@
   }
 
   .opening-content {
-    margin-left: 2rem;
+    margin-left: 5%;
+    max-width: 90%;
   }
 }
 
