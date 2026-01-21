@@ -36,7 +36,14 @@ export const useVirtualScroll = ({
 }: UseVirtualScrollProps): VirtualScrollValues => {
   const virtualScrollTarget = useMotionValue(0)
   const virtualScroll = useSpring(virtualScrollTarget, ANIMATION_CONFIG.virtualScrollSpring)
-  const depthTransitionProgress = useMotionValue(0)
+  const depthTransitionProgressRaw = useMotionValue(0)
+  const depthTransitionProgress = useSpring(depthTransitionProgressRaw, {
+    stiffness: 150,
+    damping: 28,
+    mass: 0.3,
+    restDelta: 0.0001,
+    restSpeed: 0.0001
+  })
 
   const [scrollProgress, setScrollProgress] = useState(0)
   const [zScrollComplete, setZScrollComplete] = useState(false)
@@ -51,6 +58,7 @@ export const useVirtualScroll = ({
   useEffect(() => {
     virtualScrollTarget.set(0)
     virtualScroll.set(0)
+    depthTransitionProgressRaw.set(0)
     depthTransitionProgress.set(0)
     accumulatedScroll.current = 0
   }, [])
@@ -90,27 +98,28 @@ export const useVirtualScroll = ({
     }
   }, [virtualScrollTarget, maxVirtualScroll])
 
-  // Sync depth transition progress with virtual scroll
+  // Sync depth transition progress with virtual scroll - spring-based for smoothness
   useEffect(() => {
-    depthTransitionProgress.set(scrollProgress)
     const unsubscribe = virtualScroll.on('change', (latest) => {
       const depthProgress = Math.max(0, Math.min(1, latest / maxVirtualScroll))
-      depthTransitionProgress.set(depthProgress)
+      depthTransitionProgressRaw.set(depthProgress)
     })
+    // Initialize on mount to prevent lag
+    const initialProgress = Math.max(0, Math.min(1, virtualScroll.get() / maxVirtualScroll))
+    depthTransitionProgressRaw.set(initialProgress)
     return unsubscribe
-  }, [virtualScroll, depthTransitionProgress, maxVirtualScroll, scrollProgress])
+  }, [virtualScroll, depthTransitionProgressRaw, maxVirtualScroll])
 
-  // Depth opacity (fades out opening section)
-  const depthOpacityRaw = useTransform(depthTransitionProgress, [0, 0.2, 0.4], [1, 0.5, 0])
-  const depthOpacity = useSpring(depthOpacityRaw, { stiffness: 150, damping: 25 })
+  // Depth opacity (fades out opening section) - faster fade to avoid jittery low-opacity rendering
+  const depthOpacity = useTransform(depthTransitionProgress, [0, 0.15, 0.3], [1, 0.3, 0])
   const settledOpacity = useMotionValue(1)
   const finalDepthOpacity = useMemo(
     () => (hasSettled ? settledOpacity : depthOpacity),
     [hasSettled, settledOpacity, depthOpacity]
   )
 
-  // Opening section opacity (separate fade for entire section)
-  const openingSectionOpacity = useTransform(depthTransitionProgress, [0, 0.4, 0.6], [1, 0.3, 0])
+  // Opening section opacity (separate fade for entire section) - completes earlier
+  const openingSectionOpacity = useTransform(depthTransitionProgress, [0, 0.3, 0.5], [1, 0.2, 0])
 
   // Cards interactive state
   const cardsInteractive = scrollProgress > ANIMATION_CONFIG.timing.cardsFadeIn.threshold

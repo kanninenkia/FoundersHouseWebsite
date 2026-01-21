@@ -74,32 +74,3 @@ export function computeMeshAreas(meshes: THREE.Mesh[]): number[] {
   })
 }
 
-/**
- * Updates material properties for all matching objects in a hierarchy
- * @param object - Root object to traverse
- * @param predicate - Function to test if an object should be updated
- * @param updater - Function to update the object
- */
-export function updateMaterialsInHierarchy<T extends THREE.Object3D>(
-  object: THREE.Object3D,
-  predicate: (child: THREE.Object3D) => child is T,
-  updater: (object: T) => void
-): void {
-  object.traverse((child) => {
-    if (predicate(child)) {
-      updater(child)
-    }
-  })
-}
-
-/**
- * Type guard for LineSegments with LineBasicMaterial
- */
-export function isLineSegmentsWithBasicMaterial(
-  object: THREE.Object3D
-): object is THREE.LineSegments<THREE.BufferGeometry, THREE.LineBasicMaterial> {
-  return (
-    object instanceof THREE.LineSegments &&
-    object.material instanceof THREE.LineBasicMaterial
-  )
-}

@@ -13,15 +13,6 @@ export function setupPostProcessing(renderTarget: THREE.WebGLRenderTarget, perli
   const material = new THREE.ShaderMaterial({
     uniforms: {
       tDiffuse: { value: renderTarget.texture },
-      uPerlinTexture: { value: perlinTexture },
-      uPaperTexture: { value: null },
-      uPencilColor: { value: new THREE.Color(COLORS.chartogne.black) },
-      uPaperColor: { value: new THREE.Color(COLORS.chartogne.creamBg) },
-      uBottomFogColor: { value: new THREE.Color(COLORS.day.sky) },
-      uTime: { value: 0 },
-      uPencilStrength: { value: 1.0 },
-      uResolution: { value: new THREE.Vector2(window.innerWidth * window.devicePixelRatio, window.innerHeight * window.devicePixelRatio) },
-      uContrast: { value: 3.0 },
     },
     vertexShader: postProcessVertexShader,
     fragmentShader: postProcessFragmentShader,

@@ -56,18 +56,18 @@ export const Home = () => {
   // Use virtual scroll hook
   const virtualScrollValues = useVirtualScroll({ hasEnteredFromTransition, hasSettled })
 
-  // Depth Z transforms for opening section
-  const textDepthZ = useSpring(
-    useTransform(virtualScrollValues.depthTransitionProgress, [0, 0.4], [0, 1500]),
-    ANIMATION_CONFIG.virtualScrollSpring
+  // Depth Z transforms for opening section with integer rounding for browser compatibility
+  const textDepthZ = useTransform(
+    virtualScrollValues.depthTransitionProgress,
+    (v) => Math.round(v * 1500 / 0.4)
   )
-  const imageDepthZ = useSpring(
-    useTransform(virtualScrollValues.depthTransitionProgress, [0, 0.4], [0, 2500]),
-    ANIMATION_CONFIG.virtualScrollSpring
+  const imageDepthZ = useTransform(
+    virtualScrollValues.depthTransitionProgress,
+    (v) => Math.round(v * 2500 / 0.4)
   )
-  const squareDepthZ = useSpring(
-    useTransform(virtualScrollValues.depthTransitionProgress, [0, 0.4], [0, 3500]),
-    ANIMATION_CONFIG.virtualScrollSpring
+  const squareDepthZ = useTransform(
+    virtualScrollValues.depthTransitionProgress,
+    (v) => Math.round(v * 3500 / 0.4)
   )
 
   // Use box scroll phases hook

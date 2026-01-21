@@ -10,8 +10,6 @@ import { setupSceneFog, updateFogColor } from '../effects'
 import { createSmoothPOIAnimation, updateSmoothPOIAnimation, interruptSmoothPOIAnimation, type SmoothPOIAnimation } from '../animation'
 import {
   PerlinNoiseGenerator,
-  updateMaterialsInHierarchy,
-  isLineSegmentsWithBasicMaterial,
   applyCameraConfig,
   getCurrentCameraConfig,
   CAMERA_PRESETS,
@@ -66,7 +64,6 @@ export class HelsinkiScene {
   private lastHeroTextOpacity: number = -1
 
   public revealProgress: number = 0
-  public pencilStrength: number = 1.0
 
   constructor(config: SceneConfig) {
     this.container = config.container
@@ -106,7 +103,7 @@ export class HelsinkiScene {
     }
 
     loadDualModels({
-      mainMapPath: '/models/map.glb',
+      mainMapPath: '/models/fh.glb',
       scene: this.scene,
       camera: this.camera,
       controls: this.controls,
@@ -319,9 +316,6 @@ export class HelsinkiScene {
       }
     }
 
-    this.postProcessMaterial.uniforms.uTime.value = elapsed
-    this.postProcessMaterial.uniforms.uPencilStrength.value = this.pencilStrength
-
     // Auto-centering drift logic for Founders House
     if (this.enableAutoCentering) {
       this.updateAutoCentering()
@@ -454,16 +448,6 @@ export class HelsinkiScene {
     }
 
     if (this.helsinkiModel) {
-      const edgeGeometries = (this.helsinkiModel as any).__edgeGeometries as THREE.EdgesGeometry[] | undefined
-      const edgeMaterials = (this.helsinkiModel as any).__edgeMaterials as THREE.LineBasicMaterial[] | undefined
-
-      if (edgeGeometries) {
-        edgeGeometries.forEach(geom => geom.dispose())
-      }
-      if (edgeMaterials) {
-        edgeMaterials.forEach(mat => mat.dispose())
-      }
-
       this.scene.remove(this.helsinkiModel)
     }
 
@@ -494,10 +478,6 @@ export class HelsinkiScene {
     } catch (e) {
       return false
     }
-  }
-
-  public setPencilStrength(strength: number) {
-    this.pencilStrength = Math.max(0, Math.min(1, strength))
   }
 
   public setCameraConfig(config: CameraConfig): void {
@@ -677,31 +657,6 @@ export class HelsinkiScene {
       : new THREE.Color(COLORS.day.sky)
 
     updateFogColor(this.fog, this.isNightMode)
-
-    this.postProcessMaterial.uniforms.uBottomFogColor.value.setHex(
-      this.isNightMode ? COLORS.night.sky : COLORS.day.sky
-    )
-
-    if (this.helsinkiModel) {
-      updateMaterialsInHierarchy(
-        this.helsinkiModel,
-        isLineSegmentsWithBasicMaterial,
-        (lineSegments) => {
-          if (this.isNightMode) {
-            lineSegments.material.color.setHex(COLORS.night.wireframe)
-            lineSegments.material.transparent = true
-            lineSegments.material.opacity = COLORS.night.wireframeOpacity
-          } else {
-            lineSegments.material.color.setHex(COLORS.day.wireframe)
-            lineSegments.material.transparent = true
-            lineSegments.material.opacity = COLORS.day.wireframeOpacity
-          }
-          lineSegments.material.depthTest = true
-          lineSegments.material.depthWrite = false
-          lineSegments.material.needsUpdate = true
-        }
-      )
-    }
 
     this.scene.traverse((child) => {
       if (child instanceof THREE.PointLight) {

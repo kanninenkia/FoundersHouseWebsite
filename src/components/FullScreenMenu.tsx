@@ -129,7 +129,7 @@ export const FullScreenMenu = ({ isOpen, onClose }: FullScreenMenuProps) => {
                   style={{ x: mapX, y: mapY }}
                 />
                 <motion.img
-                  src="/models/radar.svg"
+                  src="/models/radar.webp"
                   alt="Radar"
                   className="menu-radar"
                   style={{ x: mapX, y: mapY }}

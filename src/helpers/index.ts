@@ -5,9 +5,7 @@
 
 export {
   collectMeshes,
-  computeMeshAreas,
-  updateMaterialsInHierarchy,
-  isLineSegmentsWithBasicMaterial
+  computeMeshAreas
 } from './geometryHelpers'
 
 

@@ -97,7 +97,7 @@ export const Phase2Ambitious = ({
         }}
       >
         <motion.img
-          src="/models/radar.svg"
+          src="/models/radar.webp"
           alt="Location marker"
           animate={{
             opacity: [mapOpacity * 0.5, mapOpacity, mapOpacity * 0.5],

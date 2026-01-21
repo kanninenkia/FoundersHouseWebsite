@@ -54,13 +54,13 @@ export const FOUNDERS_HOUSE_POI: PointOfInterest = {
   name: 'Founders House',
   description: 'The heart of innovation and entrepreneurship',
   mapCoords: {
-    x: 164,
-    y: 804
+    x: 30.77,
+    y: 533.42
   },
   worldCoords: {
-    x: 164,
-    y: 0,
-    z: -804
+    x: 30.77,
+    y: -20.14,
+    z: -533.42
   },
   cameraView: {
     distance: 1007,

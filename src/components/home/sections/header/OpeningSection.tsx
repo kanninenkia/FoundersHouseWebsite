@@ -2,7 +2,8 @@
  * OpeningSection - The initial hero section with floating images and decorative squares
  */
 
-import { motion, MotionValue, useTransform } from 'framer-motion'
+import { motion, MotionValue, useTransform, useMotionValueEvent } from 'framer-motion'
+import { useState } from 'react'
 import { FloatingImage, FLOATING_IMAGES_CONFIG } from '../../FloatingImage'
 
 interface DecorativeSquareProps {
@@ -135,6 +136,13 @@ export const OpeningSection = ({
     i === 0 && hasEnteredFromTransition ? { ...config, delay: 0.8 } : config
   )
 
+  const [isVisible, setIsVisible] = useState(true)
+
+  // Track opacity to toggle visibility for performance and jitter prevention
+  useMotionValueEvent(finalDepthOpacity, 'change', (latest) => {
+    setIsVisible(latest > 0.01)
+  })
+
   if (!showBackground && hasEnteredFromTransition) return null
 
   return (
@@ -142,7 +150,8 @@ export const OpeningSection = ({
       className="opening-section"
       style={{
         opacity: openingSectionOpacity,
-        pointerEvents: 'auto'
+        pointerEvents: 'auto',
+        visibility: isVisible ? 'visible' : 'hidden'
       }}
     >
       <motion.div

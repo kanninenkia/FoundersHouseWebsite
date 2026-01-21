@@ -36,7 +36,7 @@ export const EASING = {
 
 export const ANIMATION_CONFIG = {
   spring: { damping: 35, stiffness: 80, mass: 0.5 },
-  virtualScrollSpring: { stiffness: 120, damping: 30, mass: 0.5, restDelta: 0.01, restSpeed: 0.01 },
+  virtualScrollSpring: { stiffness: 100, damping: 25, mass: 0.8, restDelta: 0.001, restSpeed: 0.001 },
 
   maxVirtualScroll: 1.5,
   boxScrollHeight: 3,

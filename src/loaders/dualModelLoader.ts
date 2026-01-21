@@ -5,7 +5,6 @@
 import * as THREE from 'three'
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
 import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js'
-import { COLORS } from '../constants/designSystem'
 
 export interface DualLoadParams {
   mainMapPath: string
@@ -261,73 +260,9 @@ gl_FragColor.a *= fadeFactor;`
 function processMainMap(
   model: THREE.Group,
   camera: THREE.PerspectiveCamera,
-  isNightMode: boolean,
   renderer?: THREE.WebGLRenderer,
   scene?: THREE.Scene
 ): void {
-
-  const edgeGeometries: THREE.EdgesGeometry[] = []
-  const edgeMaterials: THREE.LineBasicMaterial[] = []
-
-  // Apply building treatments (same as original loader)
-  model.traverse((child) => {
-    if (child instanceof THREE.Mesh && child.geometry) {
-      const box = new THREE.Box3().setFromObject(child)
-      const size = box.getSize(new THREE.Vector3())
-      const isBuilding = size.y > 10
-
-      const buildingOpacity = 0.98
-
-      if (isBuilding) {
-        try {
-          const mat = (child as any).material
-          if (Array.isArray(mat)) {
-            mat.forEach((m: any) => {
-              if (m) {
-                m.transparent = true
-                m.opacity = buildingOpacity
-                m.depthWrite = true
-              }
-            })
-          } else if (mat) {
-            mat.transparent = true
-            mat.opacity = buildingOpacity
-            mat.depthWrite = true
-          }
-        } catch (e) {
-          // Non-fatal
-        }
-
-        // Add edge lines to buildings
-        const edges = new THREE.EdgesGeometry(child.geometry, 15)
-        const lineMaterial = new THREE.LineBasicMaterial({
-          color: isNightMode ? COLORS.night.wireframe : COLORS.day.wireframe,
-          transparent: true,
-          opacity: isNightMode ? COLORS.night.wireframeOpacity : COLORS.day.wireframeOpacity,
-          linewidth: 1,
-          depthTest: true,
-          depthWrite: false,
-        })
-        ;(lineMaterial as any).polygonOffset = true
-        ;(lineMaterial as any).polygonOffsetFactor = 1
-        ;(lineMaterial as any).polygonOffsetUnits = 1
-
-        const lineSegments = new THREE.LineSegments(edges, lineMaterial)
-        lineSegments.frustumCulled = false
-
-        edgeGeometries.push(edges)
-        edgeMaterials.push(lineMaterial)
-
-        if (child.parent) {
-          child.parent.add(lineSegments)
-        }
-      }
-    }
-  })
-
-  // Store for cleanup
-  ;(model as any).__edgeGeometries = edgeGeometries
-  ;(model as any).__edgeMaterials = edgeMaterials
 
   // Position model
   const box = new THREE.Box3().setFromObject(model)
@@ -434,7 +369,6 @@ export async function loadDualModels(params: DualLoadParams): Promise<DualLoadRe
     mainMapPath,
     scene,
     camera,
-    isNightMode = false,
     onLoadProgress,
     onLoadComplete,
     renderer,
@@ -477,7 +411,7 @@ export async function loadDualModels(params: DualLoadParams): Promise<DualLoadRe
 
 
     // Process main map (includes edge fade and shader pre-compilation)
-    processMainMap(mainMapModel, camera, isNightMode, renderer, scene)
+    processMainMap(mainMapModel, camera, renderer, scene)
 
     // Add to scene
     scene.add(mainMapModel)

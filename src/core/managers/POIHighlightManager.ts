@@ -37,56 +37,10 @@ export class POIHighlightManager {
   /**
    * Highlight buildings near a POI by changing their color to red
    * Uses raycasting from camera to find meshes at the POI location
+   * DISABLED: No highlighting applied
    */
   public highlightPOI(poiName: string, maxIntersections: number = 20): void {
-    // First, remove any existing highlights
-    this.clearHighlights()
-
-    if (!this.helsinkiModel) {
-      return
-    }
-
-    const poi = POINTS_OF_INTEREST[poiName as keyof typeof POINTS_OF_INTEREST]
-    if (!poi) {
-      return
-    }
-
-    // Use raycasting from camera towards POI to find the building
-    const raycaster = new THREE.Raycaster()
-    const cameraDirection = new THREE.Vector3()
-
-    // Calculate direction from camera to POI world coordinates
-    const poiWorldPos = new THREE.Vector3(
-      poi.worldCoords.x,
-      poi.worldCoords.y,
-      poi.worldCoords.z
-    )
-
-    cameraDirection.subVectors(poiWorldPos, this.camera.position).normalize()
-    raycaster.set(this.camera.position, cameraDirection)
-
-    // Find all intersections with the model
-    const intersects = raycaster.intersectObject(this.helsinkiModel, true)
-
-    const highlightedObjects = new Set<THREE.Mesh>()
-
-    if (intersects.length > 0) {
-      // Highlight the meshes that were hit by the raycast
-      const intersectionsToHighlight = intersects.slice(0, maxIntersections)
-
-      for (const intersection of intersectionsToHighlight) {
-        const mesh = intersection.object
-        if (mesh instanceof THREE.Mesh && !highlightedObjects.has(mesh)) {
-          // Store original material
-          this.highlightedMeshes.set(mesh, mesh.material)
-
-          // Apply red highlight material (reuse single material instance)
-          mesh.material = this.highlightMaterial
-          highlightedObjects.add(mesh)
-        }
-      }
-    }
-
+    // Highlighting disabled - do nothing
     this.highlightedPOI = poiName
   }
 

@@ -27,12 +27,11 @@ export class FoundersHouseMarker {
 
   /**
    * Set the Helsinki model reference
+   * DISABLED: No auto-highlighting
    */
   public setModel(model: THREE.Group | null, _camera?: THREE.PerspectiveCamera): void {
     this.helsinkiModel = model
-    if (model) {
-      this.highlightFoundersHouse()
-    }
+    // Auto-highlighting disabled
   }
 
   /**
