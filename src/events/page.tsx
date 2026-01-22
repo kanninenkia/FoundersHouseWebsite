@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import ParallaxMotion from '../effects/ParallaxMotion.tsx';
 import { AnimatedHamburger } from '../components/AnimatedHamburger.tsx';
 import { FullScreenMenu } from '../components/FullScreenMenu.tsx';
+import Button from '../components/button.tsx';
 import { eventsData } from './hooks/events-data.ts';
 import "./page.css";
 
@@ -446,18 +447,23 @@ export default function EventsPage() {
                 </ParallaxMotion>
                 <div className="header-h3-wrapper">
                   <ParallaxMotion speedX={40} speedY={25} easing={[0.17, 0.67, 0.3, 0.99]}>
-                    <motion.a
-                      href="https://luma.com/founders-house_helsinki"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="calendar-button"
+                    <motion.div
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       transition={{ delay: 2.6, duration: 1, ease: [0.11, 0.45, 0.08, 1.00] }}
                       style={{ pointerEvents: "auto" }}
                     >
-                      <img src="/icons/calendericon.svg" alt="Calendar" />
-                    </motion.a>
+                      <a
+                        href="https://luma.com/founders-house_helsinki"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{ textDecoration: 'none' }}
+                      >
+                        <Button className="calendar-button events-calendar-button">
+                          Subscribe to our events calendar
+                        </Button>
+                      </a>
+                    </motion.div>
                     <motion.h3
                       ref={descriptionRef}
                       className="header-h3"

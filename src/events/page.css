@@ -134,6 +134,26 @@ body *:active {
     height: 70px;
 }
 
+/* Events page specific button styling */
+.events-calendar-button {
+    transform: scale(0.9) translateX(-2.5vh);
+}
+
+.events-calendar-button:hover {
+    transform: scale(0.9) translateX(-2.5vh);
+}
+
+/* Override button layer positioning for events page - top layer goes RIGHT and up */
+.events-calendar-button.custom-btn::before {
+    top: -8px;
+    left: 8px;
+}
+
+.events-calendar-button.custom-btn:hover::before {
+    top: 0;
+    left: 0;
+}
+
 .header-h3-wrapper .header-h3 {
     font-family: 'IBM Plex Sans', sans-serif;
     font-size: 1.54rem;
