@@ -4,6 +4,8 @@
  */
 
 import { motion } from 'framer-motion'
+import { useNavigate } from 'react-router-dom'
+import './CTASection.css'
 
 interface CTASectionProps {
   zScrollComplete: boolean
@@ -20,7 +22,13 @@ export const CTASection = ({
   ctaTextY,
   horsesY
 }: CTASectionProps) => {
+  const navigate = useNavigate()
+
   if (!zScrollComplete) return null
+
+  const handleImageClick = () => {
+    navigate('/join')
+  }
 
   return (
     <motion.section
@@ -66,20 +74,56 @@ export const CTASection = ({
         </h2>
       </motion.div>
 
-      {/* Horses Image */}
-      <motion.img
-        src="/images/horses.webp"
-        alt="Horses"
+      {/* Horses Image with hover effect */}
+      <motion.div
+        className="horses-image-container"
+        onClick={handleImageClick}
         style={{
           opacity: horsesOpacity,
-          transform: `translateY(${horsesY}vh) scaleY(0.85)`,
-          marginTop: '6vh',
+          transform: `translateY(${horsesY}vh) scaleY(0.9)`,
+          marginTop: '5vh',
           width: '100%',
           maxWidth: '1572px',
-          height: 'auto',
-          objectFit: 'contain',
+          position: 'relative',
+          cursor: 'pointer',
         }}
-      />
+      >
+        <motion.img
+          src="/images/horses-colour.webp"
+          alt="Horses"
+          className="horses-image"
+          style={{
+            width: '100%',
+            height: 'auto',
+            display: 'block',
+          }}
+        />
+        {/* Animated squares: top-left */}
+        <div className="horses-square square-tl-1" />
+        <div className="horses-square square-tl-2" />
+        <div className="horses-square square-tl-3" />
+        {/* Animated squares: bottom-right */}
+        <div className="horses-square square-br-1" />
+        <div className="horses-square square-br-2" />
+        <div className="horses-square square-br-3" />
+        {/* Bottom left text */}
+        <div
+          style={{
+            position: 'absolute',
+            bottom: '20px',
+            left: '20px',
+            fontFamily: 'IBM Plex Sans, -apple-system, BlinkMacSystemFont, sans-serif',
+            fontSize: 'clamp(1.36rem, 3.4vw, 2.72rem)',
+            fontWeight: 500,
+            color: '#FFF8F2',
+            textTransform: 'uppercase',
+            lineHeight: 1,
+            zIndex: 3,
+          }}
+        >
+          JOIN US, BUILD WITH US, DEFINE TOMORROW.
+        </div>
+      </motion.div>
     </motion.section>
   )
 }

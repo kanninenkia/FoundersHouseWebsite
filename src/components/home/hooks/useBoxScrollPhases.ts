@@ -234,14 +234,12 @@ export const useBoxScrollPhases = (zScrollComplete: boolean, ANIMATION_CONFIG: A
                     const ctaProgress = Math.max(0, Math.min(1, (fifthProgress - 0.25) / 0.35))
                     const easedCtaProgress = EASING.out(ctaProgress)
                     setCtaTextOpacity(easedCtaProgress)
-                    // Fade up from 25vh to 0vh (final position)
-                    setCtaTextY(25 - (easedCtaProgress * 25))
+                    setCtaTextY(25 - (easedCtaProgress * 20))
 
                     const horsesProgress = Math.max(0, Math.min(1, (fifthProgress - 0.35) / 0.30))
                     const easedHorsesProgress = EASING.out(horsesProgress)
                     setHorsesOpacity(easedHorsesProgress)
-                    // Fade up from 25vh to 0vh (final position)
-                    setHorsesY(25 - (easedHorsesProgress * 25))
+                    setHorsesY(25 - (easedHorsesProgress * 20))
 
                     const footerStartProgress = 0.70
                     const footerDuration = 0.20
