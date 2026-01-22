@@ -1,0 +1,113 @@
+.char {
+  white-space: pre;
+  letter-spacing: inherit;
+}
+/* --- Animated character hover styles ported from FullScreenMenu.css --- */
+.char-original,
+.char-clone {
+  display: block;
+  transition: transform var(--menu-animation-default, 0.35s cubic-bezier(0.22,1,0.36,1));
+  will-change: transform;
+  color: inherit;
+}
+
+.custom-btn:hover .char-original,
+.custom-btn:hover .char-clone {
+  color: #FFF8F2;
+}
+
+.char-clone {
+  position: absolute;
+  top: 0;
+  left: 0;
+  transform: translateY(100%);
+}
+
+.custom-btn:hover .char-original,
+.custom-btn:hover .char-clone {
+  transition-delay: inherit;
+}
+
+.custom-btn:hover .char-original {
+  transform: translateY(-100%);
+}
+
+.custom-btn:hover .char-clone {
+  transform: translateY(0);
+}
+.custom-btn-third {
+  position: absolute;
+  top: -8px;
+  left: -8px;
+  width: 100%;
+  height: 100%;
+  background: #A93226;
+  z-index: 0;
+  border-radius: 0;
+  pointer-events: none;
+}
+.custom-btn {
+  position: relative;
+  display: inline-block;
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 2rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  outline: none;
+}
+
+.custom-btn-bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: #9E1B1E;
+  z-index: 1;
+  border-radius: 0;
+}
+
+.custom-btn-content {
+  position: relative;
+  font-family: "IBM Plex Sans", sans-serif;
+  font-size: 1.4rem;
+  letter-spacing: -0.04rem;
+  font-weight: 600;
+  z-index: 2;
+  color: #FFF8F2;
+  padding: 0.3em 2em;
+  display: block;
+  overflow: hidden;
+}
+
+.custom-btn-content .btn-content-inner {
+    height: 30px;
+    overflow: hidden;
+}
+
+.custom-btn::before {
+  content: "";
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  width: 100%;
+  height: 100%;
+  background: #922B1B;
+  z-index: 0;
+  border-radius: 0;
+  transition: top 0.2s, left 0.2s;
+}
+
+.custom-btn:hover::before {
+  top: 0;
+  left: 0;
+}
+
+.custom-btn:active .custom-btn-bg {
+  background: #A93226;
+}

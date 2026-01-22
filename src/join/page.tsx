@@ -1,15 +1,17 @@
 import React, { useEffect, useRef, useState } from "react";
-import { motion, AnimatePresence, useScroll, useAnimation } from "framer-motion";
+import { motion, AnimatePresence, useScroll, useAnimation, color } from "framer-motion";
 import { useMotionValue, useTransform } from "framer-motion";
 import GridDistortion from '../effects/GridDistortion.tsx';
 import ParallaxMotion from '../effects/ParallaxMotion.tsx';
 import "./page.css";
 import { HelsinkiViewer } from "../components/HelsinkiViewer.tsx";
 import Footer from "../components/Footer.tsx";
-// import HelsinkiViewerSimple from "../components/HelsinkiViewerSimple.tsx";
+import Button from "../components/button.tsx";
 
 const HEADER_IMG_SRC = "/images/horses.webp";
-const SECTION2_IMG_SRC = "/images/Wave x Maki Photo (2).webp";
+const RESIDENT_SRC = "/images/resident.webp";
+const MEMBER_SRC = "/images/member.webp";
+const PROCESS_SRC = "/images/join-process.webp";
 
 export default function JoinPage() {
   const [stage, setStage] = useState(1);
@@ -30,33 +32,6 @@ export default function JoinPage() {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [hoveredMember]);
-  // Ref for section-5
-  const section5Ref = useRef<HTMLDivElement>(null);
-  const [imgScale, setImgScale] = useState(1.5);
-  const [imgSkew, setImgSkew] = useState(-50); // degrees, negative for backward tilt
-    // Use rAF for scale animation (Lenis compatible)
-    useEffect(() => {
-      let running = true;
-      function animate() {
-        if (!running) return;
-        if (section5Ref.current) {
-          const rect = section5Ref.current.getBoundingClientRect();
-          const windowHeight = window.innerHeight;
-          const total = rect.height + windowHeight;
-          const visible = windowHeight - rect.top;
-          let progress = visible / total;
-          progress = Math.max(0, Math.min(1, progress));
-          const scale = 1.5 - 0.5 * progress;
-          setImgScale(scale);
-          // Skew from -50deg (backward tilt) to 0deg
-          const skew = -50 + 50 * progress;
-          setImgSkew(skew);
-        }
-        requestAnimationFrame(animate);
-      }
-      animate();
-      return () => { running = false; };
-    }, []);
 
   // Parallax setup
   const yScroll = useMotionValue(0);
@@ -68,13 +43,16 @@ export default function JoinPage() {
   //--------------------------------------//
   const { scrollY } = useScroll();
   const headerBG = useTransform(scrollY, [0, 1000], [0, 200]);
-  const headerContent = useTransform(scrollY, [0, 1000], [0, 100]);
+  const headerContent = useTransform(scrollY, [0, 1000], [0, -100]);
 
   // Scroll-based scale for stage1-img-container in stage 2
   const stage1ImgScale = useTransform(scrollY, [0, 400], [1, 0.9]);
   /* Section 2 */
-  const section2BG = useTransform(scrollY, [0, 1500], [-300, 50]);
+  const section2BG = useTransform(scrollY, [0, 1500], [-100, 200]);
   const section2Content = useTransform(scrollY, [0, 1500], [-150, 200]);
+
+  // Scroll-based scale for header-wrapper in stage 2
+  const headerWrapperScale = useTransform(scrollY, [0, 400], [1, 0.92]);
 
   const section3Ref = useRef<HTMLDivElement>(null);
   const revealerControls = useAnimation();
@@ -224,22 +202,25 @@ export default function JoinPage() {
             className="stage2-wrapper"
           >
 
-            <div className="header-wrapper" style={{pointerEvents: "none"}}>
+            <motion.div
+              className="header-wrapper"
+              style={enableScrollScale ? { pointerEvents: "none", scale: headerWrapperScale } : { pointerEvents: "none" }}
+            >
               <motion.div className="header-content" style={{ y: headerContent }}>
-                <ParallaxMotion speedX={30} speedY={15} easing={[0.17, 0.67, 0.3, 0.99]} delay={10}>
+                <ParallaxMotion speedX={15} speedY={15} easing={[0.17, 0.67, 0.3, 0.99]} delay={6}>
                   <div className="header-h1-wrapper">
                     <motion.h1
                       className="header-h1"
                       initial={{ y: 175 }}
                       animate={{ y: 0 }}
-                      transition={{ delay: 2.4, duration: 1.3, ease: [0.11, 0.45, 0.08, 1.00] }}
+                      transition={{ delay: 2.4, duration: 1.1, ease: [0.11, 0.45, 0.08, 1.00] }}
                       >
                         JOIN
                     </motion.h1>
                   </div>
                 </ParallaxMotion>
                 <div className="header-h3-wrapper">
-                  <ParallaxMotion speedX={40} speedY={25} easing={[0.17, 0.67, 0.3, 0.99]}>
+                  <ParallaxMotion speedX={30} speedY={30} easing={[0.17, 0.67, 0.3, 0.99]}>
                     <motion.h3
                       className="header-h3"
                       initial={{ opacity: 0 }}
@@ -251,11 +232,104 @@ export default function JoinPage() {
                   </ParallaxMotion>
                 </div>
               </motion.div>
-            </div>
+            </motion.div>
 
             <div className="section-2">
-              <motion.div className="section-2-bg-container" style={{ y: section2BG }}>
-                test
+              <div className="content-wrapper">
+                <motion.div
+                  className="join-type type-resident"
+                  initial={{ opacity: 0 }}
+                  whileInView={{ opacity: 1 }}
+                  viewport={{ once: false, amount: 0.3 }}
+                  transition={{ duration: 0.8, ease: [0.4, 0, 0.2, 1] }}
+                  style={{ y: section2BG }}
+                  >
+                  <ParallaxMotion className="second-border-container" speedX={10} speedY={10} easing={[0.17, 0.67, 0.3, 0.99]}>
+                    <div className="second-border"></div>
+                    <ParallaxMotion className="second-border-container" speedX={10} speedY={10} easing={[0.17, 0.67, 0.3, 0.99]}>
+                      <div className="first-border">
+                        <h2>RESIDENT</h2>
+                        <p>Resident teams get a private office or desk inside Founders House. We offer 10 private rooms for teams, as well as shared spaces for solo validators or founders. Residents receive 24/7 access, priority admission to events, and benefits, such as resources and credits to speed up the building. Every resident is automatically a member.</p>
+                        <p>Residencies are mainly offered for 6 months, whereafter the FH team will have a check in with the resident team’s progress and needs.</p>
+                        <div className="type-img-container" style={{ position: "relative", overflow: "hidden" }}>
+                          <img src={RESIDENT_SRC} alt="Founders House Resident" />
+                          {/* Animated squares: top-left */}
+                          <div className="img-square resident-square square-tl-1" />
+                          <div className="img-square resident-square square-tl-2" />
+                          <div className="img-square resident-square square-tl-3" />
+                          {/* Animated squares: bottom-right */}
+                          <div className="img-square resident-square square-br-1" />
+                          <div className="img-square resident-square square-br-2" />
+                          <div className="img-square resident-square square-br-3" />
+                        </div>
+                        <Button className="button">Become a Resident</Button>
+                      </div>
+                    </ParallaxMotion>
+                  </ParallaxMotion>
+                </motion.div>
+                <motion.div 
+                  className="join-type type-member"
+                  initial={{ opacity: 0 }}
+                  whileInView={{ opacity: 1 }}
+                  viewport={{ once: false, amount: 0.3 }}
+                  transition={{ delay: 0.1, duration: 0.8, ease: [0.4, 0, 0.2, 1] }}
+                  style={{ y: section2BG }}>
+                  <ParallaxMotion className="second-border-container" speedX={10} speedY={10} delay={12} easing={[0.17, 0.67, 0.3, 0.99]}>
+                    <div className="second-border"></div>
+                    <ParallaxMotion className="second-border-container" speedX={5} speedY={5} delay={12} easing={[0.17, 0.67, 0.3, 0.99]}>
+                      <div className="first-border">
+                        <h2>MEMBER</h2>
+                        <p>Our members get priority invitations to exclusive events, access to a private WhatsApp group, and selected resources.</p>
+                        <p>When you become a member of Founders House Helsinki, you keep it. After age 35 you become an Alumni member, which means some benefits shift while new ones open up.</p>
+                        <div className="type-img-container" style={{ position: "relative" }}>
+                          <img src={MEMBER_SRC} alt="Founders House Member" />
+                          {/* Animated squares: top-right (different pattern) */}
+                          <div className="img-square member-square member-square-tr-1" />
+                          <div className="img-square member-square member-square-tr-2" />
+                          <div className="img-square member-square member-square-tr-3" />
+                          {/* Animated squares: bottom-left (different pattern) */}
+                          <div className="img-square member-square member-square-bl-1" />
+                          <div className="img-square member-square member-square-bl-2" />
+                          <div className="img-square member-square member-square-bl-3" />
+                        </div>
+                        <Button className="button">Become a members</Button>
+                      </div>
+                    </ParallaxMotion>
+                  </ParallaxMotion>
+                </motion.div>
+              </div>
+            </div>
+
+            <div className="last-section">
+              <motion.div className="last-section-bg-container" style={{ y: section2BG }}>
+                <ParallaxMotion speedX={20} speedY={15} easing={[0.22, 0.67, 0.3, 0.99]} delay={12}>
+                  <motion.img
+                    className="last-section-bg"
+                    src={PROCESS_SRC}
+                    alt="About"
+                    style={{ scale: 1.05, objectFit: "cover", filter: "brightness(0.6)" }}
+                  />
+                </ParallaxMotion>
+              </motion.div>        
+              
+              <motion.div className="last-section-content" style={{ y: section2Content }}>
+                <ParallaxMotion speedX={30} speedY={32} easing={[0.17, 0.67, 0.3, 0.99]}>
+                  <h3>Application process</h3>
+                </ParallaxMotion>
+                <ParallaxMotion speedX={30} speedY={32} easing={[0.17, 0.67, 0.3, 0.99]}>
+                  <p>We run two application pushes a year, in February and September, but since we know building a company doesn’t look at the time, we have room for exceptional cases when timing matters.</p>
+                  <br />
+                  <p>Selected founders are invited to interviews with the Founders House Helsinki team. After that, the council chooses which founders receive Residency or Membership.</p>
+                </ParallaxMotion>
+              </motion.div>
+
+              <motion.div className="last-section-content" style={{ y: section2Content }}>
+                <ParallaxMotion speedX={50} speedY={52} easing={[0.17, 0.67, 0.3, 0.99]}>
+                  <h3 style={{ color: "white" }}>Join our community</h3>
+                </ParallaxMotion>
+                <ParallaxMotion speedX={50} speedY={52} easing={[0.17, 0.67, 0.3, 0.99]}>
+                  <p style={{ color: "white" }}>We’re also hosting a few open community events during the year, so if you want to be part of our community follow us on Linkedin and keep an eye on our Luma calendar so you don't miss out.</p>
+                </ParallaxMotion>
               </motion.div>
             </div>
 

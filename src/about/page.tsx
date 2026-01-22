@@ -103,9 +103,9 @@ export default function AboutPage() {
       const windowHeight = window.innerHeight;
       // When the top of section-3 is above the bottom by half its height
       if (rect.top < windowHeight - rect.height / 8) {
-        revealerControls.start({ y: "100%" }); // Move up (adjust as needed)
+        revealerControls.start({ x: "-100%" }); // Move up (adjust as needed)
       } else {
-        revealerControls.start({ y: "0%" }); // Original position
+        revealerControls.start({ x: "0" }); // Original position
       }
     };
     window.addEventListener("scroll", handleScroll);
@@ -289,11 +289,11 @@ export default function AboutPage() {
                 </ParallaxMotion>
               </motion.div>        
               
-                <motion.div className="section-2-content" style={{ y: section2Content }}>
-                  <ParallaxMotion speedX={30} speedY={32} easing={[0.17, 0.67, 0.3, 0.99]}>
-                    <p>Founders House Helsinki is the hub for Finland’s most promising next-gen startups. A home for builders who move faster than anyone else, think differently, and raise the bar for everyone around them.</p>
-                  </ParallaxMotion>
-                </motion.div>
+              <motion.div className="section-2-content" style={{ y: section2Content }}>
+                <ParallaxMotion speedX={30} speedY={32} easing={[0.17, 0.67, 0.3, 0.99]}>
+                  <p>Founders House Helsinki is the hub for Finland’s most promising next-gen startups. A home for builders who move faster than anyone else, think differently, and raise the bar for everyone around them.</p>
+                </ParallaxMotion>
+              </motion.div>
             </div>
 
             <motion.div className="section-3" style={{ y: section3 }} ref={section3Ref}>
@@ -386,9 +386,10 @@ export default function AboutPage() {
               <div className="team-img-wrapper">
                 <ParallaxMotion speedX={15} speedY={15} easing={[0.17, 0.67, 0.3, 0.99]}>
                   <div className="team-img-container">
-                    {/*
-                    <img src={FOUNDERS_HOUSE_TEAM_IMG_SRC} alt="" />
-                    */}
+                    
+                    <img src={FOUNDERS_HOUSE_TEAM_IMG_SRC} alt="Founders House Team" />
+                    
+                    {/*}
                     <GridDistortion
                       imageSrc={FOUNDERS_HOUSE_TEAM_IMG_SRC}
                       grid={20}
@@ -397,6 +398,7 @@ export default function AboutPage() {
                       relaxation={0.95}
                       className="team-distortion-img"
                     />
+                    */}
                   </div>
                 </ParallaxMotion>
               </div>

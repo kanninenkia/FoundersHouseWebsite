@@ -16,7 +16,7 @@
 }
 
 .corner-element p {
-    font-family: 'IBMPlexSans', sans-serif;
+    font-family: 'IBM Plex Sans', sans-serif;
     font-size: 0.9rem;
     font-weight: 500;
     color: #D82E11;
@@ -68,7 +68,7 @@
     display: flex;
     flex-direction: column;
     width: 92%;
-    height: 70%;
+    height: 78%;
     margin-left: 4%;
     justify-content: space-between;
     align-items: flex-start;
@@ -98,7 +98,7 @@
     font-size: 2.2rem;
     line-height: 2.5rem;
     letter-spacing: -0.04rem;
-    font-weight: 500;
+    font-weight: 600;
     text-transform: uppercase;
     color: #D82E11;
     margin: 0;
@@ -112,8 +112,222 @@
     width: 100vw;
     background-color: #2B0906;
     overflow: hidden;
-    padding: 3% 0 25% 0;
+    padding: 3% 5% 15% 5%;
     z-index: 5;
 }
 
+.section-2 .content-wrapper {
+    position: relative;
+    display: flex;
+    flex-direction: row;
+    gap: 40px;
+}
+
+.section-2 .content-wrapper .join-type {
+    position: relative;
+    flex: 1;
+}
+
+.section-2 .content-wrapper .type-resident .first-border {
+    border: solid 4px #D82E11;
+}
+.section-2 .content-wrapper .type-resident .first-border h2 {
+    color: #D82E11;
+}
+.section-2 .content-wrapper .type-resident .second-border{
+    border: solid 4px #D82E11;
+}
+
+.section-2 .content-wrapper .type-member .first-border {
+    border: solid 4px #9E1B1E;
+}
+.section-2 .content-wrapper .type-member .first-border h2 {
+    color: #9E1B1E;
+}
+.section-2 .content-wrapper .type-member .second-border{
+    border: solid 4px #9E1B1E;
+}
+
+.section-2 .content-wrapper .join-type .first-border {
+    padding: 60px 50px 80px 50px;
+    min-height: 450px;
+}
+
+.section-2 .content-wrapper .join-type .first-border h2 {
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 4rem;
+    line-height: 3.2rem;
+    font-weight: 700;
+    margin: 0 0 20px 0;
+}
+
+.section-2 .content-wrapper .join-type .first-border p {
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 1.1rem;
+    line-height: 1.5rem;
+    font-weight: 300;
+    color: #FFF8F2;
+    margin: 0 0 20px 0;
+}
+
+.section-2 .content-wrapper .join-type .second-border {
+    position: absolute;
+    height: 100%;
+    width: 100%;
+    top: -20px;
+    left: -20px;
+}
+
+.section-2 .content-wrapper .join-type .type-img-container {
+    overflow: hidden;
+    position: relative;
+}
+
+.section-2 .content-wrapper .join-type .type-img-container img {
+    width: 100%;
+    height: 300px;
+    object-fit: cover;
+    filter: grayscale(0.9) brightness(0.7);
+    transition: filter 0.3s cubic-bezier(.4,0,.2,1);
+}
+
+.section-2 .content-wrapper .join-type:hover .type-img-container img {
+    filter: grayscale(0) brightness(0.9);
+}
+
+/* Animated squares for type-img-container */
+.img-square {
+    position: absolute;
+    width: 30px;
+    height: 30px;
+    background: #D82E11;
+        opacity: 0;
+        transition:
+            opacity 0.35s cubic-bezier(.4,0,.2,1);
+    z-index: 2;
+}
+
+/* Top-left squares */
+.square-tl-1 { top: 0px; left: 0px; }
+.square-tl-2 { top: 30px; left: 30px; }
+.square-tl-3 { top: 60px; left: 0px; }
+/* Bottom-right squares */
+.square-br-1 { bottom: 6px; right: 30px; }
+.square-br-2 { bottom: 36px; right: 0px; }
+.square-br-3 { bottom: 36px; right: 60px; }
+
+/* Animate squares on hover of join-type */
+.join-type:hover .img-square.square-tl-1 {
+    opacity: 1;
+    transition-delay: 0.1s;
+}
+.join-type:hover .img-square.square-tl-2 {
+    opacity: 1;
+    transition-delay: 0.18s;
+}
+.join-type:hover .img-square.square-tl-3 {
+    opacity: 1;
+    transition-delay: 0.26s;
+}
+.join-type:hover .img-square.square-br-1 {
+    opacity: 1;
+    transition-delay: 0.12s;
+}
+.join-type:hover .img-square.square-br-2 {
+    opacity: 1;
+    transition-delay: 0.20s;
+}
+.join-type:hover .img-square.square-br-3 {
+    opacity: 1;
+    transition-delay: 0.28s;
+}
+
+/* Member block squares (different pattern) */
+.member-square-tr-1 { top: 0px; right: 30px; }
+.member-square-tr-2 { top: 30px; right: 0px; }
+.member-square-tr-3 { top: 60px; right: 30px; }
+.member-square-bl-1 { bottom: 6px; left: 0px; }
+.member-square-bl-2 { bottom: 36px; left: 0px; }
+.member-square-bl-3 { bottom: 66px; left: 60px; }
+
+.join-type.type-member:hover .img-square.member-square-tr-1 {
+    opacity: 1;
+    transition-delay: 0.1s;
+}
+.join-type.type-member:hover .img-square.member-square-tr-2 {
+    opacity: 1;
+    transition-delay: 0.18s;
+}
+.join-type.type-member:hover .img-square.member-square-tr-3 {
+    opacity: 1;
+    transition-delay: 0.26s;
+}
+.join-type.type-member:hover .img-square.member-square-bl-1 {
+    opacity: 1;
+    transition-delay: 0.12s;
+}
+.join-type.type-member:hover .img-square.member-square-bl-2 {
+    opacity: 1;
+    transition-delay: 0.20s;
+}
+.join-type.type-member:hover .img-square.member-square-bl-3 {
+    opacity: 1;
+    transition-delay: 0.28s;
+}
+
+.section-2 .first-border .button {
+    margin-top: 20px;
+}
+
 /*----------------------------------------------*/
+
+.last-section {
+    position: relative;
+    width: 100vw;
+    overflow: hidden;
+    padding: 0 0 25% 0;
+    z-index: 5;
+}
+
+.last-section-bg-container {
+    position: absolute;
+    width: 100%;
+    height: 140%;
+    z-index: 1;
+    filter: brightness(0.5);
+}
+
+.last-section-bg {
+    width: 100%;
+}
+
+.last-section-content {
+    position: relative;
+    z-index: 99;
+    margin-left: 8%;
+    margin-top: 6%;
+    width: 40%;
+}
+
+.last-section-content h3 {
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 3rem;
+    letter-spacing: -0.04rem;
+    line-height: 3.5rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: #D82E11;
+    margin-bottom: 20px;
+}
+
+.last-section-content p {
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 1.2rem;
+    letter-spacing: -0.02rem;
+    line-height: 2rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    color: #D82E11;
+    text-wrap: balance;
+    pointer-events: none;
+}
