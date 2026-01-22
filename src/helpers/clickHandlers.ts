@@ -51,17 +51,5 @@ export function setupClickHandler(
  * Log click point for POI setup
  */
 function logClickPoint(intersection: THREE.Intersection): void {
-  const point = intersection.point
-
-  console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
-  console.log('📍 CLICKED LOCATION COORDINATES')
-  console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
-  console.log('World Coordinates:')
-  console.log(`  x: ${point.x.toFixed(2)}`)
-  console.log(`  y: ${point.y.toFixed(2)}`)
-  console.log(`  z: ${point.z.toFixed(2)}`)
-  console.log('')
-  console.log('Copy-paste ready format:')
-  console.log(`{ x: ${point.x.toFixed(2)}, y: ${point.y.toFixed(2)}, z: ${point.z.toFixed(2)} }`)
-  console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━')
+  // Disabled - use camera position logging after POI animation instead
 }

@@ -24,6 +24,7 @@ import {
 import { AutoTourManager, POIHighlightManager, FoundersHouseMarker } from './managers'
 import { COLORS } from '../constants/designSystem'
 import { POINTS_OF_INTEREST, FOUNDERS_HOUSE_SCREEN_POS } from '../constants/poi'
+import { MAP_BOUNDARIES } from '../constants/mapBoundaries'
 
 export interface SceneConfig {
   container: HTMLElement
@@ -102,6 +103,9 @@ export class HelsinkiScene {
       this.setupInteractionListeners()
     }
 
+    // Add boundary wireframe box
+    this.createBoundaryWireframe()
+
     loadDualModels({
       mainMapPath: '/models/fh.glb',
       scene: this.scene,
@@ -120,6 +124,27 @@ export class HelsinkiScene {
 
     this._cleanupClickHandler = setupClickHandler(this.renderer, this.camera, () => this.helsinkiModel)
     window.addEventListener('resize', this.onWindowResize)
+  }
+
+  private createBoundaryWireframe(): void {
+    // Create a wireframe box at the map boundaries
+    const sizeX = MAP_BOUNDARIES.x.max - MAP_BOUNDARIES.x.min
+    const sizeZ = MAP_BOUNDARIES.z.max - MAP_BOUNDARIES.z.min
+    const height = 400  // Height of the wireframe walls
+
+    const geometry = new THREE.BoxGeometry(sizeX, height, sizeZ)
+    const edges = new THREE.EdgesGeometry(geometry)
+    const material = new THREE.LineBasicMaterial({
+      color: this.isNightMode ? 0x4a5568 : 0x94a3b8,
+      transparent: true,
+      opacity: 0.3
+    })
+    const wireframe = new THREE.LineSegments(edges, material)
+
+    // Position the box at ground level
+    wireframe.position.set(0, height / 2 - 50, 0)
+
+    this.scene.add(wireframe)
   }
 
   private generatePerlinTexture(): THREE.DataTexture {
@@ -240,8 +265,9 @@ export class HelsinkiScene {
       clamped = true
     }
 
-    if (this.camera.position.y < 220) {
-      this.camera.position.y = 220
+    // Maintain reasonable camera height when user is in control
+    if (this.camera.position.y < 80) {
+      this.camera.position.y = 80
       clamped = true
     }
     if (this.camera.position.y > 300) {
@@ -259,20 +285,18 @@ export class HelsinkiScene {
     const elapsed = this.clock.getElapsedTime()
     const delta = this.clock.getDelta()
 
-    this.enforceCameraBoundaries()
+    // Smooth POI animation system - DISABLE interruptions during POI animations
+    const isPOIAnimating = this.poiAnimation && this.poiAnimation.isActive
 
-    // Smooth POI animation system
-    if (this.controls.isUserInteracting()) {
-      const wasAnimating = (this.poiAnimation && this.poiAnimation.isActive) || this.autoTourManager.isWaiting()
+    // Only enforce camera boundaries when NOT animating to a POI
+    if (!isPOIAnimating) {
+      this.enforceCameraBoundaries()
+    }
+
+    if (this.controls.isUserInteracting() && !isPOIAnimating) {
+      const wasAnimating = this.autoTourManager.isWaiting()
 
       if (wasAnimating) {
-        const currentVelocity = this.poiAnimation?.currentVelocity?.clone() || new THREE.Vector3()
-
-        if (this.poiAnimation && this.poiAnimation.isActive) {
-          interruptSmoothPOIAnimation(this.poiAnimation)
-          this.poiAnimation = null
-        }
-
         this.autoTourManager.setWaiting(false)
         this.autoTourManager.stop()
         this.poiHighlightManager.clearHighlights()
@@ -285,10 +309,6 @@ export class HelsinkiScene {
         newTarget.y = Math.max(newTarget.y, 10)
 
         this.controls.setTarget(newTarget.x, newTarget.y, newTarget.z)
-
-        if (this.controls.applyHandoffVelocity && currentVelocity.length() > 0) {
-          this.controls.applyHandoffVelocity(currentVelocity)
-        }
       }
 
       this.controls.resetInteractionFlag()
@@ -297,7 +317,7 @@ export class HelsinkiScene {
 
     let currentCameraTarget = this.controls.target || new THREE.Vector3(0, 0, 0)
 
-    if (this.poiAnimation && this.poiAnimation.isActive) {
+    if (isPOIAnimating) {
       const result = updateSmoothPOIAnimation(this.poiAnimation, this.camera, elapsed, delta)
       currentCameraTarget = result.currentTarget
 
@@ -305,8 +325,6 @@ export class HelsinkiScene {
         this.poiAnimation = null
       }
     }
-
-    const isPOIAnimating = this.poiAnimation && this.poiAnimation.isActive
 
     if (!isPOIAnimating) {
       this.controls.update(delta)
@@ -557,9 +575,10 @@ export class HelsinkiScene {
     const desiredAzimuth = azimuth ?? poi.cameraView?.azimuth ?? 90
     const desiredElevation = elevation ?? poi.cameraView?.elevation ?? 40
 
-    const finalDistance = Math.max(200, Math.min(900, desiredDistance))
+    // Use requested values with reasonable bounds
+    const finalDistance = Math.max(400, Math.min(900, desiredDistance))
     const finalAzimuth = desiredAzimuth
-    const finalElevation = Math.max(8, Math.min(15, desiredElevation))
+    const finalElevation = Math.max(20, Math.min(45, desiredElevation))
 
     if (animated) {
       this.poiHighlightManager.clearHighlights()
@@ -620,7 +639,21 @@ export class HelsinkiScene {
           () => {
             this.poiHighlightManager.highlightPOI(poiName, 200)
             this.controls.setTarget(clampedPOITarget.x, clampedPOITarget.y, clampedPOITarget.z)
-            this.controls.minDistance = 700
+
+            // Set camera distance constraints to maintain zoom level after handoff
+            const currentDistance = this.camera.position.distanceTo(new THREE.Vector3(clampedPOITarget.x, clampedPOITarget.y, clampedPOITarget.z))
+            this.controls.minDistance = currentDistance * 0.8  // Allow slight zoom in
+            this.controls.maxDistance = currentDistance * 1.5  // Allow some zoom out
+
+            // Update polar angle constraints to allow current elevation angle
+            // This prevents the camera from being forced down to 8-15° elevation after handoff
+            const currentElevationDeg = finalElevation
+            const minElevationDeg = Math.max(currentElevationDeg - 10, 15)  // Allow 10° down from current, min 15°
+            const maxElevationDeg = Math.min(currentElevationDeg + 15, 60)  // Allow 15° up from current, max 60°
+
+            // Convert to polar angles (polar angle = 90° - elevation angle)
+            this.controls.maxPolarAngle = THREE.MathUtils.degToRad(90 - minElevationDeg)
+            this.controls.minPolarAngle = THREE.MathUtils.degToRad(90 - maxElevationDeg)
 
             if (this.controls.syncInternalState) {
               this.controls.syncInternalState()

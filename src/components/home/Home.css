@@ -863,3 +863,34 @@
 /* Floating images and decorative squares: Let Framer Motion handle layer promotion */
 /* Removed will-change and backface-visibility to prevent compositing layer conflicts */
 /* Framer Motion manages its own GPU acceleration for 3D transforms */
+
+/* ==================== HOME PAGE FOOTER OVERRIDE ==================== */
+/* Tighter, more compact footer styling for home page */
+
+.home-footer-wrapper .footer {
+  padding: 2vh 0 1.5vh;
+  max-height: 25vh;
+  gap: 0;
+  border-top: none; /* Remove top divider line */
+  transform: scale(1.02); /* Make whole footer 2% bigger */
+  transform-origin: bottom center;
+}
+
+.home-footer-wrapper .footer-sponsors {
+  width: 100%;
+}
+
+.home-footer-wrapper .footer-divider {
+  width: 100%;
+  height: 1px;
+  background: rgba(255, 248, 242, 0.15);
+}
+
+.home-footer-wrapper .footer-content {
+  width: 100%;
+}
+
+/* Hide Supercell logo on home page to match old design */
+.home-footer-wrapper .sponsor-logo:nth-child(3) {
+  display: none;
+}

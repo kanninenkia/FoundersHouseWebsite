@@ -1,5 +1,6 @@
 import React from 'react'
 import './Footer.css'
+import { MagneticElement } from './MagneticElement'
 
 const Footer: React.FC = () => {
   return (
@@ -65,36 +66,52 @@ const Footer: React.FC = () => {
         <div className="footer-links">
           {/* Column 1: Map */}
           <div className="footer-column">
-            <a href="/" className="footer-link footer-heading">MAP</a>
-            <a href="/home" className="footer-link">HOME</a>
+            <MagneticElement strength={0.3} range={80}>
+              <a href="/" className="footer-link footer-heading">MAP</a>
+            </MagneticElement>
+            <MagneticElement strength={0.3} range={80}>
+              <a href="/home" className="footer-link">HOME</a>
+            </MagneticElement>
           </div>
 
           {/* Column 2: About */}
           <div className="footer-column">
-            <a href="/about" className="footer-link footer-heading">ABOUT</a>
-            <a href="/events" className="footer-link">EVENTS</a>
+            <MagneticElement strength={0.3} range={80}>
+              <a href="/about" className="footer-link footer-heading">ABOUT</a>
+            </MagneticElement>
+            <MagneticElement strength={0.3} range={80}>
+              <a href="/events" className="footer-link">EVENTS</a>
+            </MagneticElement>
           </div>
 
           {/* Column 3: News */}
           <div className="footer-column">
-            <a href="/join" className="footer-link footer-heading">JOIN</a>
-            <a href="/privacy" className="footer-link">PRIVACY POLICIES</a>
+            <MagneticElement strength={0.3} range={80}>
+              <a href="/join" className="footer-link footer-heading">JOIN</a>
+            </MagneticElement>
+            <MagneticElement strength={0.3} range={80}>
+              <a href="/privacy" className="footer-link">PRIVACY POLICIES</a>
+            </MagneticElement>
           </div>
         </div>
 
         {/* Right Column: Contact Info */}
         <div className="footer-contact">
-          <a href="mailto:contact@founders-house.com" className="footer-link">
-            CONTACT@FOUNDERS-HOUSE.COM
-          </a>
-          <a
-            href="https://linkedin.com"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="footer-link"
-          >
-            LINKEDIN
-          </a>
+          <MagneticElement strength={0.3} range={80}>
+            <a href="mailto:contact@founders-house.com" className="footer-link">
+              CONTACT@FOUNDERS-HOUSE.COM
+            </a>
+          </MagneticElement>
+          <MagneticElement strength={0.3} range={80}>
+            <a
+              href="https://linkedin.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="footer-link"
+            >
+              LINKEDIN
+            </a>
+          </MagneticElement>
           <p className="footer-address">SÄHKÖTALO, 00100 HELSINKI</p>
         </div>
       </div>

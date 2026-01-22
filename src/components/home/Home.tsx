@@ -5,7 +5,7 @@ import { HomeHeader, OpeningSection } from './sections/header'
 import { QuotesSection } from './sections/quotes'
 import { ScrollPhasesContainer } from './sections/scroll-phases'
 import { CTASection } from './sections/cta'
-import { Footer } from './sections/footer'
+import Footer from '../Footer'
 import { ANIMATION_CONFIG, EASING } from './config/animationConfig'
 import { useMouseParallax } from './hooks/useMouseParallax'
 import { useVirtualScroll } from './hooks/useVirtualScroll'
@@ -199,11 +199,16 @@ export const Home = () => {
         horsesOpacity={scrollPhases.horsesOpacity}
         ctaTextY={scrollPhases.ctaTextY}
         horsesY={scrollPhases.horsesY}
+        ctaTextParallaxX={parallaxValues.ctaTextParallaxX}
+        ctaTextParallaxY={parallaxValues.ctaTextParallaxY}
+        horsesImageParallaxX={parallaxValues.horsesImageParallaxX}
+        horsesImageParallaxY={parallaxValues.horsesImageParallaxY}
       />
 
       {/* Footer - Fixed position, independent of CTA scroll */}
-      {virtualScrollValues.zScrollComplete && (
+      {virtualScrollValues.zScrollComplete && scrollPhases.footerOpacity > 0 && (
         <motion.div
+          className="home-footer-wrapper"
           style={{
             position: 'fixed',
             bottom: 0,
@@ -214,7 +219,7 @@ export const Home = () => {
             pointerEvents: scrollPhases.footerOpacity > 0 ? 'auto' : 'none',
           }}
         >
-          <Footer footerOpacity={scrollPhases.footerOpacity} />
+          <Footer />
         </motion.div>
       )}
     </motion.div>

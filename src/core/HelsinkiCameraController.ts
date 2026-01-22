@@ -90,10 +90,10 @@ export class HelsinkiCameraController {
     this.orbit.panSpeed = this.panSpeed
     this.orbit.target.copy(this.target)
 
-    if (this.horizontalDragEnabled) {
-      this.orbit.enableRotate = false
-      this.orbit.enablePan = false
-    }
+    // Disable rotation and zoom for normal dragging - only allow panning
+    this.orbit.enableRotate = false
+    this.orbit.enableZoom = false
+    this.orbit.enablePan = true
 
     if (!mouseMoveOnly) {
       this.setupInteractionListeners()

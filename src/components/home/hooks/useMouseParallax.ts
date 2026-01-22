@@ -3,9 +3,13 @@
  * Manages all mouse-based parallax effects for the LearnMore page
  */
 
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import { useMotionValue, useSpring, useTransform, MotionValue } from 'framer-motion'
 import { ANIMATION_CONFIG } from '../config/animationConfig'
+
+// Detect Safari for browser-specific optimizations
+const isSafari = typeof navigator !== 'undefined' &&
+  /^((?!chrome|android).)*safari/i.test(navigator.userAgent)
 
 export interface MouseParallaxValues {
   // Raw mouse position values
@@ -61,6 +65,12 @@ export interface MouseParallaxValues {
   fourthDecorativeBoxParallaxY: MotionValue<number>
   fourthDecorativeTextParallaxX: MotionValue<number>
   fourthDecorativeTextParallaxY: MotionValue<number>
+
+  // CTA section parallax (Phase 5)
+  ctaTextParallaxX: MotionValue<number>
+  ctaTextParallaxY: MotionValue<number>
+  horsesImageParallaxX: MotionValue<number>
+  horsesImageParallaxY: MotionValue<number>
 }
 
 export const useMouseParallax = (): MouseParallaxValues => {
@@ -68,21 +78,47 @@ export const useMouseParallax = (): MouseParallaxValues => {
   const mouseX = useMotionValue(0)
   const mouseY = useMotionValue(0)
 
+  // Safari-optimized spring config: higher damping, lower stiffness for smoother motion
+  const springConfig = isSafari
+    ? { damping: 50, stiffness: 50, mass: 0.8, restDelta: 0.001 }
+    : ANIMATION_CONFIG.spring
+
   // Smoothed mouse position
-  const smoothMouseX = useSpring(mouseX, ANIMATION_CONFIG.spring)
-  const smoothMouseY = useSpring(mouseY, ANIMATION_CONFIG.spring)
+  const smoothMouseX = useSpring(mouseX, springConfig)
+  const smoothMouseY = useSpring(mouseY, springConfig)
+
+  // RAF throttling for Safari
+  const rafId = useRef<number | null>(null)
 
   // Setup mouse tracking
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
       const x = (e.clientX / window.innerWidth - 0.5) * 2
       const y = (e.clientY / window.innerHeight - 0.5) * 2
-      mouseX.set(x)
-      mouseY.set(y)
+
+      // Safari: throttle updates with RAF to reduce jitter
+      if (isSafari) {
+        if (rafId.current !== null) return
+
+        rafId.current = requestAnimationFrame(() => {
+          mouseX.set(x)
+          mouseY.set(y)
+          rafId.current = null
+        })
+      } else {
+        // Chrome: immediate updates for maximum smoothness
+        mouseX.set(x)
+        mouseY.set(y)
+      }
     }
 
-    window.addEventListener('mousemove', handleMouseMove)
-    return () => window.removeEventListener('mousemove', handleMouseMove)
+    window.addEventListener('mousemove', handleMouseMove, { passive: true })
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove)
+      if (rafId.current !== null) {
+        cancelAnimationFrame(rafId.current)
+      }
+    }
   }, [mouseX, mouseY])
 
   // Text parallax (for header text)
@@ -133,6 +169,12 @@ export const useMouseParallax = (): MouseParallaxValues => {
   const fourthDecorativeTextParallaxX = useTransform(smoothMouseX, [-1, 1], [-16, 16]) // Decorative text speed
   const fourthDecorativeTextParallaxY = useTransform(smoothMouseY, [-1, 1], [-16, 16])
 
+  // CTA section parallax - subtle movement for final section
+  const ctaTextParallaxX = useTransform(smoothMouseX, [-1, 1], [-15, 15]) // Text parallax
+  const ctaTextParallaxY = useTransform(smoothMouseY, [-1, 1], [-15, 15])
+  const horsesImageParallaxX = useTransform(smoothMouseX, [-1, 1], [-10, 10]) // Horses image parallax - slightly slower
+  const horsesImageParallaxY = useTransform(smoothMouseY, [-1, 1], [-10, 10])
+
   return {
     mouseX,
     mouseY,
@@ -168,5 +210,9 @@ export const useMouseParallax = (): MouseParallaxValues => {
     fourthDecorativeBoxParallaxY,
     fourthDecorativeTextParallaxX,
     fourthDecorativeTextParallaxY,
+    ctaTextParallaxX,
+    ctaTextParallaxY,
+    horsesImageParallaxX,
+    horsesImageParallaxY,
   }
 }

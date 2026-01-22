@@ -3,7 +3,7 @@
  * Phase 5 of the scroll animation
  */
 
-import { motion } from 'framer-motion'
+import { motion, MotionValue } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import './CTASection.css'
 
@@ -13,6 +13,10 @@ interface CTASectionProps {
   horsesOpacity: number
   ctaTextY: number
   horsesY: number
+  ctaTextParallaxX: MotionValue<number>
+  ctaTextParallaxY: MotionValue<number>
+  horsesImageParallaxX: MotionValue<number>
+  horsesImageParallaxY: MotionValue<number>
 }
 
 export const CTASection = ({
@@ -20,7 +24,11 @@ export const CTASection = ({
   ctaTextOpacity,
   horsesOpacity,
   ctaTextY,
-  horsesY
+  horsesY,
+  ctaTextParallaxX,
+  ctaTextParallaxY,
+  horsesImageParallaxX,
+  horsesImageParallaxY
 }: CTASectionProps) => {
   const navigate = useNavigate()
 
@@ -51,6 +59,8 @@ export const CTASection = ({
         style={{
           opacity: ctaTextOpacity,
           transform: `translateY(${ctaTextY}vh)`,
+          x: ctaTextParallaxX,
+          y: ctaTextParallaxY,
           width: '95%',
           maxWidth: '1572px',
           textAlign: 'justify',
@@ -81,6 +91,8 @@ export const CTASection = ({
         style={{
           opacity: horsesOpacity,
           transform: `translateY(${horsesY}vh) scaleY(0.9)`,
+          x: horsesImageParallaxX,
+          y: horsesImageParallaxY,
           marginTop: '5vh',
           width: '100%',
           maxWidth: '1572px',

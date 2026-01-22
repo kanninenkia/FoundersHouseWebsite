@@ -92,9 +92,9 @@ export const OURA_POI: PointOfInterest = {
     z: -517.65
   },
   cameraView: {
-    distance: 280,
+    distance: 450,
     azimuth: 90,
-    elevation: 40
+    elevation: 30
   }
 }
 
@@ -115,15 +115,15 @@ export const SUPERCELL_POI: PointOfInterest = {
     z: 295.63
   },
   cameraView: {
-    distance: 320,
+    distance: 450,
     azimuth: 90,
-    elevation: 40
+    elevation: 30
   }
 }
 
 /**
  * Relex
- * TODO: Click on the actual Relex building to get correct coordinates
+ * Note: Relex is not on the map - using placeholder coordinates
  */
 export const RELEX_POI: PointOfInterest = {
   id: 'relex',
@@ -139,33 +139,32 @@ export const RELEX_POI: PointOfInterest = {
     z: -400
   },
   cameraView: {
-    distance: 300,
+    distance: 450,
     azimuth: 90,
-    elevation: 40
+    elevation: 30
   }
 }
 
 /**
- * TOM (The Orthopedic Marketplace)
- * TODO: Click on the actual TOM building to get correct coordinates
+ * Silo
  */
-export const TOM_POI: PointOfInterest = {
-  id: 'tom',
-  name: 'TOM',
-  description: 'TOM - The Orthopedic Marketplace',
+export const SILO_POI: PointOfInterest = {
+  id: 'silo',
+  name: 'Silo',
+  description: 'Silo - Technology and innovation',
   mapCoords: {
-    x: -100,
-    y: 600
+    x: 65.16,
+    y: 371.43
   },
   worldCoords: {
-    x: -100,
-    y: -38,
-    z: -600
+    x: 65.16,
+    y: -51.58,
+    z: -371.43
   },
   cameraView: {
-    distance: 290,
+    distance: 450,
     azimuth: 90,
-    elevation: 40
+    elevation: 30
   }
 }
 
@@ -186,9 +185,9 @@ export const WOLT_POI: PointOfInterest = {
     z: -774.90
   },
   cameraView: {
-    distance: 300,
+    distance: 450,
     azimuth: 90,
-    elevation: 40
+    elevation: 30
   }
 }
 
@@ -209,105 +208,101 @@ export const LIFELINE_VENTURES_POI: PointOfInterest = {
     z: 594.14
   },
   cameraView: {
-    distance: 300,
+    distance: 450,
     azimuth: 90,
-    elevation: 40
+    elevation: 30
   }
 }
 
 /**
- * Varjo
- * TODO: Click on the actual Varjo building to get correct coordinates
+ * Swappie
  */
-export const VARJO_POI: PointOfInterest = {
-  id: 'varjo',
-  name: 'Varjo',
-  description: 'Varjo - Professional VR/XR headsets',
+export const SWAPPIE_POI: PointOfInterest = {
+  id: 'swappie',
+  name: 'Swappie',
+  description: 'Swappie - Refurbished smartphone marketplace',
   mapCoords: {
-    x: 600,
-    y: 400
+    x: -622.55,
+    y: 107.02
   },
   worldCoords: {
-    x: 600,
-    y: -45,
-    z: -400
+    x: -622.55,
+    y: -56.12,
+    z: -107.02
   },
   cameraView: {
-    distance: 295,
+    distance: 450,
     azimuth: 90,
-    elevation: 40
+    elevation: 30
   }
 }
 
 /**
  * Linear
- * TODO: Click on the actual Linear building to get correct coordinates
  */
 export const LINEAR_POI: PointOfInterest = {
   id: 'linear',
   name: 'Linear',
   description: 'Linear - Project management and issue tracking',
   mapCoords: {
-    x: 300,
-    y: -400
+    x: 163.29,
+    y: 289.33
   },
   worldCoords: {
-    x: 300,
-    y: -44,
-    z: 400
+    x: 163.29,
+    y: -36.12,
+    z: -289.33
   },
   cameraView: {
-    distance: 305,
+    distance: 450,
     azimuth: 90,
-    elevation: 40
+    elevation: 30
   }
 }
 
 /**
- * Distance
- * TODO: Click on the actual Distance building to get correct coordinates
+ * Smartly
  */
-export const DISTANCE_POI: PointOfInterest = {
-  id: 'distance',
-  name: 'Distance',
-  description: 'Distance - Technology and innovation',
+export const SMARTLY_POI: PointOfInterest = {
+  id: 'smartly',
+  name: 'Smartly',
+  description: 'Smartly - Social media advertising automation',
   mapCoords: {
-    x: 100,
-    y: -600
+    x: 432.35,
+    y: 1003.46
   },
   worldCoords: {
-    x: 100,
-    y: -46,
-    z: 600
+    x: 432.35,
+    y: -30.42,
+    z: -1003.46
   },
   cameraView: {
-    distance: 315,
+    distance: 450,
     azimuth: 90,
-    elevation: 40
+    elevation: 30
   }
 }
 
 /**
- * Swarmia
- * TODO: Click on the actual Swarmia building to get correct coordinates
+ * Illusian
  */
-export const SWARMIA_POI: PointOfInterest = {
-  id: 'swarmia',
-  name: 'Swarmia',
-  description: 'Swarmia - Engineering analytics and insights',
+export const ILLUSIAN_POI: PointOfInterest = {
+  id: 'illusian',
+  name: 'Illusian',
+  description: 'Illusian - Technology and innovation',
   mapCoords: {
-    x: -100,
-    y: -700
+    x: 948.37,
+    y: 664.52
   },
   worldCoords: {
-    x: -100,
-    y: -47,
-    z: 700
+    x: 948.37,
+    y: -40.69,
+    z: -664.52
   },
   cameraView: {
-    distance: 300,
+    distance: 450,
     azimuth: 90,
-    elevation: 40
+    elevation: 30
   }
 }
 
@@ -317,15 +312,15 @@ export const SWARMIA_POI: PointOfInterest = {
  * Order matches the landing page navigation (left to right)
  */
 export const POINTS_OF_INTEREST: Record<string, PointOfInterest> = {
-  SUPERCELL: SUPERCELL_POI,
-  RELEX: RELEX_POI,
-  OURA: OURA_POI,
-  WOLT: WOLT_POI,
   LIFELINE_VENTURES: LIFELINE_VENTURES_POI,
+  RELEX: RELEX_POI,
+  SUPERCELL: SUPERCELL_POI,
+  WOLT: WOLT_POI,
+  OURA: OURA_POI,
   FOUNDERS_HOUSE: FOUNDERS_HOUSE_POI,
-  VARJO: VARJO_POI,
-  TOM: TOM_POI,
   LINEAR: LINEAR_POI,
-  DISTANCE: DISTANCE_POI,
-  SWARMIA: SWARMIA_POI,
+  SILO: SILO_POI,
+  SWAPPIE: SWAPPIE_POI,
+  SMARTLY: SMARTLY_POI,
+  ILLUSIAN: ILLUSIAN_POI,
 }

@@ -70,24 +70,20 @@ export function createSmoothPOIAnimation(
   onComplete?: () => void,
   onInterrupt?: () => void
 ): SmoothPOIAnimation {
-  // Adjust distance and clamp to camera constraints (700-900)
-  let adjustedDistance = distance * 1.6
-  adjustedDistance = Math.max(700, Math.min(900, adjustedDistance))
+  // Use the requested distance directly
+  let adjustedDistance = distance
+  adjustedDistance = Math.max(50, Math.min(900, adjustedDistance))
 
-  // Convert angles to radians and clamp elevation to constraints (8-15°)
+  // Convert angles to radians - use elevation as requested without clamping
   const azimuthRad = THREE.MathUtils.degToRad(azimuth)
-  const clampedElevation = Math.max(8, Math.min(15, elevation))
-  const elevationRad = THREE.MathUtils.degToRad(clampedElevation)
+  const elevationRad = THREE.MathUtils.degToRad(elevation)
 
   // Calculate end camera position using spherical coordinates
   const horizontalDistance = adjustedDistance * Math.cos(elevationRad)
   const endCameraX = poiPosition.x + horizontalDistance * Math.cos(azimuthRad)
   const endCameraZ = poiPosition.z + horizontalDistance * Math.sin(azimuthRad)
-  // Calculate camera height
-  let endCameraY = poiPosition.y + adjustedDistance * Math.sin(elevationRad)
-
-  // CRITICAL: Clamp camera height to respect camera constraints (220-300)
-  endCameraY = Math.max(220, Math.min(300, endCameraY))
+  // Calculate camera height based on elevation angle
+  const endCameraY = poiPosition.y + adjustedDistance * Math.sin(elevationRad)
 
   return {
     isActive: true,
