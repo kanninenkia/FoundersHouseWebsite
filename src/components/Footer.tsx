@@ -77,7 +77,7 @@ const Footer: React.FC = () => {
 
           {/* Column 3: News */}
           <div className="footer-column">
-            <a href="/news" className="footer-link footer-heading">NEWS</a>
+            <a href="/join" className="footer-link footer-heading">JOIN</a>
             <a href="/privacy" className="footer-link">PRIVACY POLICIES</a>
           </div>
         </div>
