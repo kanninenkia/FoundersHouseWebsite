@@ -63,6 +63,18 @@ export class HelsinkiScene {
   private lastInteractionTime: number = Date.now()
   private initialLoadTime: number = Date.now()
   private lastHeroTextOpacity: number = -1
+  private originalMinPolarAngle: number | null = null
+  private originalMaxPolarAngle: number | null = null
+  private justFinishedPOIAnimation: boolean = false
+  private angleRestoreAnimation: {
+    active: boolean
+    startTime: number
+    duration: number
+    startPolarAngle: number
+    endPolarAngle: number
+    startHeight: number
+    endHeight: number
+  } | null = null
 
   public revealProgress: number = 0
 
@@ -83,6 +95,9 @@ export class HelsinkiScene {
     this.controls = new HelsinkiCameraController(this.camera, this.renderer.domElement, config.staticMode)
     if (!config.staticMode) {
       configureCameraControls(this.controls)
+      // Store original polar angle constraints to restore after POI animations
+      this.originalMinPolarAngle = this.controls.minPolarAngle
+      this.originalMaxPolarAngle = this.controls.maxPolarAngle
     }
     this.renderTarget = createRenderTarget()
     this.perlinTexture = this.generatePerlinTexture()
@@ -266,8 +281,8 @@ export class HelsinkiScene {
     }
 
     // Maintain reasonable camera height when user is in control
-    if (this.camera.position.y < 80) {
-      this.camera.position.y = 80
+    if (this.camera.position.y < 210) {
+      this.camera.position.y = 210
       clamped = true
     }
     if (this.camera.position.y > 300) {
@@ -294,25 +309,69 @@ export class HelsinkiScene {
     }
 
     if (this.controls.isUserInteracting() && !isPOIAnimating) {
-      const wasAnimating = this.autoTourManager.isWaiting()
-
-      if (wasAnimating) {
-        this.autoTourManager.setWaiting(false)
-        this.autoTourManager.stop()
-        this.poiHighlightManager.clearHighlights()
-
-        const currentTarget = this.controls.target || new THREE.Vector3(0, 0, 0)
-        const currentDistance = this.camera.position.distanceTo(currentTarget)
-        const direction = new THREE.Vector3()
-        this.camera.getWorldDirection(direction)
-        const newTarget = this.camera.position.clone().add(direction.multiplyScalar(currentDistance))
-        newTarget.y = Math.max(newTarget.y, 10)
-
-        this.controls.setTarget(newTarget.x, newTarget.y, newTarget.z)
+      // Cancel angle restoration if user interacts during it
+      if (this.angleRestoreAnimation && this.angleRestoreAnimation.active) {
+        this.angleRestoreAnimation.active = false
+        this.angleRestoreAnimation = null
       }
 
       this.controls.resetInteractionFlag()
-      this.autoTourManager.recordInteraction()
+      // Auto-tour manager disabled - no longer using inactivity timers
+    }
+
+    // Handle angle restoration animation
+    if (this.angleRestoreAnimation && this.angleRestoreAnimation.active) {
+      const currentTime = performance.now() / 1000
+      const elapsed = currentTime - this.angleRestoreAnimation.startTime
+      const t = Math.min(elapsed / this.angleRestoreAnimation.duration, 1.0)
+
+      // Ease out cubic for smooth deceleration
+      const eased = 1 - Math.pow(1 - t, 3)
+
+      const currentTarget = this.controls.target || new THREE.Vector3(0, 0, 0)
+      const currentDistance = this.camera.position.distanceTo(currentTarget)
+
+      // Interpolate polar angle
+      const newPolarAngle = THREE.MathUtils.lerp(
+        this.angleRestoreAnimation.startPolarAngle,
+        this.angleRestoreAnimation.endPolarAngle,
+        eased
+      )
+
+      // Get current azimuth
+      const cameraToTarget = new THREE.Vector3().subVectors(this.camera.position, currentTarget)
+      const currentSpherical = new THREE.Spherical().setFromVector3(cameraToTarget)
+
+      // Set camera position with interpolated polar angle
+      const newSpherical = new THREE.Spherical(currentDistance, newPolarAngle, currentSpherical.theta)
+      const offset = new THREE.Vector3().setFromSpherical(newSpherical)
+      this.camera.position.copy(currentTarget).add(offset)
+
+      // Interpolate height
+      const targetHeight = THREE.MathUtils.lerp(
+        this.angleRestoreAnimation.startHeight,
+        this.angleRestoreAnimation.endHeight,
+        eased
+      )
+      this.camera.position.y = targetHeight
+
+      this.camera.lookAt(currentTarget)
+
+      // Animation complete
+      if (t >= 1.0) {
+        this.angleRestoreAnimation.active = false
+        this.angleRestoreAnimation = null
+
+        // Restore original polar angle constraints
+        if (this.originalMinPolarAngle !== null && this.originalMaxPolarAngle !== null) {
+          this.controls.minPolarAngle = this.originalMinPolarAngle
+          this.controls.maxPolarAngle = this.originalMaxPolarAngle
+
+          if (this.controls.syncInternalState) {
+            this.controls.syncInternalState()
+          }
+        }
+      }
     }
 
     let currentCameraTarget = this.controls.target || new THREE.Vector3(0, 0, 0)
@@ -321,13 +380,49 @@ export class HelsinkiScene {
       const result = updateSmoothPOIAnimation(this.poiAnimation, this.camera, elapsed, delta)
       currentCameraTarget = result.currentTarget
 
+      // SMOOTH HANDOFF: During settling phase, pre-sync controller state
+      // This prevents snap by ensuring controller is ready before animation ends
+      if (result.isSettling && this.controls.syncInternalState) {
+        // Gradually sync internal state during the last 5% of animation
+        // This ensures baseCameraPosition, cameraTargetPosition etc are in sync
+        this.controls.syncInternalState()
+      }
+
       if (!result.stillAnimating) {
         this.poiAnimation = null
+        this.justFinishedPOIAnimation = true
       }
     }
 
-    if (!isPOIAnimating) {
+    const isAngleRestoring = this.angleRestoreAnimation && this.angleRestoreAnimation.active
+
+    if (!isPOIAnimating && !isAngleRestoring) {
+      if (this.justFinishedPOIAnimation) {
+        console.log('📹 BEFORE controls.update() (frame after animation):')
+        console.log('  Camera Position:', this.camera.position.toArray())
+        console.log('  Controls Target:', this.controls.target.toArray())
+        console.log('  Camera Rotation:', this.camera.rotation.toArray().slice(0, 3))
+      }
+
       this.controls.update(delta)
+
+      if (this.justFinishedPOIAnimation) {
+        console.log('📹 AFTER controls.update() (THE SNAP):')
+        console.log('  Camera Position:', this.camera.position.toArray())
+        console.log('  Controls Target:', this.controls.target.toArray())
+        console.log('  Camera Rotation:', this.camera.rotation.toArray().slice(0, 3))
+        console.log('  ⚠️  POSITION DELTA:', {
+          x: this.camera.position.x,
+          y: this.camera.position.y,
+          z: this.camera.position.z
+        })
+        this.justFinishedPOIAnimation = false
+      }
+    } else if (!isPOIAnimating && isAngleRestoring) {
+      // During angle restoration, keep target in sync but don't update controls
+      if (this.controls.target) {
+        this.controls.target.copy(currentCameraTarget)
+      }
     } else {
       if (this.controls.target) {
         this.controls.target.copy(currentCameraTarget)
@@ -412,29 +507,8 @@ export class HelsinkiScene {
   }
 
   private flyToNextPOI(): void {
-    if (!this.autoTourManager.enabled) {
-      this.autoTourManager.setWaiting(false)
-      return
-    }
-
-    if (this.autoTourManager.isComplete()) {
-      this.autoTourManager.handleCompletion(() => this.flyToNextPOI())
-      return
-    }
-
-    const poiName = this.autoTourManager.getNextPOI()
-    if (!poiName) return
-
-    this.focusPOI(poiName, undefined, undefined, undefined, 4.0, true, () => {
-      this.autoTourManager.advance()
-
-      if (this.autoTourManager.enabled && !this.autoTourManager.isComplete()) {
-        this.autoTourManager.scheduleNext(() => this.flyToNextPOI(), 1500)
-      } else if (this.autoTourManager.enabled) {
-        this.autoTourManager.setWaiting(false)
-        this.flyToNextPOI()
-      }
-    })
+    // Auto-tour disabled - this method is no longer used
+    return
   }
 
   public stopAutoTour(): void {
@@ -533,6 +607,12 @@ export class HelsinkiScene {
   ): void {
     const poi = POINTS_OF_INTEREST[poiName]
     if (!poi) return
+
+    // CRITICAL: Stop all camera momentum before starting POI animation
+    // This prevents teleportation when clicking "Learn More" while camera is moving
+    if (this.controls.syncInternalState) {
+      this.controls.syncInternalState()
+    }
 
     if (poiName === 'OURA' && animated) {
       this.poiHighlightManager.clearHighlights()
@@ -638,23 +718,24 @@ export class HelsinkiScene {
           duration,
           () => {
             this.poiHighlightManager.highlightPOI(poiName, 200)
+
+            // CRITICAL FIX: Use setTarget() method to properly sync orbit controls
+            // Then make camera look at target to prevent OrbitControls from recalculating
             this.controls.setTarget(clampedPOITarget.x, clampedPOITarget.y, clampedPOITarget.z)
+            this.camera.lookAt(clampedPOITarget.x, clampedPOITarget.y, clampedPOITarget.z)
 
             // Set camera distance constraints to maintain zoom level after handoff
             const currentDistance = this.camera.position.distanceTo(new THREE.Vector3(clampedPOITarget.x, clampedPOITarget.y, clampedPOITarget.z))
-            this.controls.minDistance = currentDistance * 0.8  // Allow slight zoom in
-            this.controls.maxDistance = currentDistance * 1.5  // Allow some zoom out
+            this.controls.minDistance = currentDistance * 0.8
+            this.controls.maxDistance = currentDistance * 1.5
 
-            // Update polar angle constraints to allow current elevation angle
-            // This prevents the camera from being forced down to 8-15° elevation after handoff
-            const currentElevationDeg = finalElevation
-            const minElevationDeg = Math.max(currentElevationDeg - 10, 15)  // Allow 10° down from current, min 15°
-            const maxElevationDeg = Math.min(currentElevationDeg + 15, 60)  // Allow 15° up from current, max 60°
+            // Restore original polar angle constraints
+            if (this.originalMinPolarAngle !== null && this.originalMaxPolarAngle !== null) {
+              this.controls.minPolarAngle = this.originalMinPolarAngle
+              this.controls.maxPolarAngle = this.originalMaxPolarAngle
+            }
 
-            // Convert to polar angles (polar angle = 90° - elevation angle)
-            this.controls.maxPolarAngle = THREE.MathUtils.degToRad(90 - minElevationDeg)
-            this.controls.minPolarAngle = THREE.MathUtils.degToRad(90 - maxElevationDeg)
-
+            // Sync all internal state to current camera position
             if (this.controls.syncInternalState) {
               this.controls.syncInternalState()
             }
@@ -726,5 +807,68 @@ export class HelsinkiScene {
 
   public setAutoCenteringEnabled(enabled: boolean): void {
     this.enableAutoCentering = enabled
+  }
+
+  /**
+   * Zoom directly into Founders House for "Learn More" transition
+   * Always zooms to the same endpoint for consistency
+   */
+  public zoomToFoundersHouse(onComplete?: () => void): void {
+    console.log('🚀 LEARN MORE CLICKED - Starting zoom to Founders House')
+    console.log('  Current Camera Position:', this.camera.position.toArray())
+    console.log('  Current Target:', this.controls.target ? this.controls.target.toArray() : 'none')
+    console.log('  Current Velocity:', (this.controls as any).velocity ? (this.controls as any).velocity.toArray() : 'none')
+    console.log('  Current Rotation Velocity:', (this.controls as any).rotationVelocity || 0)
+
+    // Stop all momentum
+    if (this.controls.syncInternalState) {
+      this.controls.syncInternalState()
+      console.log('  ✅ Momentum stopped via syncInternalState')
+    }
+
+    console.log('  Camera Position AFTER momentum stop:', this.camera.position.toArray())
+
+    // Target: Founders House building
+    const targetPos = new THREE.Vector3(30.77, -20.14, -533.42)
+
+    // Camera end position: Very close to building, looking straight at it
+    const cameraEndPos = new THREE.Vector3(30.77, 180, -300)
+
+    const startPos = this.camera.position.clone()
+    const startTarget = this.controls.target ? this.controls.target.clone() : new THREE.Vector3(0, 0, 0)
+
+    console.log('  Animation Start Position:', startPos.toArray())
+    console.log('  Animation Start Target:', startTarget.toArray())
+    console.log('  Animation End Position:', cameraEndPos.toArray())
+    console.log('  Animation End Target:', targetPos.toArray())
+
+    // Create direct zoom animation
+    // CRITICAL: Use this.clock.getElapsedTime() not performance.now() to match update loop
+    this.poiAnimation = {
+      isActive: true,
+      startTime: this.clock.getElapsedTime(),
+      duration: 1.2,
+      startCameraPosition: startPos,
+      startTargetPosition: startTarget,
+      endCameraPosition: cameraEndPos,
+      endTargetPosition: targetPos,
+      currentVelocity: new THREE.Vector3(),
+      currentTargetVelocity: new THREE.Vector3(),
+      onComplete: () => {
+        console.log('  ✅ Zoom animation completed')
+        if (this.controls.setTarget) {
+          this.controls.setTarget(targetPos.x, targetPos.y, targetPos.z)
+        }
+        if (this.controls.syncInternalState) {
+          this.controls.syncInternalState()
+        }
+        if (onComplete) {
+          onComplete()
+        }
+      },
+      onInterrupt: () => {
+        console.log('  ⚠️ Zoom animation interrupted')
+      }
+    }
   }
 }

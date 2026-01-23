@@ -70,6 +70,8 @@ export class HelsinkiCameraController {
   private _tempVector3: THREE.Vector3 = new THREE.Vector3();
   private _tempVector3_2: THREE.Vector3 = new THREE.Vector3();
   private _tempVector3_3: THREE.Vector3 = new THREE.Vector3();
+  private lookAtTargetBlend: number = 0; // 0 = free camera, 1 = locked to target
+  private lookAtTargetBlendSpeed: number = 0.05; // How fast to blend in/out (slower = smoother)
 
   constructor(camera: THREE.PerspectiveCamera, domElement: HTMLElement, mouseMoveOnly: boolean = false) {
     this.camera = camera
@@ -90,10 +92,11 @@ export class HelsinkiCameraController {
     this.orbit.panSpeed = this.panSpeed
     this.orbit.target.copy(this.target)
 
-    // Disable rotation and zoom for normal dragging - only allow panning
-    this.orbit.enableRotate = false
-    this.orbit.enableZoom = false
-    this.orbit.enablePan = true
+    // Disable OrbitControls rotation - we'll handle horizontal panning ourselves
+    if (this.horizontalDragEnabled) {
+      this.orbit.enableRotate = false
+      this.orbit.enablePan = false // We handle panning manually
+    }
 
     if (!mouseMoveOnly) {
       this.setupInteractionListeners()
@@ -201,12 +204,14 @@ export class HelsinkiCameraController {
 
   private handleWheelWithEasing = (event: WheelEvent): void => {
     if (!this.softBoundaryEnabled || !this.orbit) return
-    
+
+    // Don't instantly disable - let it fade out in update loop
+
     const zoomingIn = event.deltaY > 0 // Scroll down = zoom in (closer)
-    
+
     // Calculate easing factor using new method
     const easingFactor = this.calculateZoomEasing(zoomingIn)
-    
+
     // Apply eased zoom speed
     this.orbit.zoomSpeed = this.baseZoomSpeed * easingFactor
   }
@@ -377,7 +382,9 @@ export class HelsinkiCameraController {
     this.lastMouseX = event.clientX
     this.lastMouseY = event.clientY
     this.userInteracting = true
-    
+
+    // Don't instantly disable - let it fade out in update loop
+
     // Start dragging on left mouse button
     if (event.button === 0) {
       this.isDragging = true
@@ -619,6 +626,43 @@ export class HelsinkiCameraController {
     this.cameraTargetPosition.z += (intended.z - this.cameraTargetPosition.z) * this.cameraLerpAlpha;
     this.camera.position.copy(this.cameraTargetPosition);
 
+    // CRITICAL: Enforce camera height boundaries - NEVER allow camera to drop below minimum
+    const MIN_CAMERA_HEIGHT = 210
+    const MAX_CAMERA_HEIGHT = 300
+
+    if (this.camera.position.y < MIN_CAMERA_HEIGHT) {
+      this.camera.position.y = MIN_CAMERA_HEIGHT
+      this.cameraTargetPosition.y = MIN_CAMERA_HEIGHT
+      this.baseCameraPosition.y = MIN_CAMERA_HEIGHT
+    }
+    if (this.camera.position.y > MAX_CAMERA_HEIGHT) {
+      this.camera.position.y = MAX_CAMERA_HEIGHT
+      this.cameraTargetPosition.y = MAX_CAMERA_HEIGHT
+      this.baseCameraPosition.y = MAX_CAMERA_HEIGHT
+    }
+
+    // SMOOTH BLEND: Gradually fade out lookAt behavior when user interacts
+    // If user is interacting (dragging/zooming), fade out the blend
+    if (this.isDragging || this.velocity.length() > this.velocityThreshold || Math.abs(this.rotationVelocity) > this.rotationThreshold) {
+      // Fade out - smoothly reduce blend toward 0
+      this.lookAtTargetBlend = Math.max(0, this.lookAtTargetBlend - this.lookAtTargetBlendSpeed)
+    }
+
+    // CRITICAL FIX: Smoothly blend between lookAt (POI mode) and free camera (user control)
+    // This prevents snap when transitioning from POI to user control
+    if (this.lookAtTargetBlend > 0.001 && this.orbit && this.orbit.target) {
+      // Store current rotation
+      const currentRotation = this.camera.quaternion.clone()
+
+      // Calculate desired rotation (looking at target)
+      this.camera.lookAt(this.orbit.target)
+      const targetRotation = this.camera.quaternion.clone()
+
+      // Blend between current and target rotation
+      currentRotation.slerp(targetRotation, this.lookAtTargetBlend)
+      this.camera.quaternion.copy(currentRotation)
+    }
+
     // update target proxy
     if (this.orbit) this.target.copy(this.orbit.target)
   }
@@ -695,6 +739,14 @@ export class HelsinkiCameraController {
     // Reset all velocities and momentum
     this.velocity.set(0, 0, 0)
     this.rotationVelocity = 0
+
+    // CRITICAL: Reset parallax offsets to prevent snap after POI animation
+    // When animation hands off, parallax should start from zero
+    this.parallaxOffsetX = 0
+    this.parallaxOffsetY = 0
+
+    // Enable lookAt behavior after POI handoff - set to full blend
+    this.lookAtTargetBlend = 1.0
 
     // Sync orbit controls target
     if (this.orbit && this.orbit.target) {

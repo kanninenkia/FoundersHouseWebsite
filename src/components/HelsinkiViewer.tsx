@@ -429,8 +429,8 @@ export const HelsinkiViewer = ({
                 }
 
                 if (sceneRef.current) {
-                  sceneRef.current.focusPOI('FOUNDERS_HOUSE', 100, -136, 22, 1.2, true, () => {
-
+                  // Use dedicated zoom method for consistent transition
+                  sceneRef.current.zoomToFoundersHouse(() => {
                     if ((window as any).navigateToLearnMore) {
                       (window as any).navigateToLearnMore()
                     }
@@ -441,7 +441,7 @@ export const HelsinkiViewer = ({
                       }
                       setIsTransitionActive(false)
                     }, 1500)
-                  }, true)
+                  })
                 }
               }}
             >
@@ -458,7 +458,7 @@ export const HelsinkiViewer = ({
         </div>
       )}
 
-      {isDragging && scrollProgress >= 1 && (
+      {scrollProgress >= 1 && (
         <div
           className="drag-cursor-indicator"
           style={{
@@ -466,18 +466,7 @@ export const HelsinkiViewer = ({
             top: `${cursorPosition.y}px`,
           }}
         >
-          <svg viewBox="0 0 50 50" className="cursor-circle">
-            <circle
-              cx="25"
-              cy="25"
-              r="20"
-              fill="none"
-              stroke="#8B1215"
-              strokeWidth="0.8"
-              opacity="0.25"
-            />
-          </svg>
-          <div className="cursor-label">EXPLORE</div>
+          <img src="/icons/dragnexplore.svg" alt="Drag to explore" className="cursor-icon" />
         </div>
       )}
 

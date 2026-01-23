@@ -17,14 +17,14 @@
 export const MAP_BOUNDARIES = {
   // X-axis boundaries (east-west): ±1012.5m from origin
   x: {
-    min: -1012.5,       // Western boundary (-1012.5m)
-    max: 1012.5,        // Eastern boundary (+1012.5m)
+    min: -2012.5,       // Western boundary (-1012.5m)
+    max: 2012.5,        // Eastern boundary (+1012.5m)
   },
 
   // Z-axis boundaries (north-south): ±1012.5m from origin
   z: {
-    min: -1012.5,       // Southern boundary (-1012.5m)
-    max: 1012.5,        // Northern boundary (+1012.5m)
+    min: -2012.5,       // Southern boundary (-1012.5m)
+    max: 2012.5,        // Northern boundary (+1012.5m)
   }
 } as const
 
