@@ -35,6 +35,31 @@
 .custom-btn:hover .char-clone {
   transform: translateY(0);
 }
+
+@media (max-width: 768px) {
+  .custom-btn .char-original,
+  .custom-btn .char-clone {
+    transition: none;
+  }
+
+  .custom-btn .char-clone {
+    transform: translateY(100%);
+  }
+
+  .custom-btn:hover .char-original,
+  .custom-btn:hover .char-clone {
+    color: inherit;
+  }
+
+  .custom-btn:hover .char-original {
+    transform: none;
+  }
+
+  .custom-btn:hover .char-clone {
+    transform: translateY(100%);
+  }
+}
+
 .custom-btn-third {
   position: absolute;
   top: -8px;
@@ -110,4 +135,29 @@
 
 .custom-btn:active .custom-btn-bg {
   background: #A93226;
+}
+
+@media (max-width: 768px) {
+  .custom-btn .char-original,
+  .custom-btn .char-clone {
+    transition: none;
+  }
+
+  .custom-btn .char-clone {
+    display: none;
+    transform: translateY(100%);
+  }
+
+  .custom-btn:hover .char-original,
+  .custom-btn:hover .char-clone {
+    color: inherit;
+  }
+
+  .custom-btn:hover .char-original {
+    transform: none;
+  }
+
+  .custom-btn:hover .char-clone {
+    transform: translateY(100%);
+  }
 }

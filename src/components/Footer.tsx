@@ -1,4 +1,5 @@
 import React from 'react'
+import { Link } from 'react-router-dom'
 import './Footer.css'
 import { MagneticElement } from './MagneticElement'
 
@@ -48,13 +49,13 @@ const Footer: React.FC = () => {
       <div className="footer-content">
         {/* Left Column: Brand Logo */}
         <div className="footer-brand">
-          <a href="/">
+          <Link to="/">
             <img
               src="/logos/FHLOGO-footer.svg"
               alt="Founders House"
               className="footer-logo"
             />
-          </a>
+          </Link>
         </div>
 
         {/* Center: Footer Navigation Links */}
@@ -62,27 +63,27 @@ const Footer: React.FC = () => {
           {/* Column 1: Map */}
           <div className="footer-column">
             <MagneticElement strength={0.3} range={80}>
-              <a href="/" className="footer-link footer-heading">MAP</a>
+              <Link to="/" className="footer-link footer-heading">MAP</Link>
             </MagneticElement>
             <MagneticElement strength={0.3} range={80}>
-              <a href="/home" className="footer-link">HOME</a>
+              <Link to="/home" className="footer-link">HOME</Link>
             </MagneticElement>
           </div>
 
           {/* Column 2: About */}
           <div className="footer-column">
             <MagneticElement strength={0.3} range={80}>
-              <a href="/about" className="footer-link footer-heading">ABOUT</a>
+              <Link to="/about" className="footer-link footer-heading">ABOUT</Link>
             </MagneticElement>
             <MagneticElement strength={0.3} range={80}>
-              <a href="/events" className="footer-link">EVENTS</a>
+              <Link to="/events" className="footer-link">EVENTS</Link>
             </MagneticElement>
           </div>
 
           {/* Column 3: News */}
           <div className="footer-column">
             <MagneticElement strength={0.3} range={80}>
-              <a href="/join" className="footer-link footer-heading">JOIN</a>
+              <Link to="/join" className="footer-link footer-heading">JOIN</Link>
             </MagneticElement>
             <MagneticElement strength={0.3} range={80}>
               <a href="/privacy" className="footer-link">PRIVACY POLICIES</a>

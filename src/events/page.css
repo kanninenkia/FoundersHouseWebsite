@@ -88,6 +88,8 @@ body.events-cursor.events-cursor-interactive .custom-cursor {
     width: 90%;
     margin-left: 5%;
     line-height: 4.5rem;
+    margin-top: 0;
+    margin-bottom: 0;
 }
 
 .header-wrapper {
@@ -122,6 +124,10 @@ body.events-cursor.events-cursor-interactive .custom-cursor {
     font-weight: 600;
     color: #D82E11;
     margin: 0;
+}
+
+.calendar-button-wrapper {
+    margin-bottom: 1vh;
 }
 
 .header-date-location {
@@ -338,4 +344,203 @@ body.events-cursor.events-cursor-interactive .custom-cursor {
     max-height: 150px;
     transform: translate(-50%, -50%);
     filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.3));
+}
+
+@media (max-width: 768px) {
+    .events-page {
+        height: 100vh !important;
+        min-height: 100vh;
+        overflow: hidden !important;
+        overflow-x: hidden;
+    }
+
+    .events-header {
+        padding: 1.25rem;
+    }
+
+    .header-wrapper {
+        position: relative;
+        height: auto;
+        overflow: visible;
+    }
+
+    .header-content {
+        position: relative;
+        width: 90%;
+        height: auto;
+        margin-left: 5%;
+        margin-top: 14vh;
+        gap: 1vh;
+    }
+
+    .header-h1-wrapper {
+        height: calc(7rem * 0.85);
+        overflow: hidden;
+    }
+
+    .header-h1-wrapper .header-h1 {
+        font-size: calc(9.1rem * .6);
+        line-height: calc(7rem * 0.85);
+        margin-top: 1vh;
+        white-space: nowrap;
+        max-width: 100%;
+    }
+
+    .header-h1-wrapper .header-h1.is-event-title {
+        font-size: calc(9.1rem * 0.75);
+    }
+
+    .header-date-location {
+        position: static;
+        margin-top: 0;
+        transform: translateY(-1vh);
+        font-size: 1.4rem;
+        line-height: 1.6rem;
+    }
+
+    .header-h3-wrapper {
+        width: 100%;
+        gap: 1.2vh;
+    }
+
+    .header-h3 {
+        font-size: calc(1.1rem * 0.7);
+        line-height: 1.45rem;
+        margin-top: 1vh;
+    }
+
+    .header-h3-parallax {
+        flex-direction: column;
+        gap: 2vh;
+    }
+
+    .header-h3-wrapper a {
+        display: block;
+        width: 100%;
+        margin-top: 0;
+        transform: translateX(-1vh);
+    }
+
+    .calendar-button-wrapper {
+        margin-top: 1vh;
+        margin-bottom: 2vh;
+    }
+
+    .stage1-text-overlay {
+        margin-top: 10%;
+        gap: 12px;
+    }
+
+    .stage1-text-overlay .stage1-text-overlay-wrapper {
+        height: auto;
+        overflow: visible;
+    }
+
+    .stage1-text-overlay .stage1-text-overlay-h2 {
+        font-size: 2.8rem;
+        line-height: 2.6rem;
+    }
+
+    .events-calendar-button {
+        width: 100%;
+        transform: none;
+    }
+
+    .events-calendar-button:hover {
+        transform: none;
+    }
+
+    .events-calendar-button .custom-btn-content {
+        font-size: calc(1.4rem * 0.72);
+        padding: 0.25em 1.5em;
+        text-align: center;
+    }
+
+    .events-calendar-button .custom-btn-content {
+        text-align: center;
+    }
+
+    .events-scroll-container {
+        position: fixed;
+        left: 0;
+        bottom: 0;
+        right: 0;
+        width: 100vw;
+        height: 38vh;
+        padding: 0 5% 0;
+        cursor: auto;
+        overflow-x: auto;
+        overflow-y: hidden;
+        -webkit-overflow-scrolling: touch;
+        touch-action: pan-x;
+    }
+
+    .events-scroll-track {
+        padding: 0;
+        gap: 0;
+        align-items: flex-end;
+    }
+
+    .event-card {
+        width: 70vw;
+        height: 44vw;
+        margin-left: -18vw;
+    }
+
+    .event-card:nth-child(n) {
+        width: 70vw;
+        height: 44vw;
+    }
+
+    .event-card:first-child {
+        margin-left: 0;
+    }
+
+    .event-card:nth-child(1) {
+        margin-top: 0;
+    }
+
+    .event-card:nth-child(2) {
+        margin-top: 10vh;
+    }
+
+    .event-card:nth-child(3) {
+        margin-top: -9vh;
+    }
+
+    .event-card:nth-child(4) {
+        margin-top: 9vh;
+    }
+
+    .header-wrapper {
+        padding-bottom: 40vh;
+    }
+
+    html.events-cursor,
+    body.events-cursor,
+    html.events-cursor *,
+    body.events-cursor * {
+        cursor: auto !important;
+    }
+
+    .custom-cursor {
+        display: none;
+    }
+}
+
+@media (max-width: 480px) {
+    .event-card:nth-child(2) {
+        margin-top: 12vh;
+        transform: translateY(2vh);
+    }
+
+    .event-card:nth-child(3) {
+        margin-top: -11vh;
+        transform: translateY(-2vh);
+    }
+
+    .event-card:nth-child(4) {
+        margin-top: 11vh;
+        transform: translateY(2vh);
+    }
 }

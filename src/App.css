@@ -18,14 +18,14 @@ html, body, #root {
   width: 100%;
   min-height: 100vh;
   overflow: hidden;
-  background-color: #000000; /* Prevent white flash */
+  background-color: #590D0F; /* Match pixel transition background */
 }
 
 .App {
   width: 100%;
   min-height: 100vh;
   position: relative;
-  background-color: #000000; /* Prevent white flash during route changes */
+  background-color: #590D0F; /* Match pixel transition background */
 }
 
 /* Noise overlay covers the whole app */

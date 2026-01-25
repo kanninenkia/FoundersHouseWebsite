@@ -146,10 +146,13 @@ export function handleResize(
     window.innerHeight * cappedPixelRatio
   )
 
-  postProcessMaterial.uniforms.uResolution.value.set(
-    window.innerWidth * cappedPixelRatio,
-    window.innerHeight * cappedPixelRatio
-  )
+  const resolutionUniform = postProcessMaterial.uniforms?.uResolution
+  if (resolutionUniform && resolutionUniform.value && typeof resolutionUniform.value.set === 'function') {
+    resolutionUniform.value.set(
+      window.innerWidth * cappedPixelRatio,
+      window.innerHeight * cappedPixelRatio
+    )
+  }
 
   if (composer) {
     composer.setSize(

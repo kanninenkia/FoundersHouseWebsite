@@ -21,7 +21,7 @@ export const CAMERA_BASE = {
   // Ideal camera position - Hardcoded initial view
   position: {
     x: 292,
-    y: 195,
+    y: 220,
     z: -173
   },
 

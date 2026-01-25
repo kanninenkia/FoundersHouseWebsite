@@ -42,8 +42,12 @@ export const FullScreenMenu = ({ isOpen, onClose }: FullScreenMenuProps) => {
     if (path === '/') {
       sessionStorage.setItem('hasVisitedMap', 'true')
     }
+    // Navigate first (start pixel transition), then close menu after pixels cover
     navigate(path)
-    onClose()
+    // Close menu after pixel transition starts (let pixels cover the menu too)
+    setTimeout(() => {
+      onClose()
+    }, 100)
   }
 
   return (

@@ -1,129 +1,77 @@
 /**
- * TransitionOverlay.css - Flying elements during transition
+ * TransitionOverlay.css - Pixelation transition overlay
+ * Matches LoadingScreen pixel-reveal behavior
+ * Cross-browser optimized for consistent performance
  */
 
 .transition-overlay {
   position: fixed;
-  top: 0;
-  left: 0;
+  inset: 0;
   width: 100vw;
   height: 100vh;
   z-index: 9999;
   pointer-events: none;
   overflow: hidden;
-  perspective: 1000px;
-  perspective-origin: 50% 50%;
-  /* GPU acceleration */
+  /* Force GPU acceleration for consistent performance */
   transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.pixel-transition .pixel-block {
+  position: absolute;
+  background: #590D0F;
+  opacity: 0;
+  box-sizing: border-box;
   will-change: opacity;
-}
-
-/* Expanding red square */
-.transition-square {
-  position: absolute;
-  width: 100vw;
-  height: 100vw;
-  background-color: #C03434;
-  transform: translate(-50%, -50%);
-  transform-origin: center;
-  will-change: transform;
-  backface-visibility: hidden;
-  /* GPU acceleration */
-  transform: translate(-50%, -50%) translateZ(0);
-}
-
-/* Flying decorative squares - pass through completely */
-.transition-flying-square {
-  position: absolute;
-  background-color: #8B1215;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  will-change: transform, opacity;
-  backface-visibility: hidden;
-  /* GPU acceleration */
+  /* Force GPU acceleration per block */
   transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  /* Ensure crisp rendering on all devices */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-/* Position each square uniquely - spread across viewport */
-.transition-flying-square.square-0 {
-  width: 140px;
-  height: 140px;
-  top: 12%;
-  left: 18%;
+/* Pixel-out: blocks instantly appear at their delay time (like LoadingScreen) */
+.pixel-transition.pixel-out .pixel-block {
+  animation: blockReveal 0s forwards;
+  -webkit-animation: blockReveal 0s forwards;
+  /* animationDelay is set inline via style attribute */
 }
 
-.transition-flying-square.square-1 {
-  width: 90px;
-  height: 90px;
-  top: 58%;
-  left: 78%;
+/* Pixel-in: blocks instantly disappear at their delay time */
+.pixel-transition.pixel-in .pixel-block {
+  opacity: 1;
+  animation: blockDisappear 0s forwards;
+  -webkit-animation: blockDisappear 0s forwards;
+  /* animationDelay is set inline via style attribute */
 }
 
-.transition-flying-square.square-2 {
-  width: 160px;
-  height: 160px;
-  top: 38%;
-  left: 8%;
+/* Instant reveal - matches LoadingScreen's blockReveal */
+@keyframes blockReveal {
+  to {
+    opacity: 1;
+  }
 }
 
-.transition-flying-square.square-3 {
-  width: 100px;
-  height: 100px;
-  top: 22%;
-  left: 88%;
+@-webkit-keyframes blockReveal {
+  to {
+    opacity: 1;
+  }
 }
 
-.transition-flying-square.square-4 {
-  width: 120px;
-  height: 120px;
-  top: 72%;
-  left: 28%;
+/* Instant disappear for reveal effect */
+@keyframes blockDisappear {
+  to {
+    opacity: 0;
+  }
 }
 
-.transition-flying-square.square-5 {
-  width: 145px;
-  height: 145px;
-  top: 32%;
-  left: 62%;
-}
-
-.transition-flying-square.square-6 {
-  width: 105px;
-  height: 105px;
-  top: 82%;
-  left: 68%;
-}
-
-.transition-flying-square.square-7 {
-  width: 115px;
-  height: 115px;
-  top: 48%;
-  left: 42%;
-}
-
-.transition-flying-square.square-8 {
-  width: 95px;
-  height: 95px;
-  top: 18%;
-  left: 52%;
-}
-
-.transition-flying-square.square-9 {
-  width: 135px;
-  height: 135px;
-  top: 65%;
-  left: 15%;
-}
-
-.transition-flying-square.square-10 {
-  width: 110px;
-  height: 110px;
-  top: 45%;
-  left: 82%;
-}
-
-.transition-flying-square.square-11 {
-  width: 125px;
-  height: 125px;
-  top: 28%;
-  left: 38%;
+@-webkit-keyframes blockDisappear {
+  to {
+    opacity: 0;
+  }
 }

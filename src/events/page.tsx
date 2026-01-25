@@ -64,12 +64,17 @@ export default function EventsPage() {
   const cursorY = useMotionValue(0);
   const [showCustomCursor, setShowCustomCursor] = useState(false);
   const [displayedTitle, setDisplayedTitle] = useState("EVENTS");
+  const [isEventTitle, setIsEventTitle] = useState(false);
   const [displayedDateLocation, setDisplayedDateLocation] = useState("");
   const [hoveredCardId, setHoveredCardId] = useState<number | null>(null);
+  const [isMobile, setIsMobile] = useState(false);
+  const [isCardLocked, setIsCardLocked] = useState(false);
   const titleRef = useRef<HTMLHeadingElement>(null);
   const descriptionRef = useRef<HTMLHeadingElement>(null);
   const titleCleanupRef = useRef<(() => void) | null>(null);
   const descriptionCleanupRef = useRef<(() => void) | null>(null);
+  const fitTitleTimeoutRef = useRef<number | null>(null);
+  const isTouchingRef = useRef(false);
 
   //--------------------------------------//
   // Parallax on Elements Settings //
@@ -85,6 +90,62 @@ export default function EventsPage() {
       return () => clearTimeout(timer);
     }
   }, [stage]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const media = window.matchMedia("(max-width: 768px)");
+    const update = () => setIsMobile(media.matches);
+    update();
+    media.addEventListener("change", update);
+    return () => media.removeEventListener("change", update);
+  }, []);
+
+  const parallaxScale = isMobile ? 0.5 : 1;
+  const lockedBrightness = isCardLocked ? 0.36 : 0.4;
+
+  useEffect(() => {
+    if (!isMobile) {
+      setIsCardLocked(false);
+    }
+  }, [isMobile]);
+
+  const resetCardSelection = () => {
+    setHoveredCardId(null);
+    setDisplayedDateLocation("");
+    if (titleCleanupRef.current) {
+      titleCleanupRef.current();
+    }
+    if (descriptionCleanupRef.current) {
+      descriptionCleanupRef.current();
+    }
+    if (titleRef.current) {
+      titleCleanupRef.current = shuffleText(titleRef.current, "EVENTS", 400);
+      titleRef.current.style.fontSize = "";
+    }
+    if (descriptionRef.current) {
+      descriptionCleanupRef.current = shuffleText(
+        descriptionRef.current,
+        "Join us for inspiring events, networking opportunities, and community building sessions designed to accelerate your startup journey.",
+        300
+      );
+    }
+    setIsEventTitle(false);
+  };
+
+  useEffect(() => {
+    if (!isCardLocked) return;
+    const handlePointerDown = (event: PointerEvent) => {
+      const target = event.target as HTMLElement | null;
+      if (target && target.closest(".event-card")) {
+        return;
+      }
+      setIsCardLocked(false);
+      resetCardSelection();
+    };
+
+    document.addEventListener("pointerdown", handlePointerDown);
+    return () => document.removeEventListener("pointerdown", handlePointerDown);
+  }, [isCardLocked]);
 
   // Mouse wheel and drag horizontal scroll - from anywhere with momentum
   useEffect(() => {
@@ -254,6 +315,48 @@ export default function EventsPage() {
     };
   }, []);
 
+  const fitTitleToWidth = (text?: string) => {
+    const titleEl = titleRef.current;
+    if (!titleEl) return;
+
+    const isMobile = window.matchMedia("(max-width: 768px)").matches;
+    if (!isMobile) return;
+
+    const parent = titleEl.parentElement;
+    if (!parent) return;
+
+    const availableWidth = parent.clientWidth;
+    const computed = window.getComputedStyle(titleEl);
+    const currentSize = parseFloat(computed.fontSize);
+    if (!availableWidth || !currentSize) return;
+
+    let titleWidth = titleEl.scrollWidth;
+    if (text) {
+      const measurer = document.createElement("span");
+      measurer.textContent = text;
+      measurer.style.position = "absolute";
+      measurer.style.visibility = "hidden";
+      measurer.style.whiteSpace = "nowrap";
+      measurer.style.fontFamily = computed.fontFamily;
+      measurer.style.fontSize = computed.fontSize;
+      measurer.style.fontWeight = computed.fontWeight;
+      measurer.style.letterSpacing = computed.letterSpacing;
+      measurer.style.textTransform = computed.textTransform;
+      measurer.style.pointerEvents = "none";
+      document.body.appendChild(measurer);
+      titleWidth = measurer.offsetWidth;
+      document.body.removeChild(measurer);
+    }
+
+    if (titleWidth > availableWidth) {
+      const scale = availableWidth / titleWidth;
+      const newSize = Math.max(14, Math.floor(currentSize * scale));
+      titleEl.style.fontSize = `${newSize}px`;
+    } else {
+      titleEl.style.fontSize = "";
+    }
+  };
+
   return (
     <div
       className="events-page"
@@ -310,7 +413,7 @@ export default function EventsPage() {
         }
         transition={{ duration: 1.2, ease: [0.32, 0.26, 0, 1] }}
       >
-        <ParallaxMotion speedX={12} speedY={12} easing={[0.37, 0.67, 0.3, 0.97]} delay={12}>
+        <ParallaxMotion speedX={12 * parallaxScale} speedY={12 * parallaxScale} easing={[0.37, 0.67, 0.3, 0.97]} delay={12}>
           <motion.img
             className="stage1-img"
             src={HEADER_IMG_SRC}
@@ -319,7 +422,7 @@ export default function EventsPage() {
             animate={
                 stage === 1
                 ? { width: "100%", height: "100vh", position: "absolute", objectFit: "cover", filter: "grayscale(1) brightness(0.9)", scale: 1.4 }
-                : { width: "100%", height: "100vh", position: "absolute", objectFit: "cover", filter: "grayscale(1) brightness(0.4)", scale: 1.05 }
+                : { width: "100%", height: "100vh", position: "absolute", objectFit: "cover", filter: `grayscale(1) brightness(${lockedBrightness})`, scale: 1.05 }
             }
             transition={{ duration: 2, ease: [0.32, 0.26, 0, 1] }}
             style={{ y: headerBG }}
@@ -409,11 +512,11 @@ export default function EventsPage() {
           >
             <div className="header-wrapper" style={{pointerEvents: "none"}}>
               <motion.div className="header-content" style={{ y: headerContent }}>
-                <ParallaxMotion speedX={30} speedY={15} easing={[0.17, 0.67, 0.3, 0.99]} delay={10}>
+                <ParallaxMotion speedX={30 * parallaxScale} speedY={15 * parallaxScale} easing={[0.17, 0.67, 0.3, 0.99]} delay={10}>
                   <div className="header-h1-wrapper">
                     <motion.h1
                       ref={titleRef}
-                      className="header-h1"
+                      className={`header-h1${isEventTitle ? " is-event-title" : ""}`}
                       initial={{ y: 122 }}
                       animate={{ y: 0 }}
                       transition={{ delay: 2.4, duration: 1.3, ease: [0.11, 0.45, 0.08, 1.00] }}
@@ -433,11 +536,12 @@ export default function EventsPage() {
                 <div className="header-h3-wrapper">
                   <ParallaxMotion
                     className="header-h3-parallax"
-                    speedX={40}
-                    speedY={25}
+                    speedX={40 * parallaxScale}
+                    speedY={25 * parallaxScale}
                     easing={[0.17, 0.67, 0.3, 0.99]}
                   >
                     <motion.div
+                      className="calendar-button-wrapper"
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       transition={{ delay: 2.6, duration: 1, ease: [0.11, 0.45, 0.08, 1.00] }}
@@ -491,10 +595,10 @@ export default function EventsPage() {
               {eventsData.map((event, index) => {
                 // Different parallax speeds for each card
                 const speeds = [
-                  { speedX: 20, speedY: 10 },
-                  { speedX: 35, speedY: 18 },
-                  { speedX: 15, speedY: 8 },
-                  { speedX: 28, speedY: 14 }
+                  { speedX: 20 * parallaxScale, speedY: 10 * parallaxScale },
+                  { speedX: 35 * parallaxScale, speedY: 18 * parallaxScale },
+                  { speedX: 15 * parallaxScale, speedY: 8 * parallaxScale },
+                  { speedX: 28 * parallaxScale, speedY: 14 * parallaxScale }
                 ];
                 const speed = speeds[index % speeds.length];
 
@@ -517,9 +621,16 @@ export default function EventsPage() {
                   if (descriptionRef.current) {
                     descriptionCleanupRef.current = shuffleText(descriptionRef.current, event.description, 300);
                   }
+
+                  setIsEventTitle(true);
+                  if (fitTitleTimeoutRef.current !== null) {
+                    window.clearTimeout(fitTitleTimeoutRef.current);
+                  }
+                  fitTitleToWidth(event.title.toUpperCase());
                 };
 
                 const handleMouseLeave = () => {
+                  if (isTouchingRef.current || isCardLocked) return;
                   setHoveredCardId(null);
                   setDisplayedDateLocation("");
 
@@ -538,6 +649,31 @@ export default function EventsPage() {
                   if (descriptionRef.current) {
                     descriptionCleanupRef.current = shuffleText(descriptionRef.current, "Join us for inspiring events, networking opportunities, and community building sessions designed to accelerate your startup journey.", 300);
                   }
+
+                  setIsEventTitle(false);
+                  if (fitTitleTimeoutRef.current !== null) {
+                    window.clearTimeout(fitTitleTimeoutRef.current);
+                  }
+                  if (titleRef.current) {
+                    titleRef.current.style.fontSize = "";
+                  }
+                };
+
+                const handleTouchStart = () => {
+                  isTouchingRef.current = true;
+                  handleMouseEnter();
+                  setIsCardLocked(true);
+                };
+
+                const handleTouchEnd = () => {
+                  isTouchingRef.current = false;
+                };
+
+                const handleCardClick = (event: React.MouseEvent) => {
+                  if (event.detail > 1) return;
+                  if (!isMobile) return;
+                  handleMouseEnter();
+                  setIsCardLocked(true);
                 };
 
                 const isHovered = hoveredCardId === event.id;
@@ -562,6 +698,10 @@ export default function EventsPage() {
                     }}
                     onMouseEnter={handleMouseEnter}
                     onMouseLeave={handleMouseLeave}
+                    onTouchStart={handleTouchStart}
+                    onTouchEnd={handleTouchEnd}
+                    onTouchCancel={handleTouchEnd}
+                    onClick={handleCardClick}
                   >
                     <motion.div
                       className="event-card-inner"

@@ -61,6 +61,7 @@ export const AnimatedHamburger = ({ isOpen, onClick, color = '#FFF8F2' }: Animat
           stroke={color}
           strokeWidth="2"
           strokeLinecap="round"
+          initial={{ opacity: 1, scale: 1 }}
           animate={{
             opacity: isOpen ? 0 : 1,
             scale: isOpen ? 0 : 1,

@@ -2,10 +2,12 @@ import { useState, useEffect, useRef, lazy, Suspense } from 'react'
 import { BrowserRouter, Routes, Route, useNavigate, useLocation } from 'react-router-dom'
 import { LoadingScreen } from './components/LoadingScreen'
 import { TransitionOverlay } from './components/transition'
+import PageTransition from './components/PageTransition'
 import Lenis from 'lenis'
 import 'lenis/dist/lenis.css'
 import './App.css'
 import NoiseLayer from './components/NoiseLayer'
+import { AnimatePresence } from 'framer-motion'
 
 // Lazy load route components
 const Home = lazy(() => import('./components/home').then(module => ({ default: module.Home })))
@@ -45,6 +47,7 @@ function AppContent() {
     }
     sessionStorage.setItem('scrollProgress', scrollProgress.toString());
   }, [scrollProgress]);
+
 
   useEffect(() => {
     const lenis = new Lenis({
@@ -88,8 +91,9 @@ function AppContent() {
   return (
     <div className="App">
       <NoiseLayer />
-      <Suspense fallback={<div style={{ background: '#000', width: '100vw', height: '100vh' }} />}>
-        <Routes location={location}>
+      <Suspense fallback={<div style={{ background: '#590D0F', width: '100vw', height: '100vh' }} />}>
+        <AnimatePresence mode="sync">
+          <Routes location={location} key={location.pathname}>
           <Route path="/" element={<LoadingScreen
                 onComplete={() => {
                   sessionStorage.setItem('hasVisitedMap', 'true')
@@ -99,12 +103,12 @@ function AppContent() {
                 onScrollProgressChange={setScrollProgress}
                 isReturnVisit={isReturnVisit}
               />} />
-          <Route path="/home" element={<Home />} />
-          <Route path="/about" element={<AboutPage />} />
-          <Route path="/join" element={<JoinPage />} />
-          <Route path="/events" element={<EventsPage />} />
-
-        </Routes>
+            <Route path="/home" element={<PageTransition><Home /></PageTransition>} />
+            <Route path="/about" element={<PageTransition><AboutPage /></PageTransition>} />
+            <Route path="/join" element={<PageTransition><JoinPage /></PageTransition>} />
+            <Route path="/events" element={<PageTransition><EventsPage /></PageTransition>} />
+          </Routes>
+        </AnimatePresence>
       </Suspense>
 
       <TransitionOverlay isActive={isTransitionActive} />
