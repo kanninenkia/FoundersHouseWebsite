@@ -32,7 +32,7 @@ body.events-cursor.events-cursor-interactive .custom-cursor {
     opacity: 0;
 }
 
-.stage1-wrapper {
+.events-page .stage1-wrapper {
     position: absolute;
     width: 100vw;
     height: 100%;
@@ -40,27 +40,27 @@ body.events-cursor.events-cursor-interactive .custom-cursor {
     background-color: #2B0906;
 }
 
-.corner-elements {
+.events-page .corner-elements {
     position: absolute;
     width: 100%;
 }
 
-.corner-element {
+.events-page .corner-element {
     position: absolute;
 }
 
-.corner-element p {
+.events-page .corner-element p {
     font-family: 'IBMPlexSans', sans-serif;
     font-size: 0.9rem;
     font-weight: 500;
     color: #D82E11;
 }
 
-.stage1-img-container .stage1-img {
+.events-page .stage1-img-container .stage1-img {
     will-change: transform
 }
 
-.stage1-text-overlay {
+.events-page .stage1-text-overlay {
     position: absolute;
     display: flex;
     flex-direction: column;
@@ -72,7 +72,7 @@ body.events-cursor.events-cursor-interactive .custom-cursor {
     margin-top: 5%;
 }
 
-.stage1-text-overlay .stage1-text-overlay-wrapper {
+.events-page .stage1-text-overlay .stage1-text-overlay-wrapper {
     height: 80px;
     width: 100%;
     overflow: hidden;
@@ -80,7 +80,7 @@ body.events-cursor.events-cursor-interactive .custom-cursor {
     align-items: center;
 }
 
-.stage1-text-overlay .stage1-text-overlay-h2 {
+.events-page .stage1-text-overlay .stage1-text-overlay-h2 {
     font-family: 'IBM Plex Sans', sans-serif;
     font-size: 6rem;
     font-weight: 700;
@@ -92,14 +92,14 @@ body.events-cursor.events-cursor-interactive .custom-cursor {
     margin-bottom: 0;
 }
 
-.header-wrapper {
+.events-page .header-wrapper {
     position: sticky;
     width: 100vw;
     height: 100vh;
     overflow: hidden;
 }
 
-.header-content {
+.events-page .header-content {
     position: absolute;
     display: flex;
     flex-direction: column;
@@ -112,12 +112,12 @@ body.events-cursor.events-cursor-interactive .custom-cursor {
     gap: 43vh;
 }
 
-.header-h1-wrapper {
+.events-page .header-h1-wrapper {
     height: 119px;
     overflow: hidden;
 }
 
-.header-h1-wrapper .header-h1 {
+.events-page .header-h1-wrapper .header-h1 {
     font-family: 'Outfit', sans-serif;
     font-size: 9.1rem;
     line-height: 7rem;
@@ -126,11 +126,11 @@ body.events-cursor.events-cursor-interactive .custom-cursor {
     margin: 0;
 }
 
-.calendar-button-wrapper {
+.events-page .calendar-button-wrapper {
     margin-bottom: 1vh;
 }
 
-.header-date-location {
+.events-page .header-date-location {
     font-family: 'IBM Plex Sans', sans-serif;
     font-size: 3.01rem;
     font-weight: 700;
@@ -142,55 +142,55 @@ body.events-cursor.events-cursor-interactive .custom-cursor {
     letter-spacing: 0.05rem;
 }
 
-.header-h3-wrapper {
+.events-page .header-h3-wrapper {
     width: 35%;
     display: flex;
     flex-direction: column;
     gap: 4vh;
 }
 
-.header-h3-parallax {
+.events-page .header-h3-parallax {
     display: flex;
     flex-direction: column;
     gap: 4vh;
 }
 
-.calendar-button {
+.events-page .calendar-button {
     display: inline-block;
     transition: transform 0.3s ease;
     width: fit-content;
 }
 
-.calendar-button:hover {
+.events-page .calendar-button:hover {
     transform: scale(1.1);
 }
 
-.calendar-button img {
+.events-page .calendar-button img {
     width: 315px;
     height: 70px;
 }
 
 /* Events page specific button styling */
-.events-calendar-button {
+.events-page .events-calendar-button {
     transform: scale(0.9) translateX(-2.5vh);
 }
 
-.events-calendar-button:hover {
+.events-page .events-calendar-button:hover {
     transform: scale(0.9) translateX(-2.5vh);
 }
 
 /* Override button layer positioning for events page - top layer goes RIGHT and up */
-.events-calendar-button.custom-btn::before {
+.events-page .events-calendar-button.custom-btn::before {
     top: -8px;
     left: 8px;
 }
 
-.events-calendar-button.custom-btn:hover::before {
+.events-page .events-calendar-button.custom-btn:hover::before {
     top: 0;
     left: 0;
 }
 
-.header-h3-wrapper .header-h3 {
+.events-page .header-h3-wrapper .header-h3 {
     font-family: 'IBM Plex Sans', sans-serif;
     font-size: 1.54rem;
     line-height: 1.75rem;
@@ -204,7 +204,7 @@ body.events-cursor.events-cursor-interactive .custom-cursor {
 
 /*----------------------------------------------*/
 
-.section-2 {
+.events-page .section-2 {
     position: relative;
     width: 100vw;
     background-color: #2B0906;
@@ -216,7 +216,7 @@ body.events-cursor.events-cursor-interactive .custom-cursor {
 /*----------------------------------------------*/
 
 /* Events Header */
-.events-header {
+.events-page .events-header {
     position: fixed;
     top: 0;
     left: 0;
@@ -229,11 +229,11 @@ body.events-cursor.events-cursor-interactive .custom-cursor {
     pointer-events: none;
 }
 
-.events-header > * {
+.events-page .events-header > * {
     pointer-events: auto;
 }
 
-.events-header .header-logo {
+.events-page .events-header .header-logo {
     height: 24px;
     width: auto;
 }
@@ -243,7 +243,7 @@ body.events-cursor.events-cursor-interactive .custom-cursor {
 /* Horizontal Scrolling Events Section */
 /*----------------------------------------------*/
 
-.events-scroll-container {
+.events-page .events-scroll-container {
     position: fixed;
     bottom: -5vh;
     left: 60vw;
@@ -255,11 +255,11 @@ body.events-cursor.events-cursor-interactive .custom-cursor {
     cursor: none;
 }
 
-.events-scroll-container:active {
+.events-page .events-scroll-container:active {
     cursor: none;
 }
 
-.events-scroll-track {
+.events-page .events-scroll-track {
     display: flex;
     gap: 0;
     padding: 0 2rem 1rem 0;
@@ -268,7 +268,7 @@ body.events-cursor.events-cursor-interactive .custom-cursor {
     align-items: center;
 }
 
-.event-card {
+.events-page .event-card {
     position: relative;
     width: 35vw;
     height: 21vw;
@@ -277,7 +277,7 @@ body.events-cursor.events-cursor-interactive .custom-cursor {
     padding: 20px 0;
 }
 
-.event-card-inner {
+.events-page .event-card-inner {
     width: 100%;
     height: 100%;
     border-radius: 8px;
@@ -287,38 +287,38 @@ body.events-cursor.events-cursor-interactive .custom-cursor {
 }
 
 /* Dynamic sizing and positioning variations */
-.event-card:nth-child(1) {
+.events-page .event-card:nth-child(1) {
     margin-top: 0vh;
 }
 
-.event-card:nth-child(2) {
+.events-page .event-card:nth-child(2) {
     width: 37vw;
     height: 22vw;
     margin-top: 15vh;
 }
 
-.event-card:nth-child(3) {
+.events-page .event-card:nth-child(3) {
     width: 33vw;
     height: 20vw;
     margin-top: -8vh;
 }
 
-.event-card:nth-child(4) {
+.events-page .event-card:nth-child(4) {
     width: 36vw;
     height: 21.5vw;
     margin-top: 12vh;
 }
 
-.event-card:first-child {
+.events-page .event-card:first-child {
     margin-left: 0;
 }
 
-.event-card:hover {
+.events-page .event-card:hover {
     transform: translateY(-10px) scale(1.03);
     z-index: 10 !important;
 }
 
-.event-card-image {
+.events-page .event-card-image {
     width: 100%;
     height: 100%;
     object-fit: cover;
@@ -330,14 +330,14 @@ body.events-cursor.events-cursor-interactive .custom-cursor {
 /* Custom Cursor */
 /*----------------------------------------------*/
 
-.custom-cursor {
+.events-page .custom-cursor {
     position: fixed;
     pointer-events: none;
     z-index: 10000;
     transform: translate(-50%, -50%);
 }
 
-.cursor-icon {
+.events-page .cursor-icon {
     width: auto;
     height: auto;
     max-width: 150px;
@@ -354,17 +354,17 @@ body.events-cursor.events-cursor-interactive .custom-cursor {
         overflow-x: hidden;
     }
 
-    .events-header {
+    .events-page .events-header {
         padding: 1.25rem;
     }
 
-    .header-wrapper {
+    .events-page .header-wrapper {
         position: relative;
         height: auto;
         overflow: visible;
     }
 
-    .header-content {
+    .events-page .header-content {
         position: relative;
         width: 90%;
         height: auto;
@@ -373,12 +373,12 @@ body.events-cursor.events-cursor-interactive .custom-cursor {
         gap: 1vh;
     }
 
-    .header-h1-wrapper {
+    .events-page .header-h1-wrapper {
         height: calc(7rem * 0.85);
         overflow: hidden;
     }
 
-    .header-h1-wrapper .header-h1 {
+    .events-page .header-h1-wrapper .header-h1 {
         font-size: calc(9.1rem * .6);
         line-height: calc(7rem * 0.85);
         margin-top: 1vh;
@@ -386,11 +386,11 @@ body.events-cursor.events-cursor-interactive .custom-cursor {
         max-width: 100%;
     }
 
-    .header-h1-wrapper .header-h1.is-event-title {
+    .events-page .header-h1-wrapper .header-h1.is-event-title {
         font-size: calc(9.1rem * 0.75);
     }
 
-    .header-date-location {
+    .events-page .header-date-location {
         position: static;
         margin-top: 0;
         transform: translateY(-1vh);
@@ -398,72 +398,68 @@ body.events-cursor.events-cursor-interactive .custom-cursor {
         line-height: 1.6rem;
     }
 
-    .header-h3-wrapper {
+    .events-page .header-h3-wrapper {
         width: 100%;
         gap: 1.2vh;
     }
 
-    .header-h3 {
-        font-size: calc(1.1rem * 0.7);
+    .events-page .header-h3-wrapper .header-h3.header-h3 {
+        font-size: calc(1.1rem * 1.2);
         line-height: 1.45rem;
         margin-top: 1vh;
     }
 
-    .header-h3-parallax {
+    .events-page .header-h3-parallax {
         flex-direction: column;
         gap: 2vh;
     }
 
-    .header-h3-wrapper a {
+    .events-page .header-h3-wrapper a {
         display: block;
         width: 100%;
         margin-top: 0;
         transform: translateX(-1vh);
     }
 
-    .calendar-button-wrapper {
+    .events-page .calendar-button-wrapper {
         margin-top: 1vh;
         margin-bottom: 2vh;
     }
 
-    .stage1-text-overlay {
+    .events-page .stage1-text-overlay {
         margin-top: 10%;
         gap: 12px;
     }
 
-    .stage1-text-overlay .stage1-text-overlay-wrapper {
+    .events-page .stage1-text-overlay .stage1-text-overlay-wrapper {
         height: auto;
         overflow: visible;
     }
 
-    .stage1-text-overlay .stage1-text-overlay-h2 {
+    .events-page .stage1-text-overlay .stage1-text-overlay-h2 {
         font-size: 2.8rem;
         line-height: 2.6rem;
     }
 
-    .events-calendar-button {
+    .events-page .events-calendar-button {
         width: 100%;
         transform: none;
     }
 
-    .events-calendar-button:hover {
+    .events-page .events-calendar-button:hover {
         transform: none;
     }
 
-    .events-calendar-button .custom-btn-content {
+    .events-page .events-calendar-button .custom-btn-content {
         font-size: calc(1.4rem * 0.72);
         padding: 0.25em 1.5em;
         text-align: center;
     }
 
-    .events-calendar-button .custom-btn-content {
-        text-align: center;
-    }
-
-    .events-scroll-container {
+    .events-page .events-scroll-container {
         position: fixed;
         left: 0;
-        bottom: 0;
+        bottom: 2vh;
         right: 0;
         width: 100vw;
         height: 38vh;
@@ -475,71 +471,69 @@ body.events-cursor.events-cursor-interactive .custom-cursor {
         touch-action: pan-x;
     }
 
-    .events-scroll-track {
+    .events-page .events-scroll-track {
         padding: 0;
         gap: 0;
         align-items: flex-end;
     }
 
-    .event-card {
+    .events-page .event-card {
         width: 70vw;
         height: 44vw;
         margin-left: -18vw;
     }
 
-    .event-card:nth-child(n) {
+    .events-page .event-card:nth-child(n) {
         width: 70vw;
         height: 44vw;
     }
 
-    .event-card:first-child {
+    .events-page .event-card:first-child {
         margin-left: 0;
     }
 
-    .event-card:nth-child(1) {
+    .events-page .event-card:nth-child(1) {
         margin-top: 0;
     }
 
-    .event-card:nth-child(2) {
+    .events-page .event-card:nth-child(2) {
         margin-top: 10vh;
     }
 
-    .event-card:nth-child(3) {
+    .events-page .event-card:nth-child(3) {
         margin-top: -9vh;
     }
 
-    .event-card:nth-child(4) {
+    .events-page .event-card:nth-child(4) {
         margin-top: 9vh;
     }
 
-    .header-wrapper {
+    .events-page .header-wrapper {
         padding-bottom: 40vh;
     }
 
-    html.events-cursor,
-    body.events-cursor,
-    html.events-cursor *,
-    body.events-cursor * {
+    body.events-cursor .events-page,
+    body.events-cursor .events-page * {
         cursor: auto !important;
     }
 
-    .custom-cursor {
+    .events-page .custom-cursor {
         display: none;
     }
 }
 
 @media (max-width: 480px) {
-    .event-card:nth-child(2) {
+    .events-page .event-card:nth-child(2) {
         margin-top: 12vh;
         transform: translateY(2vh);
     }
 
-    .event-card:nth-child(3) {
+    .events-page .event-card:nth-child(3) {
         margin-top: -11vh;
         transform: translateY(-2vh);
     }
 
-    .event-card:nth-child(4) {
+    .events-page .event-card:nth-child(4) {
         margin-top: 11vh;
         transform: translateY(2vh);
     }

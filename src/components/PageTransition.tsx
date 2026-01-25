@@ -44,9 +44,7 @@ const PageTransition: React.FC<PageTransitionProps> = ({ children }) => {
       {/* Page content appears after pixels have fully covered previous page */}
       <motion.div
         style={{
-          minHeight: "100vh",
-          // Hide immediately when exiting to prevent animation glitches
-          visibility: (!isPresent && showPixelCover) ? 'hidden' : 'visible'
+          minHeight: "100vh"
         }}
         initial={{ opacity: 0 }}
         animate={{ opacity: showContent ? 1 : 0 }}

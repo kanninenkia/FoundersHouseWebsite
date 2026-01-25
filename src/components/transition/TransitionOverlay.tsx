@@ -73,7 +73,12 @@ export const TransitionOverlay = ({
   cols = 18,
   rows = 10,
 }: TransitionOverlayProps) => {
-  const blocks = useMemo(() => generateBlocks(cols, rows, maxDelayMs), [cols, rows, maxDelayMs])
+  // Reduce grid size on mobile to prevent "funky" overcrowded pixels
+  const isMobile = typeof window !== 'undefined' && window.innerWidth <= 768
+  const adjustedCols = isMobile ? 10 : cols
+  const adjustedRows = isMobile ? 6 : rows
+
+  const blocks = useMemo(() => generateBlocks(adjustedCols, adjustedRows, maxDelayMs), [adjustedCols, adjustedRows, maxDelayMs])
   const isReveal = mode === 'in'
 
   return (

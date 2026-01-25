@@ -1,3 +1,4 @@
+import "./page.css";
 import React, { useEffect, useState, useRef } from "react";
 import { motion, AnimatePresence, useScroll, useTransform, useMotionValue } from "framer-motion";
 import { useNavigate } from 'react-router-dom';
@@ -6,9 +7,37 @@ import { AnimatedHamburger } from '../components/AnimatedHamburger.tsx';
 import { FullScreenMenu } from '../components/FullScreenMenu.tsx';
 import Button from '../components/Button.tsx';
 import { eventsData } from './hooks/events-data.ts';
-import "./page.css";
 
 const HEADER_IMG_SRC = "/images/Legends Day Still 002.webp";
+
+const removeDuplicatePageCssSheets = () => {
+  if (typeof document === "undefined") return false;
+  const sheets = Array.from(document.styleSheets);
+  const pageCssSheets = sheets.filter(sheet =>
+    sheet.href && sheet.href.includes("/events/page.css")
+  );
+  if (pageCssSheets.length <= 1) return false;
+  pageCssSheets.slice(1).forEach(sheet => {
+    sheet.ownerNode?.remove();
+  });
+  return true;
+};
+
+const forceStyleRecalc = () => {
+  if (typeof document === "undefined") return;
+  document.body.style.display = "none";
+  void document.body.offsetHeight;
+  document.body.style.display = "";
+};
+
+// Clean up duplicate stylesheets from Vite HMR on component unmount
+if (import.meta.hot) {
+  import.meta.hot.dispose(() => {
+    if (removeDuplicatePageCssSheets()) {
+      forceStyleRecalc();
+    }
+  });
+}
 
 // Text shuffle utility - Rylan Phillips style
 const shuffleText = (
@@ -67,7 +96,12 @@ export default function EventsPage() {
   const [isEventTitle, setIsEventTitle] = useState(false);
   const [displayedDateLocation, setDisplayedDateLocation] = useState("");
   const [hoveredCardId, setHoveredCardId] = useState<number | null>(null);
-  const [isMobile, setIsMobile] = useState(false);
+  const [fontsReady, setFontsReady] = useState(false);
+  const [isMobile, setIsMobile] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    const matches = window.matchMedia('(max-width: 768px)').matches;
+    return matches;
+  });
   const [isCardLocked, setIsCardLocked] = useState(false);
   const titleRef = useRef<HTMLHeadingElement>(null);
   const descriptionRef = useRef<HTMLHeadingElement>(null);
@@ -85,11 +119,33 @@ export default function EventsPage() {
 
   // Transition from stage 1 to stage 2 after a delay
   useEffect(() => {
-    if (stage === 1) {
+    if (typeof document === "undefined") {
+      setFontsReady(true);
+      return;
+    }
+
+    const fontSet = document.fonts;
+    if (!fontSet || fontSet.status === "loaded") {
+      setFontsReady(true);
+      return;
+    }
+
+    let cancelled = false;
+    fontSet.ready.then(() => {
+      if (!cancelled) setFontsReady(true);
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (stage === 1 && fontsReady) {
       const timer = setTimeout(() => setStage(2), 3000);
       return () => clearTimeout(timer);
     }
-  }, [stage]);
+  }, [stage, fontsReady]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -99,6 +155,22 @@ export default function EventsPage() {
     media.addEventListener("change", update);
     return () => media.removeEventListener("change", update);
   }, []);
+
+  // Remove duplicate page.css stylesheets on mount (Vite HMR bug)
+  useEffect(() => {
+    const runCleanup = () => {
+      if (removeDuplicatePageCssSheets()) {
+        forceStyleRecalc();
+      }
+    };
+
+    runCleanup();
+    const timeout = setTimeout(runCleanup, 50);
+
+    return () => clearTimeout(timeout);
+  }, []);
+
+
 
   const parallaxScale = isMobile ? 0.5 : 1;
   const lockedBrightness = isCardLocked ? 0.36 : 0.4;
@@ -325,10 +397,18 @@ export default function EventsPage() {
     const parent = titleEl.parentElement;
     if (!parent) return;
 
+    // Reset inline sizing so we always measure against the base CSS size.
+    const previousInlineSize = titleEl.style.fontSize;
+    titleEl.style.fontSize = "";
+    void titleEl.offsetWidth;
+
     const availableWidth = parent.clientWidth;
     const computed = window.getComputedStyle(titleEl);
     const currentSize = parseFloat(computed.fontSize);
-    if (!availableWidth || !currentSize) return;
+    if (!availableWidth || !currentSize) {
+      titleEl.style.fontSize = previousInlineSize;
+      return;
+    }
 
     let titleWidth = titleEl.scrollWidth;
     if (text) {
@@ -355,6 +435,16 @@ export default function EventsPage() {
     } else {
       titleEl.style.fontSize = "";
     }
+  };
+
+  const scheduleFitTitleToWidth = (text?: string) => {
+    if (!isMobile) return;
+    if (fitTitleTimeoutRef.current !== null) {
+      window.clearTimeout(fitTitleTimeoutRef.current);
+    }
+    fitTitleTimeoutRef.current = window.setTimeout(() => {
+      requestAnimationFrame(() => fitTitleToWidth(text));
+    }, 0);
   };
 
   return (
@@ -408,8 +498,28 @@ export default function EventsPage() {
         initial={false}
         animate={
           stage === 1
-            ? { width: "100%", height: "100vh", overflow: "hidden", position: "absolute", top: "10vh", left: "50%", x: "-50%", scale: 0.9, zIndex: 2 }
-            : { width: "100%", height: "100vh", overflow: "hidden", position: "absolute", top: "0", left: "50%", x: "-50%", scale: 1, zIndex: 2 }
+            ? {
+                width: "100%",
+                height: "100vh",
+                overflow: "hidden",
+                position: "absolute",
+                top: "10vh",
+                left: "50%",
+                x: "-50%",
+                scale: 0.9,
+                zIndex: 2
+              }
+            : {
+                width: "100%",
+                height: "100vh",
+                overflow: "hidden",
+                position: "absolute",
+                top: "0",
+                left: "50%",
+                x: "-50%",
+                scale: 1,
+                zIndex: 2
+              }
         }
         transition={{ duration: 1.2, ease: [0.32, 0.26, 0, 1] }}
       >
@@ -623,10 +733,7 @@ export default function EventsPage() {
                   }
 
                   setIsEventTitle(true);
-                  if (fitTitleTimeoutRef.current !== null) {
-                    window.clearTimeout(fitTitleTimeoutRef.current);
-                  }
-                  fitTitleToWidth(event.title.toUpperCase());
+                  scheduleFitTitleToWidth(event.title.toUpperCase());
                 };
 
                 const handleMouseLeave = () => {
