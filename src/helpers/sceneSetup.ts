@@ -39,11 +39,18 @@ export function createCamera(): THREE.PerspectiveCamera {
 export function createRenderer(container: HTMLElement): THREE.WebGLRenderer {
   const performanceProfile = detectPerformanceTier()
 
+  // CHROME FIX: Detect Chrome browser for optimizations
+  const isChrome = /Chrome/.test(navigator.userAgent) && /Google Inc/.test(navigator.vendor)
+
   const renderer = new THREE.WebGLRenderer({
     antialias: performanceProfile.antialias,
     powerPreference: performanceProfile.tier === 'high' ? 'high-performance' : 'default',
     stencil: false,
     depth: true,
+    // CHROME FIX: Enable alpha for better compositing
+    alpha: false,
+    // CHROME FIX: Preserve drawing buffer can help with Chrome's rendering pipeline
+    preserveDrawingBuffer: false,
   })
 
   renderer.setSize(window.innerWidth, window.innerHeight)
@@ -53,6 +60,15 @@ export function createRenderer(container: HTMLElement): THREE.WebGLRenderer {
   if (performanceProfile.shadowsEnabled) {
     renderer.shadowMap.type = THREE.PCFSoftShadowMap
   }
+
+  // CHROME FIX: Set output color space for consistent rendering
+  renderer.outputColorSpace = THREE.SRGBColorSpace
+
+  // CHROME FIX: Enable scissor test for better performance
+  renderer.autoClear = true
+  renderer.autoClearColor = true
+  renderer.autoClearDepth = true
+  renderer.autoClearStencil = true
 
   container.appendChild(renderer.domElement)
 

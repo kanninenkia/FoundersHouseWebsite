@@ -78,11 +78,11 @@ export const SCENE_CONFIG = {
   lighting: {
     ambient: {
       color: 0xffffff,
-      intensity: 1.3, // BRIGHTNESS: Moderate increase from 1.0 -> 1.3 (was 1.8, too bright)
+      intensity: 1.6, // Lift dark areas without washing highlights
     },
     directional: {
       color: 0xffffff,
-      intensity: 1.4, // BRIGHTNESS: Moderate increase from 1.2 -> 1.4 (was 1.8, too bright)
+      intensity: 1.5, // Slight boost to keep contrast while lifting shadows
       position: { x: 500, y: 1000, z: 500 }, // Higher sun position for better lighting angle
       shadow: {
         left: -10000,
@@ -93,8 +93,8 @@ export const SCENE_CONFIG = {
     },
     hemisphere: {
       skyColor: 0xffffff,
-      groundColor: 0x999999, // BRIGHTNESS: Moderate ground color (was 0xbbbbbb, too bright)
-      intensity: 0.7, // BRIGHTNESS: Moderate increase from 0.6 -> 0.7 (was 0.9, too bright)
+      groundColor: 0xb5b5b5, // Slightly lighter ground bounce for dark facades
+      intensity: 0.9, // More fill light in dense areas
     },
   },
   stars: {

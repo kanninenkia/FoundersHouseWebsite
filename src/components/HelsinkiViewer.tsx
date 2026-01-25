@@ -36,9 +36,13 @@ export const HelsinkiViewer = ({
   staticMode = false,
   environmentColor,
 }: HelsinkiViewerProps) => {  const containerRef = useRef<HTMLDivElement>(null)
+
   const sceneRef = useRef<HelsinkiScene | null>(null)
   const animationFrameRef = useRef<number>(0)
   const tickerStartTimeRef = useRef<number>(Date.now())
+  // CHROME FIX: Add frame time smoothing for consistent frame pacing
+  const lastFrameTimeRef = useRef<number>(performance.now())
+  const frameTimesRef = useRef<number[]>([16.67, 16.67, 16.67]) // Rolling average
 
   const [status, setStatus] = useState<string>('Initializing...')
   const [loading, setLoading] = useState<boolean>(true)
@@ -55,12 +59,24 @@ export const HelsinkiViewer = ({
   const [isDragging, setIsDragging] = useState(false)
   const [cursorPosition, setCursorPosition] = useState({ x: 0, y: 0 })
   const [showDragIndicator, setShowDragIndicator] = useState(true)
+
   const hasInteractedRef = useRef(false)
   const [isTransitionActive, setIsTransitionActive] = useState(false)
+  const [isHoveringInteractive, setIsHoveringInteractive] = useState(false)
+  const hoveringInteractiveRef = useRef(false)
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
-      setCursorPosition({ x: e.clientX, y: e.clientY })
+       setCursorPosition({ x: e.clientX, y: e.clientY })
+      const target = document.elementFromPoint(e.clientX, e.clientY)
+      const isInteractive = !!target?.closest(
+        'a, button, .clickable, .hamburger-menu, .logo-container, .poi-navigator-wrapper, .full-screen-menu'
+      )
+      if (isInteractive !== hoveringInteractiveRef.current) {
+        hoveringInteractiveRef.current = isInteractive
+        setIsHoveringInteractive(isInteractive)
+      }
+
     }
 
     const handleMouseDown = () => setIsDragging(true)
@@ -75,7 +91,7 @@ export const HelsinkiViewer = ({
       window.removeEventListener('mousedown', handleMouseDown)
       window.removeEventListener('mouseup', handleMouseUp)
     }
-  }, [])
+      }, [])
 
   useEffect(() => {
     if (scrollProgress >= 1) {
@@ -142,14 +158,26 @@ export const HelsinkiViewer = ({
 
       setStatus('Loading Helsinki 3D model...')
 
-      const animate = () => {
+      const animate = (currentTime: number) => {
         if (sceneRef.current) {
+          // CHROME FIX: Always update, but track frame timing for smoothness
+          const frameTime = currentTime - lastFrameTimeRef.current
+          lastFrameTimeRef.current = currentTime
+
+          // Add to rolling average (keeps last 3 frames)
+          frameTimesRef.current.push(frameTime)
+          if (frameTimesRef.current.length > 3) {
+            frameTimesRef.current.shift()
+          }
+
+          // Always update - the scene's delta clamping handles spikes
           sceneRef.current.update()
+
           animationFrameRef.current = requestAnimationFrame(animate)
         }
       }
 
-      animate()
+      animationFrameRef.current = requestAnimationFrame(animate)
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err)
       setStatus('Error: ' + message)
@@ -252,7 +280,7 @@ export const HelsinkiViewer = ({
     if (!containerRef.current) return;
     const canvas = containerRef.current.querySelector('canvas');
     if (canvas) {
-      canvas.style.filter = `grayscale(${grayscaleAmount}%) brightness(1.50) contrast(0.88)`
+
     }
   }, [grayscaleAmount]);
 
@@ -319,7 +347,7 @@ export const HelsinkiViewer = ({
     <>
       <div
         ref={containerRef}
-        className="helsinki-container"
+                className="helsinki-container"
       >
         <div className={`vignette-overlay ${isCameraFlying ? 'active' : ''}`} />
       </div>
@@ -458,7 +486,7 @@ export const HelsinkiViewer = ({
         </div>
       )}
 
-      {scrollProgress >= 1 && (
+      {scrollProgress >= 1 && !isHoveringInteractive && (
         <div
           className="drag-cursor-indicator"
           style={{

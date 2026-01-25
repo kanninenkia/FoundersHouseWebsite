@@ -6,7 +6,7 @@ import ParallaxMotion from '../effects/ParallaxMotion.tsx';
 import "./page.css";
 import { HelsinkiViewer } from "../components/HelsinkiViewer.tsx";
 import Footer from "../components/Footer.tsx";
-import Button from "../components/button.tsx";
+import Button from "../components/Button.tsx";
 
 const HEADER_IMG_SRC = "/images/horses.webp";
 const RESIDENT_SRC = "/images/resident.webp";

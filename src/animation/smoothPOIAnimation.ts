@@ -68,7 +68,8 @@ export function createSmoothPOIAnimation(
   elevation: number = 15,
   duration: number = 2.5,
   onComplete?: () => void,
-  onInterrupt?: () => void
+  onInterrupt?: () => void,
+  startTimeSeconds?: number
 ): SmoothPOIAnimation {
   // Use the requested distance directly
   let adjustedDistance = distance
@@ -91,15 +92,9 @@ export function createSmoothPOIAnimation(
   const MAX_CAMERA_HEIGHT = 300
   const endCameraY = Math.max(MIN_CAMERA_HEIGHT, Math.min(MAX_CAMERA_HEIGHT, calculatedCameraY))
 
-  console.log('🚀 POI ANIMATION CREATED:')
-  console.log('  Start Camera Position:', camera.position.toArray())
-  console.log('  Start Target Position:', currentTarget.toArray())
-  console.log('  End Camera Position:', [endCameraX, endCameraY, endCameraZ])
-  console.log('  End Target Position:', [poiPosition.x, poiPosition.y, poiPosition.z])
-
   return {
     isActive: true,
-    startTime: performance.now() / 1000,
+    startTime: startTimeSeconds ?? (performance.now() / 1000),
     duration,
 
     startCameraPosition: camera.position.clone(),
@@ -141,16 +136,13 @@ export function updateSmoothPOIAnimation(
   }
 
   // Calculate progress
-  const elapsed = currentTime - animation.startTime
-  const rawProgress = Math.min(elapsed / animation.duration, 1.0)
-
-  // Log first frame to debug teleportation
-  if (rawProgress < 0.05) {
-    console.log('📹 POI Animation First Frame (progress:', rawProgress.toFixed(3), ')')
-    console.log('  Start Camera Pos:', animation.startCameraPosition.toArray())
-    console.log('  End Camera Pos:', animation.endCameraPosition.toArray())
-    console.log('  Current Camera Pos:', camera.position.toArray())
+  let elapsed = currentTime - animation.startTime
+  if (elapsed < 0) {
+    // Guard against timebase skew; reset start to current time.
+    animation.startTime = currentTime
+    elapsed = 0
   }
+  const rawProgress = Math.min(Math.max(elapsed / animation.duration, 0.0), 1.0)
 
   // Add a "settling" phase at the end (last 5% of animation)
   const SETTLING_THRESHOLD = 0.95
@@ -169,10 +161,6 @@ export function updateSmoothPOIAnimation(
     animation.endCameraPosition,
     progress
   )
-
-  if (rawProgress < 0.05) {
-    console.log('  Interpolated Position (progress', progress.toFixed(3), '):', newCameraPosition.toArray())
-  }
 
   // Interpolate target position
   const newTargetPosition = new THREE.Vector3()
@@ -196,11 +184,6 @@ export function updateSmoothPOIAnimation(
     // Animation complete - ensure exact final position
     camera.position.copy(animation.endCameraPosition)
     camera.lookAt(animation.endTargetPosition)
-
-    console.log('🎯 POI ANIMATION ENDED:')
-    console.log('  Camera Position:', camera.position.toArray())
-    console.log('  Camera Target (looking at):', animation.endTargetPosition.toArray())
-    console.log('  Camera Rotation:', camera.rotation.toArray().slice(0, 3))
 
     animation.isActive = false
     if (animation.onComplete) {

@@ -38,25 +38,23 @@ const ParallaxMotion = ({
   }, [mouseX, mouseY]);
 
   useEffect(() => {
-    let timeoutX: NodeJS.Timeout | null = null;
-    let timeoutY: NodeJS.Timeout | null = null;
     const unsubX = mouseX.on("change", (v) => {
-      if (timeoutX) clearTimeout(timeoutX);
-      timeoutX = setTimeout(() => {
-        animate(parallaxX, v * speedX, { ease: easing as any, duration: 1.4 });
-      }, delay);
+      animate(parallaxX, v * speedX, {
+        ease: easing as any,
+        duration: 1.4,
+        delay: delay / 1000,
+      });
     });
     const unsubY = mouseY.on("change", (v) => {
-      if (timeoutY) clearTimeout(timeoutY);
-      timeoutY = setTimeout(() => {
-        animate(parallaxY, v * speedY, { ease: easing as any, duration: 1.4 });
-      }, delay);
+      animate(parallaxY, v * speedY, {
+        ease: easing as any,
+        duration: 1.4,
+        delay: delay / 1000,
+      });
     });
     return () => {
       unsubX();
       unsubY();
-      if (timeoutX) clearTimeout(timeoutX);
-      if (timeoutY) clearTimeout(timeoutY);
     };
   }, [mouseX, mouseY, parallaxX, parallaxY, speedX, speedY, easing, delay]);
 

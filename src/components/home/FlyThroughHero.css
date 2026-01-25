@@ -1,0 +1,117 @@
+.quotes-section {
+    padding-top: 100%;
+}
+
+.quotes-section .quotes-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 2rem;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.quotes-section .column-left {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  transform: translateY(40px); /* adjust as needed */
+}
+
+.quotes-section .column-center {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.quotes-section .column-right {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  transform: translateY(80px); /* adjust as needed */
+}
+
+
+/*-----------------------------------------------------------------*/
+
+.scroll-section {
+    background-color: #2B0A05;
+    padding: 8% 0;
+}
+
+
+.scroll-section .part {
+    position: relative;
+    margin-bottom: 20%;
+}
+
+.scroll-section .part .bg-shape {
+    position: absolute;
+    height: 50%;
+    width: 80%;
+    left: 10%;
+    top: -5%;
+    background-color: #590D0F;
+    z-index: 1;
+}
+
+.scroll-section .part .part-img-wrapper {
+    position: relative;
+    z-index: 5;
+    width: 86%;
+    margin-left: 7%;
+}
+
+.scroll-section .part .part-img-wrapper .part-img {
+    overflow: hidden;
+    height: 80vh;
+    position: relative;
+    z-index: 1;
+}
+.scroll-section .part .part-img-wrapper .part-img img {
+    width: 100%;
+    height: auto;
+}
+
+.scroll-section .part .part-img-wrapper .part-img-text {
+    position: absolute;
+    z-index: 10;
+    text-wrap: balance;
+}
+
+.scroll-section .part-obsessive .part-img-wrapper .part-img-text {
+    bottom: 5%;
+    right: 5%;
+    width: 30%;
+    text-align: right;
+}
+
+.scroll-section .part .part-img-wrapper .part-img-text p {
+    font-family: 'IBM Plex Sans', sans-serif;
+    font-size: 1.5rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    color: #FFF8F2;
+}
+
+.scroll-section .part .part-img-wrapper .part-img-squares {
+    position: absolute;
+    z-index: 10;
+    top: 40%;
+    left: 40%;
+}
+
+.scroll-section .part-obsessive .part-img-wrapper .part-img-squares .square-1 {
+    position: absolute;
+    border: solid 4px #D82E11;
+    height: 200px;
+    width: 200px;;
+} 
+.scroll-section .part-obsessive .part-img-wrapper .part-img-squares .square-2 {
+    position: absolute;
+    border: solid 4px #D82E11;
+    height: 200px;
+    width: 200px;
+    right: -150px;
+    bottom: -150px;
+} 

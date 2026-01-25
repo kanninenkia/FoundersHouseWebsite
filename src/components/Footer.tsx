@@ -19,11 +19,6 @@ const Footer: React.FC = () => {
             className="sponsor-logo"
           />
           <img
-            src="/logos/companyLogos/Mask group-2.svg"
-            alt="Supercell"
-            className="sponsor-logo"
-          />
-          <img
             src="/logos/companyLogos/Mask group-3.svg"
             alt="LifeLine Ventures"
             className="sponsor-logo"

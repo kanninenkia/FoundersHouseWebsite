@@ -91,7 +91,7 @@ export const ScrollPhasesContainer = (props: ScrollPhasesContainerProps) => {
   if (!props.zScrollComplete) return null
 
   return (
-    <>
+    <div style={{ opacity: 1 }}>
       {/* Background and animated box */}
       <div
         style={{
@@ -212,6 +212,6 @@ export const ScrollPhasesContainer = (props: ScrollPhasesContainerProps) => {
         fourthDecorativeTextParallaxY={props.fourthDecorativeTextParallaxY}
         phase4Opacity={props.phase4Opacity}
       />
-    </>
+    </div>
   )
 }

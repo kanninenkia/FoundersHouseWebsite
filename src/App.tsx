@@ -5,6 +5,7 @@ import { TransitionOverlay } from './components/transition'
 import Lenis from 'lenis'
 import 'lenis/dist/lenis.css'
 import './App.css'
+import NoiseLayer from './components/NoiseLayer'
 
 // Lazy load route components
 const Home = lazy(() => import('./components/home').then(module => ({ default: module.Home })))
@@ -86,6 +87,7 @@ function AppContent() {
 
   return (
     <div className="App">
+      <NoiseLayer />
       <Suspense fallback={<div style={{ background: '#000', width: '100vw', height: '100vh' }} />}>
         <Routes location={location}>
           <Route path="/" element={<LoadingScreen

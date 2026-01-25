@@ -77,7 +77,8 @@ export const useVirtualScroll = ({
         const scrollDelta = e.deltaY * 1.2
         accumulatedScroll.current = Math.max(0, Math.min(maxVirtualScroll, accumulatedScroll.current + scrollDelta))
 
-        const progress = Math.max(0, Math.min(1, accumulatedScroll.current / maxVirtualScroll))
+        const unclampedProgress = accumulatedScroll.current / maxVirtualScroll
+        const progress = Math.max(0, Math.min(1, unclampedProgress))
         setScrollProgress(progress)
         virtualScrollTarget.set(accumulatedScroll.current)
 
@@ -87,7 +88,7 @@ export const useVirtualScroll = ({
           isScrollingRef.current = false
         }, 150)
 
-        setZScrollComplete(progress >= 0.98)
+        setZScrollComplete(unclampedProgress >= 1)
       }
     }
 
@@ -119,7 +120,8 @@ export const useVirtualScroll = ({
   )
 
   // Opening section opacity (separate fade for entire section) - completes earlier
-  const openingSectionOpacity = useTransform(depthTransitionProgress, [0, 0.3, 0.5], [1, 0.2, 0])
+  // Fade out earlier so testimonials grid can appear
+  const openingSectionOpacity = useTransform(depthTransitionProgress, [0, 0.15, 0.3], [1, 0.2, 0])
 
   // Cards interactive state
   const cardsInteractive = scrollProgress > ANIMATION_CONFIG.timing.cardsFadeIn.threshold

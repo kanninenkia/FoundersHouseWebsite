@@ -11,6 +11,7 @@ interface QuotesSectionProps {
   zScrollComplete: boolean
   boxScrollProgress: number
   cardsInteractive: boolean
+  isOpeningOutOfView: boolean;
   ANIMATION_CONFIG: any
   EASING: any
 }
@@ -20,51 +21,52 @@ export const QuotesSection = ({
   zScrollComplete,
   boxScrollProgress,
   cardsInteractive,
+  isOpeningOutOfView,
   ANIMATION_CONFIG,
   EASING
 }: QuotesSectionProps) => {
+  const { quoteCards, timing } = ANIMATION_CONFIG;
+  const fadeInStart = 0.5; // Cards remain stationary until scrollProgress > 0.5
+  const fadeInEnd = 1;
   return (
     <motion.section
       className="quote-cards-section"
       style={{
-        pointerEvents: cardsInteractive && !zScrollComplete ? 'auto' : 'none',
+        pointerEvents: cardsInteractive && isOpeningOutOfView && !zScrollComplete ? 'auto' : 'none',
         zIndex: scrollProgress > 0.6 ? 10 : 1,
+        position: 'relative',
+        minHeight: '160vh',
+        height: 'auto',
+        top: 'unset',
+        left: 'unset',
+        backgroundColor: 'transparent',
+        overflowY: isOpeningOutOfView ? 'auto' : 'hidden',
       }}
     >
-      <div className="quote-cards-grid">
+      <div
+        className="quote-cards-grid"
+        style={{
+          // Remove animated margin, use static or none
+          marginTop: "20vh",
+          transition: 'margin-top 0.6s cubic-bezier(0.22,1,0.36,1)'
+        }}
+      >
         {quoteCardsData.map((card, index) => {
-          const { quoteCards, timing } = ANIMATION_CONFIG
-          const yOffset = card.animateY
-
-          // Fade in with smooth easing
-          const fadeInProgress = Math.max(0, Math.min(1, (scrollProgress - timing.cardsFadeIn.threshold) / (1 - timing.cardsFadeIn.threshold)))
-          const staggerDelay = index * quoteCards.staggerIn
-          const rawFadeInProgress = Math.max(0, Math.min(1, (fadeInProgress - staggerDelay) * quoteCards.fadeInSpeed))
-          const easedFadeIn = EASING.out(rawFadeInProgress)
-          const fadeInOpacity = easedFadeIn
-          const fadeInY = yOffset * (1 - easedFadeIn)
-
-          // Fade out with smooth easing
-          const reverseIndex = quoteCardsData.length - 1 - index
-          const reverseStaggerDelay = reverseIndex * quoteCards.staggerOut
-          const fadeOutProgress = zScrollComplete
-            ? Math.max(0, Math.min(1, (boxScrollProgress - timing.cardsFadeOut.start) / (timing.cardsFadeOut.end - timing.cardsFadeOut.start)))
-            : 0
-          const rawFadeOutProgress = Math.max(0, Math.min(1, (fadeOutProgress - reverseStaggerDelay) * quoteCards.fadeOutSpeed))
-          const easedFadeOut = EASING.out(rawFadeOutProgress)
-          const fadeOutOpacity = 1 - easedFadeOut
-          const fadeOutY = -yOffset * easedFadeOut
-
-          const finalOpacity = zScrollComplete ? fadeInOpacity * fadeOutOpacity : fadeInOpacity
-          const finalY = zScrollComplete ? fadeInY + fadeOutY : fadeInY
-
+          const yOffset = card.animateY;
+          const fadeInProgress = Math.max(0, Math.min(1, (scrollProgress - fadeInStart) / (fadeInEnd - fadeInStart)));
+          const staggerDelay = index * quoteCards.staggerIn;
+          const rawFadeInProgress = Math.max(0, Math.min(1, (fadeInProgress - staggerDelay) * quoteCards.fadeInSpeed));
+          const easedFadeIn = EASING.out(rawFadeInProgress);
+          // Gate both opacity and Y movement until threshold
+          const fadeInOpacity = scrollProgress < fadeInStart ? 0 : easedFadeIn;
+          const fadeInY = scrollProgress < fadeInStart ? yOffset : yOffset * (1 - easedFadeIn);
           return (
             <motion.div
               key={card.name}
               className="quote-card-wrapper"
               style={{
-                opacity: finalOpacity,
-                y: finalY
+                opacity: fadeInOpacity,
+                y: fadeInY
               }}
             >
               <QuoteCard
@@ -74,9 +76,9 @@ export const QuotesSection = ({
                 nameColor={card.nameColor}
               />
             </motion.div>
-          )
+          );
         })}
       </div>
     </motion.section>
-  )
+  );
 }

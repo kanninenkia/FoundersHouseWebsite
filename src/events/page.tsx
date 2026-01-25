@@ -1,10 +1,10 @@
 import React, { useEffect, useState, useRef } from "react";
-import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion";
+import { motion, AnimatePresence, useScroll, useTransform, useMotionValue } from "framer-motion";
 import { useNavigate } from 'react-router-dom';
 import ParallaxMotion from '../effects/ParallaxMotion.tsx';
 import { AnimatedHamburger } from '../components/AnimatedHamburger.tsx';
 import { FullScreenMenu } from '../components/FullScreenMenu.tsx';
-import Button from '../components/button.tsx';
+import Button from '../components/Button.tsx';
 import { eventsData } from './hooks/events-data.ts';
 import "./page.css";
 
@@ -60,7 +60,8 @@ export default function EventsPage() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const trackRef = useRef<HTMLDivElement>(null);
-  const [cursorPos, setCursorPos] = useState({ x: 0, y: 0 });
+  const cursorX = useMotionValue(0);
+  const cursorY = useMotionValue(0);
   const [showCustomCursor, setShowCustomCursor] = useState(false);
   const [displayedTitle, setDisplayedTitle] = useState("EVENTS");
   const [displayedDateLocation, setDisplayedDateLocation] = useState("");
@@ -223,71 +224,55 @@ export default function EventsPage() {
     if (stage !== 2) return;
 
     const handleMouseMove = (e: MouseEvent) => {
-      setCursorPos({ x: e.clientX, y: e.clientY });
-
-          };
-
-    const handleInteractiveEnter = () => {
-      setShowCustomCursor(false);
+      cursorX.set(e.clientX);
+      cursorY.set(e.clientY);
+      const target = document.elementFromPoint(e.clientX, e.clientY);
+      const isInteractive = !!target?.closest(
+        'a, button, .hamburger-button, .calendar-button, .events-calendar-button, .events-header, .event-card, .event-card-image'
+      );
+      setShowCustomCursor(!isInteractive);
+      document.body.classList.toggle('events-cursor-interactive', isInteractive);
     };
-
-    const handleInteractiveLeave = () => {
-      setShowCustomCursor(true);
-    };
-
-    // Attach listeners to interactive elements
-    const attachListeners = () => {
-      const interactiveElements = document.querySelectorAll('.events-header, .event-card, .event-card-image');
-      interactiveElements.forEach((el) => {
-        el.addEventListener('mouseenter', handleInteractiveEnter);
-        el.addEventListener('mouseleave', handleInteractiveLeave);
-      });
-    };
-
-    // Wait for elements to be in DOM
-    const timeoutId = setTimeout(attachListeners, 100);
-
     setShowCustomCursor(true);
     window.addEventListener('mousemove', handleMouseMove);
 
     return () => {
-            clearTimeout(timeoutId);
       window.removeEventListener('mousemove', handleMouseMove);
       setShowCustomCursor(false);
-            const interactiveElements = document.querySelectorAll('.events-header, .event-card, .event-card-image');
-      interactiveElements.forEach((el) => {
-        el.removeEventListener('mouseenter', handleInteractiveEnter);
-        el.removeEventListener('mouseleave', handleInteractiveLeave);
-      });
-
+      document.body.classList.remove('events-cursor-interactive');
     };
   }, [stage]);
 
+  useEffect(() => {
+    document.body.classList.add('events-cursor');
+    document.documentElement.classList.add('events-cursor');
+    return () => {
+      document.body.classList.remove('events-cursor');
+      document.body.classList.remove('events-cursor-interactive');
+      document.documentElement.classList.remove('events-cursor');
+      document.documentElement.classList.remove('events-cursor-interactive');
+    };
+  }, []);
+
   return (
-    <div style={{ position: "relative", maxWidth: "100%", minHeight: "100vh", height: "100vh", overflow: "hidden", background: "#2B0906", cursor: "none" }}>
+    <div
+      className="events-page"
+      style={{ position: "relative", maxWidth: "100%", minHeight: "100vh", height: "100vh", overflow: "hidden", background: "#2B0906" }}
+    >
       {/* Custom Cursor */}
       {showCustomCursor && (
         <motion.div
           className="custom-cursor"
           style={{
-            left: cursorPos.x,
-            top: cursorPos.y,
+            x: cursorX,
+            y: cursorY,
           }}
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 0.8 }}
           transition={{ duration: 0.2 }}
         >
-          <div className="cursor-circle">
-            <svg width="50" height="50" viewBox="0 0 50 50">
-              <circle cx="25" cy="25" r="23" stroke="#D82E11" strokeWidth="2" fill="none" />
-              {/* Left arrow pointing left with tail connected to center */}
-              <path d="M25 25 L17 25 M20 22 L17 25 L20 28" stroke="#D82E11" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" />
-              {/* Right arrow pointing right with tail connected to center */}
-              <path d="M25 25 L33 25 M30 22 L33 25 L30 28" stroke="#D82E11" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-          </div>
-          <div className="cursor-text">Drag & Explore</div>
+          <img src="/icons/dragnexplore.svg" alt="Drag to explore" className="cursor-icon" />
         </motion.div>
       )}
 
@@ -446,7 +431,12 @@ export default function EventsPage() {
                   </motion.p>
                 </ParallaxMotion>
                 <div className="header-h3-wrapper">
-                  <ParallaxMotion speedX={40} speedY={25} easing={[0.17, 0.67, 0.3, 0.99]}>
+                  <ParallaxMotion
+                    className="header-h3-parallax"
+                    speedX={40}
+                    speedY={25}
+                    easing={[0.17, 0.67, 0.3, 0.99]}
+                  >
                     <motion.div
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}

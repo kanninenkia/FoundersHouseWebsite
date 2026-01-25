@@ -318,29 +318,27 @@
 /* ==================== 3. QUOTE CARDS SECTION - 3x2 GRID ==================== */
 
 .quote-cards-section {
-  position: fixed; /* Changed to fixed to sit behind opening section */
-  top: 0;
-  left: 0;
+  position: relative;
   width: 100%;
-  height: 100vh;
-  padding: clamp(2rem, 4vw, 4rem); /* Responsive padding */
+  min-height: 160vh;
+  padding: clamp(2rem, 4vw, 4rem);
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: transparent; /* Transparent to show container's animated background */
-  overflow: visible; /* Allow cards to be visible */
-  z-index: 1; /* Behind opening section */
+  background-color: transparent;
+  overflow: visible;
+  z-index: 1;
 }
 
 .quote-cards-grid {
   position: relative;
-  max-width: 900px; /* Fixed max width */
+  max-width: 1800px; /* Fixed max width */
   width: 100%;
   margin: 0 auto;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 1rem; /* Fixed gap */
-  padding: 0 2rem; /* Fixed padding */
+  gap: 20px; /* Fixed gap */
+  padding: 0 1rem; /* Fixed padding */
   align-items: start;
   transform: scale(0.95);
   transform-origin: center center;
@@ -356,7 +354,7 @@
 
 /* Top-left: ILKKA (light-red) - mid height */
 .quote-card-wrapper:nth-child(1) {
-  margin-top: 30px;
+  margin-top: 30px;   
   z-index: 1;
 }
 
@@ -863,34 +861,3 @@
 /* Floating images and decorative squares: Let Framer Motion handle layer promotion */
 /* Removed will-change and backface-visibility to prevent compositing layer conflicts */
 /* Framer Motion manages its own GPU acceleration for 3D transforms */
-
-/* ==================== HOME PAGE FOOTER OVERRIDE ==================== */
-/* Tighter, more compact footer styling for home page */
-
-.home-footer-wrapper .footer {
-  padding: 2vh 0 1.5vh;
-  max-height: 25vh;
-  gap: 0;
-  border-top: none; /* Remove top divider line */
-  transform: scale(1.02); /* Make whole footer 2% bigger */
-  transform-origin: bottom center;
-}
-
-.home-footer-wrapper .footer-sponsors {
-  width: 100%;
-}
-
-.home-footer-wrapper .footer-divider {
-  width: 100%;
-  height: 1px;
-  background: rgba(255, 248, 242, 0.15);
-}
-
-.home-footer-wrapper .footer-content {
-  width: 100%;
-}
-
-/* Hide Supercell logo on home page to match old design */
-.home-footer-wrapper .sponsor-logo:nth-child(3) {
-  display: none;
-}

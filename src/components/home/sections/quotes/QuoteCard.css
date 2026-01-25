@@ -11,21 +11,11 @@
   overflow: hidden;
   border-radius: 0;
   cursor: pointer;
-  transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+  transition: opacity 0.4s cubic-bezier(0.22, 1, 0.36, 1);
   margin: 0 auto;
   /* Initial state controlled by scroll-based transforms */
-  will-change: transform, opacity;
+  will-change: opacity;
   backface-visibility: hidden;
-}
-
-.quote-card:hover {
-  transform: scale(1.02);
-}
-
-@media (max-width: 1024px) {
-  .quote-card {
-    max-width: min(400px, 100%);
-  }
 }
 
 /* Image background */
@@ -39,6 +29,14 @@
   background-position: center;
   background-repeat: no-repeat;
   z-index: 1;
+  filter: grayscale(0.9);
+  transition: filter 0.8s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 4.4s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.quote-card:hover .quote-card-image {
+  filter: grayscale(0);
+  transform: scale(1.07);
 }
 
 /* Dark overlay for text readability */
@@ -70,19 +68,22 @@
 
 /* Quote text - above name */
 .quote-card-text {
+  font-family: "IBM Plex Sans", sans-serif;
   font-size: clamp(0.8rem, 1.1vw, 1.1rem);
-  line-height: 1.5;
+  line-height: 1.5; 
   color: rgba(255, 255, 255, 0.95);
   margin: 0 0 clamp(0.75rem, 1.5vw, 1rem) 0;
-  font-weight: 400;
+  font-weight: 300;
   font-style: italic;
+  text-transform: uppercase;
 }
 
 /* Name - bottom 18% of card, split into two lines */
 .quote-card-name {
-  font-size: clamp(1.4rem, 2.2vw, 2.2rem);
+  font-family: "IBM Plex Sans", sans-serif;
+  font-size: clamp(1.8rem, 3vw, 3rem);
   font-weight: 900;
-  line-height: 1.1;
+  line-height: 1;
   letter-spacing: -0.02em;
   text-transform: uppercase;
   margin: 0;

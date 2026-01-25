@@ -58,12 +58,14 @@ export class HelsinkiCameraController {
   private parallaxOffsetX = 0;
   private parallaxOffsetY = 0;
   private parallaxStrength = 30;
-  private parallaxEasing = 0.04;
+  // CHROME FIX: Increase parallax easing for smoother interpolation
+  private parallaxEasing = 0.08;
   private baseCameraPosition: THREE.Vector3 = new THREE.Vector3();
   private parallaxEnabled = true;
   private cameraTargetPosition: THREE.Vector3 = new THREE.Vector3();
   private desiredCameraPosition: THREE.Vector3 = new THREE.Vector3();
-  private cameraLerpAlpha: number = 0.08;
+  // CHROME FIX: Increase lerp alpha for snappier response
+  private cameraLerpAlpha: number = 0.15;
   private _last = performance.now()
   private dragTargetPosition: THREE.Vector3 = new THREE.Vector3();
   private _tempSpherical: THREE.Spherical = new THREE.Spherical();

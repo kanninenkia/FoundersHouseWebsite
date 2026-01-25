@@ -646,6 +646,17 @@
   cursor: none;
 }
 
+.logo-container,
+.hamburger-menu,
+.hero-learn-more,
+.poi-navigator-wrapper button,
+.poi-navigator-wrapper a,
+.full-screen-menu button,
+.full-screen-menu a,
+.full-screen-menu .clickable {
+  cursor: pointer;
+}
+
 /* Drag cursor indicator - custom SVG icon */
 .drag-cursor-indicator {
   position: fixed;

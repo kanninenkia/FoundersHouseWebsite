@@ -63,6 +63,7 @@ export class HelsinkiScene {
   private lastInteractionTime: number = Date.now()
   private initialLoadTime: number = Date.now()
   private lastHeroTextOpacity: number = -1
+  private suppressAutoCentering: boolean = false
   private originalMinPolarAngle: number | null = null
   private originalMaxPolarAngle: number | null = null
   private justFinishedPOIAnimation: boolean = false
@@ -300,6 +301,10 @@ export class HelsinkiScene {
     const elapsed = this.clock.getElapsedTime()
     const delta = this.clock.getDelta()
 
+    // CHROME FIX: Clamp delta to prevent jitter from frame rate spikes
+    // Cap at 20fps minimum (1/20 = 0.05s) to allow animations to progress even during lag
+    const clampedDelta = Math.min(delta, 0.05)
+
     // Smooth POI animation system - DISABLE interruptions during POI animations
     const isPOIAnimating = this.poiAnimation && this.poiAnimation.isActive
 
@@ -376,8 +381,8 @@ export class HelsinkiScene {
 
     let currentCameraTarget = this.controls.target || new THREE.Vector3(0, 0, 0)
 
-    if (isPOIAnimating) {
-      const result = updateSmoothPOIAnimation(this.poiAnimation, this.camera, elapsed, delta)
+    if (isPOIAnimating && this.poiAnimation) {
+      const result = updateSmoothPOIAnimation(this.poiAnimation, this.camera, elapsed, clampedDelta)
       currentCameraTarget = result.currentTarget
 
       // SMOOTH HANDOFF: During settling phase, pre-sync controller state
@@ -397,33 +402,23 @@ export class HelsinkiScene {
     const isAngleRestoring = this.angleRestoreAnimation && this.angleRestoreAnimation.active
 
     if (!isPOIAnimating && !isAngleRestoring) {
-      if (this.justFinishedPOIAnimation) {
-        console.log('📹 BEFORE controls.update() (frame after animation):')
-        console.log('  Camera Position:', this.camera.position.toArray())
-        console.log('  Controls Target:', this.controls.target.toArray())
-        console.log('  Camera Rotation:', this.camera.rotation.toArray().slice(0, 3))
-      }
-
-      this.controls.update(delta)
-
-      if (this.justFinishedPOIAnimation) {
-        console.log('📹 AFTER controls.update() (THE SNAP):')
-        console.log('  Camera Position:', this.camera.position.toArray())
-        console.log('  Controls Target:', this.controls.target.toArray())
-        console.log('  Camera Rotation:', this.camera.rotation.toArray().slice(0, 3))
-        console.log('  ⚠️  POSITION DELTA:', {
-          x: this.camera.position.x,
-          y: this.camera.position.y,
-          z: this.camera.position.z
-        })
-        this.justFinishedPOIAnimation = false
-      }
+      // CHROME FIX: Use clamped delta for smoother control updates
+      this.controls.update(clampedDelta)
+      this.justFinishedPOIAnimation = false
     } else if (!isPOIAnimating && isAngleRestoring) {
       // During angle restoration, keep target in sync but don't update controls
       if (this.controls.target) {
         this.controls.target.copy(currentCameraTarget)
       }
+    } else if (isPOIAnimating) {
+      // During POI animation, avoid control updates that can move the camera.
+      if (this.controls.target) {
+        this.controls.target.copy(currentCameraTarget)
+      }
     } else {
+      // CHROME FIX: Use clamped delta for smoother control updates
+      this.controls.update(clampedDelta)
+
       if (this.controls.target) {
         this.controls.target.copy(currentCameraTarget)
       }
@@ -447,7 +442,7 @@ export class HelsinkiScene {
    * This creates a subtle auto-correction effect when the user is idle
    */
   private updateAutoCentering(): void {
-    if (!this.helsinkiModel) return // Don't run until model is loaded
+    if (!this.helsinkiModel || this.suppressAutoCentering) return // Don't run until model is loaded
 
     const screenPos = FOUNDERS_HOUSE_SCREEN_POS.clone()
     screenPos.project(this.camera)
@@ -608,6 +603,9 @@ export class HelsinkiScene {
     const poi = POINTS_OF_INTEREST[poiName]
     if (!poi) return
 
+    // Suppress auto-centering when focusing nearby POIs to avoid recentering FH.
+    this.suppressAutoCentering = poiName === 'SILO' || poiName === 'LINEAR'
+
     // CRITICAL: Stop all camera momentum before starting POI animation
     // This prevents teleportation when clicking "Learn More" while camera is moving
     if (this.controls.syncInternalState) {
@@ -746,7 +744,8 @@ export class HelsinkiScene {
           },
           () => {
             this.poiHighlightManager.clearHighlights()
-          }
+          },
+          this.clock.getElapsedTime()
         )
     } else {
       const config: CameraConfig = {
@@ -814,33 +813,19 @@ export class HelsinkiScene {
    * Always zooms to the same endpoint for consistency
    */
   public zoomToFoundersHouse(onComplete?: () => void): void {
-    console.log('🚀 LEARN MORE CLICKED - Starting zoom to Founders House')
-    console.log('  Current Camera Position:', this.camera.position.toArray())
-    console.log('  Current Target:', this.controls.target ? this.controls.target.toArray() : 'none')
-    console.log('  Current Velocity:', (this.controls as any).velocity ? (this.controls as any).velocity.toArray() : 'none')
-    console.log('  Current Rotation Velocity:', (this.controls as any).rotationVelocity || 0)
-
     // Stop all momentum
     if (this.controls.syncInternalState) {
       this.controls.syncInternalState()
-      console.log('  ✅ Momentum stopped via syncInternalState')
     }
-
-    console.log('  Camera Position AFTER momentum stop:', this.camera.position.toArray())
 
     // Target: Founders House building
     const targetPos = new THREE.Vector3(30.77, -20.14, -533.42)
 
-    // Camera end position: Very close to building, looking straight at it
-    const cameraEndPos = new THREE.Vector3(30.77, 180, -300)
+    // Camera end position: Respect controller height constraints to avoid a clamp snap
+    const cameraEndPos = new THREE.Vector3(30.77, 210, -300)
 
     const startPos = this.camera.position.clone()
     const startTarget = this.controls.target ? this.controls.target.clone() : new THREE.Vector3(0, 0, 0)
-
-    console.log('  Animation Start Position:', startPos.toArray())
-    console.log('  Animation Start Target:', startTarget.toArray())
-    console.log('  Animation End Position:', cameraEndPos.toArray())
-    console.log('  Animation End Target:', targetPos.toArray())
 
     // Create direct zoom animation
     // CRITICAL: Use this.clock.getElapsedTime() not performance.now() to match update loop
@@ -855,7 +840,6 @@ export class HelsinkiScene {
       currentVelocity: new THREE.Vector3(),
       currentTargetVelocity: new THREE.Vector3(),
       onComplete: () => {
-        console.log('  ✅ Zoom animation completed')
         if (this.controls.setTarget) {
           this.controls.setTarget(targetPos.x, targetPos.y, targetPos.z)
         }
@@ -866,9 +850,7 @@ export class HelsinkiScene {
           onComplete()
         }
       },
-      onInterrupt: () => {
-        console.log('  ⚠️ Zoom animation interrupted')
-      }
+      onInterrupt: () => {}
     }
   }
 }

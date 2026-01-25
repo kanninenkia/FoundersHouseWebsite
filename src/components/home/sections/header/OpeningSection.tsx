@@ -114,6 +114,7 @@ interface OpeningSectionProps {
   depthTransitionProgress: MotionValue<number>
   ANIMATION_CONFIG: any
   EASING: any
+  isPinned?: boolean;
 }
 
 export const OpeningSection = ({
@@ -130,7 +131,8 @@ export const OpeningSection = ({
   squareDepthZ,
   depthTransitionProgress,
   ANIMATION_CONFIG,
-  EASING
+  EASING,
+  isPinned = true
 }: OpeningSectionProps) => {
   const floatingImagesConfig = FLOATING_IMAGES_CONFIG.map((config: typeof FLOATING_IMAGES_CONFIG[0], i: number) =>
     i === 0 && hasEnteredFromTransition ? { ...config, delay: 0.8 } : config
@@ -151,7 +153,13 @@ export const OpeningSection = ({
       style={{
         opacity: openingSectionOpacity,
         pointerEvents: 'auto',
-        visibility: isVisible ? 'visible' : 'hidden'
+        visibility: isVisible ? 'visible' : 'hidden',
+        position: isPinned ? 'fixed' : 'relative',
+        top: isPinned ? 0 : undefined,
+        left: isPinned ? 0 : undefined,
+        width: '100%',
+        height: '100vh',
+        zIndex: 10
       }}
     >
       <motion.div

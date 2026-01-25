@@ -1,4 +1,4 @@
-/**
+/*
  * QuoteCard Component
  * Card with image background, name at bottom, quote above name
  * Animation now controlled by parent wrapper for 100% consistency

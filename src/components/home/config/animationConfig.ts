@@ -38,19 +38,19 @@ export const ANIMATION_CONFIG = {
   spring: { damping: 35, stiffness: 80, mass: 0.5 },
   virtualScrollSpring: { stiffness: 100, damping: 25, mass: 0.8, restDelta: 0.001, restSpeed: 0.001 },
 
-  maxVirtualScroll: 1.5,
+  maxVirtualScroll: 3,
   boxScrollHeight: 3,
 
   timing: {
-    cardsFadeOut: { start: 0, end: 0.35 },  // Reduced window for faster, complete fade out
+    cardsFadeOut: { start: 0, end: 0.1 },  // Reduced window for faster, complete fade out
     textImageFadeIn: { start: 0.55, end: 0.90 },
     cardsFadeIn: { threshold: 0.7 },
   },
 
   // Narrative-driven scroll phases - each phase gets equal attention
   scrollPhases: {
-    // Phase 1: Box-in-box reveal with OBSESSIVE text (1.5x viewport)
-    phase1Duration: 1.5,
+    // Phase 1: Box-in-box reveal with OBSESSIVE text (3.0x viewport)
+    phase1Duration: 3,
 
     // Phase 2: Transform to rectangle + translate + AMBITIOUS text (2.0x viewport)
     // Sub-phase 2a: Transform elements (first half)
