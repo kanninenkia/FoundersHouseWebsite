@@ -125,22 +125,22 @@
     left: 5%;
 }
 .scroll-section .part-obsessive .part-img-wrapper .part-img-squares {
-    top: 40%;
-    left: 40%;
+    top: 20%;
+    left: 30%;
 }
 .scroll-section .part-obsessive .part-img-wrapper .part-img-squares .square-1 {
     position: absolute;
     border: solid 4px #D82E11;
-    height: 200px;
-    width: 200px;;
+    height: 40vh;
+    width: 30vw;
 } 
 .scroll-section .part-obsessive .part-img-wrapper .part-img-squares .square-2 {
     position: absolute;
     border: solid 4px #D82E11;
-    height: 200px;
-    width: 200px;
-    right: -150px;
-    bottom: -150px;
+    height: 40vh;
+    width: 30vw;
+    right: -28vw;
+    bottom: -38vh;
 }
 
 /*--------------- Ambitious ---------------*/
@@ -148,6 +148,13 @@
     height: 80vh;
     width: 50%;
     margin-left: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.scroll-section .part-ambitious .part-img-wrapper .part-img img {
+    height: 100%;
+    width: auto;
 }
 .scroll-section .part-ambitious .bg-shape {
     height: 80%;
@@ -171,8 +178,8 @@
     font-size: 7rem;
 }
 .scroll-section .part-ambitious .part-img-wrapper .part-img-squares {
-    top: 25%;
-    right: 30%;
+    bottom: 60%;
+    right: 40%;
 }
 .scroll-section .part-ambitious .part-img-wrapper .part-img-squares .square-1 {
     position: absolute;
@@ -274,6 +281,14 @@
 .scroll-section .part-nextgen .part-img-wrapper .part-img {
     height: 80vh;
     width: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.scroll-section .part-nextgen .part-img-wrapper .part-img img {
+    height: 100%;
+    width: auto;
+    object-fit: cover;
 }
 .scroll-section .part-nextgen .bg-shape {
     height: 80%;
@@ -295,6 +310,24 @@
 .scroll-section .part-nextgen .part-img-title h3 {
     transform: rotate(-90deg);
     font-size: 7rem;
+}
+.scroll-section .part-nextgen .part-img-wrapper .part-img-squares {
+    top: 10%;
+    left: 5%;
+}
+.scroll-section .part-nextgen .part-img-wrapper .part-img-squares .square-1 {
+    position: absolute;
+    border: solid 4px #D82E11;
+    height: 30vh;
+    width: 30vw;
+} 
+.scroll-section .part-nextgen .part-img-wrapper .part-img-squares .square-2 {
+    position: absolute;
+    border: solid 4px #D82E11;
+    height: 30vh;
+    width: 30vw;
+    right: -28vw;
+    bottom: -33vh;
 }
 
 /*--------------- Builders ---------------*/
@@ -322,22 +355,22 @@
     left: 5%;
 }
 .scroll-section .part-builders .part-img-wrapper .part-img-squares {
-    top: 40%;
-    left: 40%;
+    bottom: 50%;
+    left: 10%;
 }
 .scroll-section .part-builders .part-img-wrapper .part-img-squares .square-1 {
     position: absolute;
     border: solid 4px #D82E11;
-    height: 200px;
-    width: 200px;;
+    height: 20vh;
+    width: 26vw;
 } 
 .scroll-section .part-builders .part-img-wrapper .part-img-squares .square-2 {
     position: absolute;
     border: solid 4px #D82E11;
-    height: 200px;
-    width: 200px;
-    right: -150px;
-    bottom: -150px;
+    height: 20vh;
+    width: 26vw;
+    right: -23vw;
+    bottom: -23vh;
 }
 
 
@@ -419,11 +452,13 @@
 }
 
 .join-section .join-img .join-img-content {
-    width: 100%;
     position: absolute;
     z-index: 10;
     bottom: 40px;
     left: 40px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
 }
 
 .join-section .join-img .join-img-content h4 {

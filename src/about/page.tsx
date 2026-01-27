@@ -7,12 +7,12 @@ import "./page.css";
 import { HelsinkiViewer } from "../components/map";
 import { Footer } from "../components/layout";
 
-const HEADER_IMG_SRC = "/assets/images/events/The Legends Day.webp";
+const HEADER_IMG_SRC = "/assets/images/membership/join-process.webp";
 const SECTION2_IMG_SRC = "/assets/images/events/Wave x Maki Photo (2).webp";
-const SECTION3_IMG_1_SRC = "/assets/images/events/Legends Day Still 002.webp";
+const SECTION3_IMG_1_SRC = "/assets/images/events/FH_people1.webp";
 const SECTION3_IMG_2_SRC = "/assets/images/events/Wave x Maki Photo.webp";
 const SECTION3_IMG_3_SRC = "/assets/images/events/LoadInImage-min.webp";
-const SECTION4_IMG_SRC = "/assets/images/events/Legends Day Still 014.webp";
+const SECTION4_IMG_SRC = "/assets/images/events/FH_zechen.webp";
 const SECTION5_MAP_IMG_SRC = "/assets/models/birdseyemaps.webp";
 const SECTION5_MAP_TOP_IMG_SRC = "/assets/models/radar.webp";
 const FOUNDERS_HOUSE_TEAM_IMG_SRC = "/assets/images/team/Founders House BW.webp";
@@ -307,7 +307,7 @@ export default function AboutPage() {
               
               <motion.div className="section-2-content" style={{ y: section2Content }}>
                 <ParallaxMotion speedX={30} speedY={32} easing={[0.17, 0.67, 0.3, 0.99]}>
-                  <p>Founders House Helsinki is the hub for Finland’s most promising next-gen startups. A home for builders who move faster than anyone else, think differently, and raise the bar for everyone around them.</p>
+                  <p>FOUNDERS HOUSE HELSINKI IS THE HOME FOR EUROPE’S TOP NEXT-GEN FOUNDERS. THE BUILDERS WHO THINK DIFFERENTLY, MOVE FASTER THAN ANYONE ELSE AND RAISE THE BAR FOR EVERYONE AROUND.</p>
                 </ParallaxMotion>
               </motion.div>
             </div>
@@ -331,7 +331,7 @@ export default function AboutPage() {
                   </ParallaxMotion>
                 </div>
                 <ParallaxMotion speedX={70} speedY={70} delay={5}>
-                  <motion.p style={{ y: section3text }}>We're here to support them through a tight-knit community shaped by high ambition, collaboration, and shared energy—all under one roof. Here collisions happen naturally, where potential multiplies, and where the right people find each other.</motion.p>
+                  <motion.p style={{ y: section3text }}>WE SUPPORT THESE FOUNDERS DURING THE MOST CRITICAL EARLY STAGES OF BUILDING THROUGH A TIGHT COMMUNITY SHAPED BY COLLABORATION AND SHARED AMBITION—ALL UNDER THE SAME ROOF. BY BRINGING THESE PEOPLE TOGETHER WE CREATE THE CONDITIONS FOR AMBITIOUS COMPANIES TO BE BUILT FASTER AND AT A HIGHER LEVEL. HERE TALENT CONENTRATES AND POTENTIAL MULTIPLIES. </motion.p>
                 </ParallaxMotion>
               </div>
             </motion.div>

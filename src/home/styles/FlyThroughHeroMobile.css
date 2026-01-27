@@ -1,13 +1,16 @@
-/* Tablets */
-@media (min-width: 768px) and (max-width: 1050px) and (orientation: landscape) {
-    .scroll-section .part .part-img-title {
-        font-size: 5rem;
+/* Landscape Tablets */
+@media (min-width: 768px) and (max-width: 1200px) and (orientation: landscape) {
+    .scroll-section .part-obsessive .part-img-title h3 {
+        font-size: 7rem;
     }
     .scroll-section .part-ambitious .part-img-title h3 {
-        font-size: 5rem;
+        font-size: 7rem;
     }
     .scroll-section .part-nextgen .part-img-title h3 {
-        font-size: 5rem;
+        font-size: 7rem;
+    }
+    .scroll-section .part-builders .part-img-title h3 {
+        font-size: 7rem;
     }
 
     .scroll-section .part .part-img-wrapper .part-img-text p {
@@ -44,7 +47,7 @@
     }
 }
 
-/* Large tablets portrait */
+/* Portrait Tablets */
 @media (min-width: 768px) and (max-width: 1050px) and (orientation: portrait) {
     .quotes-section .quotes-grid {
         grid-template-columns: 1fr 1fr;
@@ -76,7 +79,11 @@
         width: auto;
         height: 100%;
         object-position: center;
-        margin-left: -40%;
+        margin-left: -20%;
+    }
+
+    .scroll-section .part .part-img-squares {
+        display: none;
     }
 
     /*--------------- Obsessive ---------------*/
@@ -159,6 +166,11 @@
         display: none;
     }
 
+    /*------------- MAP --------------*/
+    .part-ambitious .ambitious-map {
+        display: none;
+    }
+
     /*--------------- Nextgen ---------------*/
     .scroll-section .part-nextgen .part-img-wrapper .part-img {
         height: 80vh;
@@ -180,7 +192,7 @@
     }
     .scroll-section .part-nextgen .part-img-title {
         bottom: 30%;
-        left: -45%;
+        left: -25%;
     }
     .scroll-section .part-nextgen .part-img-title h3 {
         transform: rotate(-90deg);
@@ -301,6 +313,10 @@
         margin-left: -40%;
     }
 
+     .scroll-section .part .part-img-squares {
+        display: none;
+    }
+
     /*--------------- Obsessive ---------------*/
     .scroll-section .part-obsessive {
         margin-top: 20%;    
@@ -378,6 +394,11 @@
         width: 200px;
         right: -150px;
         bottom: -150px;
+        display: none;
+    }
+
+    /*------------- MAP --------------*/
+    .part-ambitious .ambitious-map {
         display: none;
     }
 

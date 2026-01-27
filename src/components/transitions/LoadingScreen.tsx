@@ -46,11 +46,11 @@ export const LoadingScreen = ({ onComplete, duration, scrollProgress, isReturnVi
   const [loadingImage] = useState(() => {
     const images = [
       '/assets/images/events/LoadInImage-min.webp',
-      '/assets/images/events/The Legends Day.webp',
+      '/assets/images/membership/join-process.webp',
       '/assets/images/events/Wave x Maki Photo (2).webp',
       '/assets/images/events/Wave x Maki Photo.webp',
-      '/assets/images/events/Legends Day Still 002.webp',
-      '/assets/images/events/Legends Day Still 014.webp'
+      '/assets/images/events/FH_people1.webp',
+      '/assets/images/events/FH_zechen.webp'
     ]
     const randomIndex = Math.floor(Math.random() * images.length)
     return images[randomIndex]

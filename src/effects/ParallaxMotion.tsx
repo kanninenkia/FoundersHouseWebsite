@@ -1,8 +1,5 @@
 import { motion, useMotionValue, animate } from "framer-motion";
-import { useEffect, ReactNode } from "react";
-
-const isSafari = typeof navigator !== "undefined" &&
-  /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+import { useEffect, ReactNode, useState } from "react";
 
 interface ParallaxMotionProps {
   children: ReactNode;
@@ -27,9 +24,21 @@ const ParallaxMotion = ({
   const mouseY = useMotionValue(0);
   const parallaxX = useMotionValue(0);
   const parallaxY = useMotionValue(0);
+  const [isDisabled, setIsDisabled] = useState(false);
+
+  // Check if parallax should be disabled based on screen size
+  useEffect(() => {
+    const checkScreenSize = () => {
+      setIsDisabled(window.innerWidth < 1200);
+    };
+    checkScreenSize();
+    window.addEventListener("resize", checkScreenSize);
+    return () => window.removeEventListener("resize", checkScreenSize);
+  }, []);
 
   useEffect(() => {
-    if (isSafari) return;
+    if (isDisabled) return; // Don't attach listeners if disabled
+    
     const handle = (e: MouseEvent) => {
       const { innerWidth, innerHeight } = window;
       const normX = (e.clientX / innerWidth) * 2 - 1;
@@ -39,29 +48,32 @@ const ParallaxMotion = ({
     };
     window.addEventListener("mousemove", handle);
     return () => window.removeEventListener("mousemove", handle);
-  }, [mouseX, mouseY]);
+  }, [mouseX, mouseY, isDisabled]);
 
   useEffect(() => {
-    if (isSafari) return;
+    if (isDisabled) return; // Don't animate if disabled
+    
+    let timeoutX: NodeJS.Timeout | null = null;
+    let timeoutY: NodeJS.Timeout | null = null;
     const unsubX = mouseX.on("change", (v) => {
-      animate(parallaxX, v * speedX, {
-        ease: easing as any,
-        duration: 1.4,
-        delay: delay / 1000,
-      });
+      if (timeoutX) clearTimeout(timeoutX);
+      timeoutX = setTimeout(() => {
+        animate(parallaxX, v * speedX, { ease: easing as any, duration: 1.4 });
+      }, delay);
     });
     const unsubY = mouseY.on("change", (v) => {
-      animate(parallaxY, v * speedY, {
-        ease: easing as any,
-        duration: 1.4,
-        delay: delay / 1000,
-      });
+      if (timeoutY) clearTimeout(timeoutY);
+      timeoutY = setTimeout(() => {
+        animate(parallaxY, v * speedY, { ease: easing as any, duration: 1.4 });
+      }, delay);
     });
     return () => {
       unsubX();
       unsubY();
+      if (timeoutX) clearTimeout(timeoutX);
+      if (timeoutY) clearTimeout(timeoutY);
     };
-  }, [mouseX, mouseY, parallaxX, parallaxY, speedX, speedY, easing, delay]);
+  }, [mouseX, mouseY, parallaxX, parallaxY, speedX, speedY, easing, delay, isDisabled]);
 
   return (
     <motion.div

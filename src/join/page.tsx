@@ -1,8 +1,10 @@
-import { useEffect, useRef, useState } from "react";
-import { motion, AnimatePresence, useScroll, useAnimation } from "framer-motion";
-import { useTransform } from "framer-motion";
+import React, { useEffect, useRef, useState } from "react";
+import { motion, AnimatePresence, useScroll, useAnimation, color } from "framer-motion";
+import { useMotionValue, useTransform } from "framer-motion";
+import GridDistortion from '../effects/GridDistortion.tsx';
 import ParallaxMotion from '../effects/ParallaxMotion.tsx';
 import "./page.css";
+import { HelsinkiViewer } from "../components/map";
 import { Footer } from "../components/layout";
 import { Button } from "../components/ui";
 
@@ -31,6 +33,11 @@ export default function JoinPage() {
     };
   }, [hoveredMember]);
 
+  // Parallax setup
+  const yScroll = useMotionValue(0);
+  // Parallax: image moves at 40% scroll speed in stage 2
+  const parallaxY = useTransform(yScroll, (v) => stage === 2 ? v * 0.4 : 0);
+
   //--------------------------------------//
   // Parallax on Elements Settings //
   //--------------------------------------//
@@ -43,14 +50,6 @@ export default function JoinPage() {
   /* Section 2 */
   const section2BG = useTransform(scrollY, [0, 1500], [-100, 200]);
   const section2Content = useTransform(scrollY, [0, 1500], [-150, 200]);
-
-  // Mobile adjustments for last-section content
-    const isMobile = window.innerWidth <= 768;
-
-  const mobileOffset1 = isMobile ? -21 : 0; // 3vh ≈ 21px on mobile for "Application process"
-  const mobileOffset2 = isMobile ? -28 : 0; // 4vh ≈ 28px on mobile for "Join our community" (2vh more)
-  const section2ContentMobile1 = useTransform(scrollY, [0, 1500], [-150 + mobileOffset1, 200 + mobileOffset1]);
-  const section2ContentMobile2 = useTransform(scrollY, [0, 1500], [-150 + mobileOffset2, 200 + mobileOffset2]);
 
   // Scroll-based scale for header-wrapper in stage 2
   const headerWrapperScale = useTransform(scrollY, [0, 400], [1, 0.92]);
@@ -263,14 +262,7 @@ export default function JoinPage() {
                           <div className="img-square resident-square square-br-2" />
                           <div className="img-square resident-square square-br-3" />
                         </div>
-                        <motion.div
-                          initial={{ opacity: 0, y: 20 }}
-                          whileInView={{ opacity: 1, y: 0 }}
-                          viewport={{ once: true, amount: 0.4 }}
-                          transition={{ duration: 0.6, ease: [0.4, 0, 0.2, 1] }}
-                        >
-                          <Button className="button">Become a Resident</Button>
-                        </motion.div>
+                        <Button className="button">Become a Resident</Button>
                       </div>
                     </ParallaxMotion>
                   </ParallaxMotion>
@@ -300,14 +292,7 @@ export default function JoinPage() {
                           <div className="img-square member-square member-square-bl-2" />
                           <div className="img-square member-square member-square-bl-3" />
                         </div>
-                        <motion.div
-                          initial={{ opacity: 0, y: 20 }}
-                          whileInView={{ opacity: 1, y: 0 }}
-                          viewport={{ once: true, amount: 0.4 }}
-                          transition={{ delay: 0.1, duration: 0.6, ease: [0.4, 0, 0.2, 1] }}
-                        >
-                          <Button className="button">Become a members</Button>
-                        </motion.div>
+                        <Button className="button">Become a members</Button>
                       </div>
                     </ParallaxMotion>
                   </ParallaxMotion>
@@ -327,18 +312,18 @@ export default function JoinPage() {
                 </ParallaxMotion>
               </motion.div>        
               
-              <motion.div className="last-section-content" style={{ y: isMobile ? section2ContentMobile1 : section2Content }}>
+              <motion.div className="last-section-content" style={{ y: section2Content }}>
                 <ParallaxMotion speedX={30} speedY={32} easing={[0.17, 0.67, 0.3, 0.99]}>
                   <h3>Application process</h3>
                 </ParallaxMotion>
                 <ParallaxMotion speedX={30} speedY={32} easing={[0.17, 0.67, 0.3, 0.99]}>
-                  <p>We run two application pushes a year, in February and September, but since we know building a company doesn't look at the time, we have room for exceptional cases when timing matters.</p>
+                  <p>We run two application pushes a year, in February and September, but since we know building a company doesn’t look at the time, we have room for exceptional cases when timing matters.</p>
                   <br />
                   <p>Selected founders are invited to interviews with the Founders House Helsinki team. After that, the council chooses which founders receive Residency or Membership.</p>
                 </ParallaxMotion>
               </motion.div>
 
-              <motion.div className="last-section-content" style={{ y: isMobile ? section2ContentMobile2 : section2Content }}>
+              <motion.div className="last-section-content" style={{ y: section2Content }}>
                 <ParallaxMotion speedX={50} speedY={52} easing={[0.17, 0.67, 0.3, 0.99]}>
                   <h3 style={{ color: "white" }}>Join our community</h3>
                 </ParallaxMotion>
@@ -348,10 +333,10 @@ export default function JoinPage() {
               </motion.div>
             </div>
 
+            <Footer />
           </motion.div>
         )}
       </AnimatePresence>
-      <Footer />
     </div>
   );
 }

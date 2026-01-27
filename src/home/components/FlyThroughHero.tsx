@@ -2,6 +2,7 @@
 
 import { useRef, useState, useEffect } from 'react';
 import { motion, useScroll, useTransform, useSpring, MotionValue, useInView } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 import ParallaxMotion from '../../effects/ParallaxMotion.tsx';
 import '../styles/FlyThroughHero.css';
 import '../styles/FlyThroughHeroMobile.css';
@@ -46,11 +47,11 @@ const FAINT_BLOCKS = [
 const ELEMENTS = [
   // Images - all square (1:1 aspect ratio), with optional parallax variance
   { id: 'img-1', type: 'image', src: '/assets/images/events/LoadInImage-min.webp', x: -38, y: 8, z: 0.3, w: 220, h: 220, speedX: 40, speedY: 10 },
-  { id: 'img-2', type: 'image', src: '/assets/images/events/Legends Day Still 002.webp', x: -18, y: -30, z: 0.5, w: 180, h: 180, speedX: 10, speedY: 30 },
-  { id: 'img-3', type: 'image', src: '/assets/images/events/Legends Day Still 014.webp', x: 18, y: -34, z: 0.4, w: 210, h: 210 },
+  { id: 'img-2', type: 'image', src: '/assets/images/membership/join-process.webp', x: -18, y: -30, z: 0.5, w: 180, h: 180, speedX: 10, speedY: 30 },
+  { id: 'img-3', type: 'image', src: '/assets/images/events/FH_people1.webp', x: 18, y: -34, z: 0.4, w: 210, h: 210 },
   { id: 'img-4', type: 'image', src: '/assets/images/events/Wave x Maki Photo.webp', x: 35, y: 15, z: 0.6, w: 280, h: 280, speedX: 30, speedY: 5 },
   { id: 'img-5', type: 'image', src: '/assets/images/events/Wave x Maki Photo (2).webp', x: 3, y: 30, z: 0.35, w: 220, h: 220 },
-  { id: 'img-6', type: 'image', src: '/assets/images/events/The Legends Day.webp', x: -22, y: 40, z: 0.55, w: 200, h: 200, speedX: 15, speedY: 15 },
+  { id: 'img-6', type: 'image', src: '/assets/images/events/FH_zechen.webp', x: -22, y: 40, z: 0.55, w: 200, h: 200, speedX: 15, speedY: 15 },
 
   // Decorative blocks - all square, with parallax speed variance
   { id: 'block-1', type: 'block', x: -19, y: -40, z: 0.1, w: 80, h: 80, speedX: 12, speedY: 8 },
@@ -252,6 +253,8 @@ function HeroText({ scrollYProgress }: { scrollYProgress: MotionValue<number> })
 // =============================================================================
 
 export function FlyThroughHero() { 
+  const navigate = useNavigate();
+  
   // ------------------------------------------------------------------------
   // RESPONSIVE SCALING FOR FLOATING ELEMENTS
   // ------------------------------------------------------------------------
@@ -273,7 +276,7 @@ export function FlyThroughHero() {
         setPositionSpread(1.1);
         setIsMobileView(true);
       } else {
-        // Desktop
+        // Desktop with mouse
         setElementScale(1);
         setPositionSpread(1);
         setIsMobileView(false);
@@ -593,19 +596,34 @@ return (
                             <div className="square-2"></div>
                         </ParallaxMotion>
                     </motion.div>
-                    <div className="part-img-text">
+                    <motion.div className="part-img-text" style={{ y: obsessedImgContent }}>
                         <ParallaxMotion speedX={isMobileView ? 0 : 10} speedY={isMobileView ? 0 : 10} delay={0} easing={[0.17, 0.67, 0.3, 0.99]}>
-                            <motion.p 
-                            style={{ y: obsessedImgContent }}
-                            >
+                            <div style={{ position: 'relative', display: 'inline-block', overflow: 'hidden' }}>
+                              <p style={{ position: 'relative', zIndex: 0 }}>
                                 For those who outwork and outthink the rest.
-                            </motion.p>
+                              </p>
+                              <motion.div
+                                initial={{ translateY: "0%" }}
+                                whileInView={{ translateY: "100%" }}
+                                transition={{ duration: 0.8, delay: 0.25, ease: [0.22, 1, 0.36, 1] }}
+                                viewport={{ once: true, amount: 0.5 }}
+                                style={{
+                                  position: "absolute",
+                                  top: 0,
+                                  left: 0,
+                                  width: "100%",
+                                  height: "100%",
+                                  backgroundColor: "#D82E11",
+                                  zIndex: 1
+                                }}
+                              />
+                            </div>
                         </ParallaxMotion>
-                    </div>
+                    </motion.div>
                     <div className='part-img'>
                       <ParallaxMotion speedX={8} speedY={8} delay={12} easing={[0.17, 0.67, 0.3, 0.99]}>
                         <motion.img
-                          src="/assets/images/values/obsessive.webp" 
+                          src="/assets/images/values/obsessive_2.webp" 
                           alt="Founders House Obsessive Part" 
                           style={{ y: obsessedImg, scale: 1.1 }}
                         />
@@ -639,19 +657,34 @@ return (
                             <div className="square-2"></div>
                         </ParallaxMotion>
                     </motion.div>
-                    <div className="part-img-text">
+                    <motion.div className="part-img-text" style={{ y: ambitiousImgContent }}>
                         <ParallaxMotion speedX={isMobileView ? 0 : 10} speedY={isMobileView ? 0 : 10} delay={0} easing={[0.17, 0.67, 0.3, 0.99]}>
-                            <motion.p 
-                            style={{ y: ambitiousImgContent }}
-                            >
+                            <div style={{ position: 'relative', display: 'inline-block', overflow: 'hidden' }}>
+                              <p style={{ position: 'relative', zIndex: 0 }}>
                                 A space built for the rare few who operate at the 0.1% level.
-                            </motion.p>
+                              </p>
+                              <motion.div
+                                initial={{ translateY: "0%" }}
+                                whileInView={{ translateY: "100%" }}
+                                transition={{ duration: 0.8, delay: 0.25, ease: [0.22, 1, 0.36, 1] }}
+                                viewport={{ once: true, amount: 0.5 }}
+                                style={{
+                                  position: "absolute",
+                                  top: 0,
+                                  left: 0,
+                                  width: "100%",
+                                  height: "100%",
+                                  backgroundColor: "#D82E11",
+                                  zIndex: 1
+                                }}
+                              />
+                            </div>
                         </ParallaxMotion>
-                    </div>
+                    </motion.div>
                     <div className='part-img'>
                       <ParallaxMotion speedX={8} speedY={8} delay={12} easing={[0.17, 0.67, 0.3, 0.99]}>
                         <motion.img
-                          src="/assets/images/values/ambitious.webp" 
+                          src="/assets/images/values/ambitious_2.webp" 
                           alt="Founders House Ambitious Part" 
                           style={{ y: ambitiousImg, scale: 1.1 }}
                         />
@@ -723,15 +756,30 @@ return (
                             <div className="square-2"></div>
                         </ParallaxMotion>
                     </motion.div>
-                    <div className="part-img-text">
+                    <motion.div className="part-img-text" style={{ y: nextgenImgContent }}>
                         <ParallaxMotion speedX={isMobileView ? 0 : 10} speedY={isMobileView ? 0 : 10} delay={0} easing={[0.17, 0.67, 0.3, 0.99]}>
-                            <motion.p 
-                            style={{ y: nextgenImgContent }}
-                            >
+                            <div style={{ position: 'relative', display: 'inline-block', overflow: 'hidden' }}>
+                              <p style={{ position: 'relative', zIndex: 0 }}>
                                 For the ones moving faster than everyone else.
-                            </motion.p>
+                              </p>
+                              <motion.div
+                                initial={{ translateY: "0%" }}
+                                whileInView={{ translateY: "100%" }}
+                                transition={{ duration: 0.8, delay: 0.25, ease: [0.22, 1, 0.36, 1] }}
+                                viewport={{ once: true, amount: 0.5 }}
+                                style={{
+                                  position: "absolute",
+                                  top: 0,
+                                  left: 0,
+                                  width: "100%",
+                                  height: "100%",
+                                  backgroundColor: "#D82E11",
+                                  zIndex: 1
+                                }}
+                              />
+                            </div>
                         </ParallaxMotion>
-                    </div>
+                    </motion.div>
                     <div className='part-img'>
                       <ParallaxMotion speedX={8} speedY={8} delay={12} easing={[0.17, 0.67, 0.3, 0.99]}>
                         <motion.img
@@ -769,15 +817,30 @@ return (
                             <div className="square-2"></div>
                         </ParallaxMotion>
                     </motion.div>
-                    <div className="part-img-text">
+                    <motion.div className="part-img-text" style={{ y: buildersImgContent }}>
                         <ParallaxMotion speedX={isMobileView ? 0 : 10} speedY={isMobileView ? 0 : 10} delay={0} easing={[0.17, 0.67, 0.3, 0.99]}>
-                            <motion.p 
-                            style={{ y: buildersImgContent }}
-                            >
+                            <div style={{ position: 'relative', display: 'inline-block', overflow: 'hidden' }}>
+                              <p style={{ position: 'relative', zIndex: 0 }}>
                                 For those who outpace their own ambition.
-                            </motion.p>
+                              </p>
+                              <motion.div
+                                initial={{ translateY: "0%" }}
+                                whileInView={{ translateY: "100%" }}
+                                transition={{ duration: 0.8, delay: 0.25, ease: [0.22, 1, 0.36, 1] }}
+                                viewport={{ once: true, amount: 0.5 }}
+                                style={{
+                                  position: "absolute",
+                                  top: 0,
+                                  left: 0,
+                                  width: "100%",
+                                  height: "100%",
+                                  backgroundColor: "#D82E11",
+                                  zIndex: 1
+                                }}
+                              />
+                            </div>
                         </ParallaxMotion>
-                    </div>
+                    </motion.div>
                     <div className='part-img'>
                       <ParallaxMotion speedX={8} speedY={8} delay={12} easing={[0.17, 0.67, 0.3, 0.99]}>
                         <motion.img
@@ -825,8 +888,25 @@ return (
                   />
                 </ParallaxMotion>
                 <div className="join-img-content">
-                  <h4>JOIN US, BUILD WITH US, DEFINE TOMORROW.</h4>
-                  <Button className="cta-button">APPLY NOW</Button>
+                  <div style={{ position: 'relative', display: 'inline-block', overflow: 'hidden' }}>
+                    <h4 style={{ position: 'relative', zIndex: 0 }}>BUILD WITH US, MOVE FASTER, DEFINE TOMORROW.</h4>
+                    <motion.div
+                      initial={{ translateY: "0%" }}
+                      whileInView={{ translateY: "101%" }}
+                      transition={{ duration: 0.8, delay: 0.25, ease: [0.22, 1, 0.36, 1] }}
+                      viewport={{ once: true, amount: 0.5 }}
+                      style={{
+                        position: "absolute",
+                        top: 0,
+                        left: 0,
+                        width: "100%",
+                        height: "100%",
+                        backgroundColor: "#D82E11",
+                        zIndex: 1
+                      }}
+                    />
+                  </div>
+                  <Button className="cta-button" onClick={() => navigate('/join')} style={{ width: 'fit-content' }}>JOIN</Button>
                 </div>
                 {/* Animated squares */}
                 <div className="join-img-square join-square-tl-1" />

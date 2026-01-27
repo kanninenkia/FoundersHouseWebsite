@@ -7,7 +7,7 @@ import { AnimatedHamburger, Button } from '../components/ui';
 import { FullScreenMenu } from '../components/layout';
 import { eventsData } from './hooks/events-data.ts';
 
-const HEADER_IMG_SRC = "/assets/images/events/Legends Day Still 002.webp";
+const HEADER_IMG_SRC = "/assets/images/events/FH_people1.webp";
 
 const removeDuplicatePageCssSheets = () => {
   if (typeof document === "undefined") return false;

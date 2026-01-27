@@ -170,7 +170,8 @@
   right: 15%;
   width: 240px;
   height: 240px;
-  background-image: url('/assets/images/events/Legends Day Still 002.webp');
+  background-image: url('/assets/images/events/FH_people1.webp');
+  filter: grayscale(100%);
 }
 
 .floating-image-3 {
@@ -186,7 +187,7 @@
   right: 8%;
   width: 280px;
   height: 280px;
-  background-image: url('/assets/images/events/Legends Day Still 014.webp');
+  background-image: url('/assets/images/events/FH_zechen.webp');
 }
 
 .floating-image-5 {
@@ -194,7 +195,7 @@
   left: 38%;
   width: 240px;
   height: 240px;
-  background-image: url('/assets/images/events/The Legends Day.webp');
+  background-image: url('/assets/images/membership/join-process.webp');
   z-index: 2;
 }
 

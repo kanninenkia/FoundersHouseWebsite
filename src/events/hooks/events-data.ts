@@ -12,7 +12,7 @@ export const eventsData: Event[] = [
     id: 1,
     title: "Legends Day",
     description: "Connect with Finland's top founders, investors, and innovators. Share insights, discover opportunities, and build lasting relationships that accelerate your startup journey.",
-    image: "/assets/images/events/The Legends Day.webp",
+    image: "/assets/images/membership/join-process.webp",
     date: "19.11.2025",
     location: "HELSINKI"
   },
@@ -28,7 +28,7 @@ export const eventsData: Event[] = [
     id: 3,
     title: "Founder Sessions",
     description: "Intimate fireside chats and workshops with successful founders sharing real stories, hard-won lessons, and actionable strategies for scaling startups in the Nordics.",
-    image: "/assets/images/events/Legends Day Still 014.webp",
+    image: "/assets/images/events/FH_zechen.webp",
     date: "12.02.2025",
     location: "HELSINKI"
   },
