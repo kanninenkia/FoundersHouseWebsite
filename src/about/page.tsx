@@ -4,25 +4,41 @@ import { useMotionValue, useTransform } from "framer-motion";
 import GridDistortion from '../effects/GridDistortion.tsx';
 import ParallaxMotion from '../effects/ParallaxMotion.tsx';
 import "./page.css";
-import { HelsinkiViewer } from "../components/HelsinkiViewer.tsx";
-import Footer from "../components/Footer.tsx";
-// import HelsinkiViewerSimple from "../components/HelsinkiViewerSimple.tsx";
+import { HelsinkiViewer } from "../components/map";
+import { Footer } from "../components/layout";
 
-const HEADER_IMG_SRC = "/images/The Legends Day.webp";
-const SECTION2_IMG_SRC = "/images/Wave x Maki Photo (2).webp";
-const SECTION3_IMG_1_SRC = "/images/Legends Day Still 002.webp";
-const SECTION3_IMG_2_SRC = "/images/Wave x Maki Photo.webp";
-const SECTION3_IMG_3_SRC = "/images/LoadInImage-min.webp";
-const SECTION4_IMG_SRC = "/images/Legends Day Still 014.webp";
-const SECTION5_MAP_IMG_SRC = "/models/birdseyemaps.webp";
-const SECTION5_MAP_TOP_IMG_SRC = "/models/radar.webp";
-const FOUNDERS_HOUSE_TEAM_IMG_SRC = "/images/Founders House BW.webp";  
+const HEADER_IMG_SRC = "/assets/images/events/The Legends Day.webp";
+const SECTION2_IMG_SRC = "/assets/images/events/Wave x Maki Photo (2).webp";
+const SECTION3_IMG_1_SRC = "/assets/images/events/Legends Day Still 002.webp";
+const SECTION3_IMG_2_SRC = "/assets/images/events/Wave x Maki Photo.webp";
+const SECTION3_IMG_3_SRC = "/assets/images/events/LoadInImage-min.webp";
+const SECTION4_IMG_SRC = "/assets/images/events/Legends Day Still 014.webp";
+const SECTION5_MAP_IMG_SRC = "/assets/models/birdseyemaps.webp";
+const SECTION5_MAP_TOP_IMG_SRC = "/assets/models/radar.webp";
+const FOUNDERS_HOUSE_TEAM_IMG_SRC = "/assets/images/team/Founders House BW.webp";
+
+// Profile images for preloading
+const PROFILE_IMAGES = [
+  "/assets/images/team/camilla.webp",
+  "/assets/images/team/kia.webp",
+  "/assets/images/team/niklas.webp",
+  "/assets/images/team/johannes.webp",
+  "/assets/images/team/robin.webp"
+];
 
 export default function AboutPage() {
   const [stage, setStage] = useState(1);
   // For team hover effect
   const [hoveredMember, setHoveredMember] = useState<string | null>(null);
   const teamRef = useRef<HTMLDivElement>(null);
+
+  // Preload profile images
+  useEffect(() => {
+    PROFILE_IMAGES.forEach((src) => {
+      const img = new Image();
+      img.src = src;
+    });
+  }, []);
 
   useEffect(() => {
     if (!hoveredMember) return;
@@ -461,7 +477,7 @@ export default function AboutPage() {
                         exit={{ opacity: 0, y: 5 }}
                         transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
                       >
-                        <img src="images/camilla.webp" alt="Camilla Komulainen" />
+                        <img src="/assets/images/team/camilla.webp" alt="Camilla Komulainen" />
                         <h5>started to like horses</h5>
                         <a className="card-email" href="mailto:camilla@wave.ventures">camilla@wave.ventures</a>
                         <a className="card-linkedin" href="https://www.linkedin.com/in/camillakomulainen/">linkedin</a>
@@ -476,7 +492,7 @@ export default function AboutPage() {
                         exit={{ opacity: 0, y: 5 }}
                         transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
                       >
-                        <img src="images/kia.webp" alt="Kia Kanninen" />
+                        <img src="/assets/images/team/kia.webp" alt="Kia Kanninen" />
                         <h5>Likes horses</h5>
                         <a className="card-email" href="mailto:kia@wave.ventures">kia@wave.ventures</a>
                         <a className="card-linkedin" href="https://www.linkedin.com/in/kiakanninen/">linkedin</a>
@@ -491,7 +507,7 @@ export default function AboutPage() {
                         exit={{ opacity: 0, y: 5 }}
                         transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
                       >
-                        <img src="images/niklas.webp" alt="Niklas Kervinen" />
+                        <img src="/assets/images/team/niklas.webp" alt="Niklas Kervinen" />
                         <h5>Likes horses</h5>
                         <a className="card-email" href="mailto:niklas@wave.ventures">niklas@wave.ventures</a>
                         <a className="card-linkedin" href="https://www.linkedin.com/in/niklas-kervinen/">linkedin</a>
@@ -506,7 +522,7 @@ export default function AboutPage() {
                         exit={{ opacity: 0, y: 5 }}
                         transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
                       >
-                        <img src="images/johannes.webp" alt="Johannes Korpela" />
+                        <img src="/assets/images/team/johannes.webp" alt="Johannes Korpela" />
                         <h5>Likes horses</h5>
                         <a className="card-email" href="mailto:johannes@wave.ventures">johannes@wave.ventures</a>
                         <a className="card-linkedin" href="https://www.linkedin.com/in/korpelajohannes/">linkedin</a>
@@ -521,7 +537,7 @@ export default function AboutPage() {
                         exit={{ opacity: 0, y: 5 }}
                         transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
                       >
-                        <img src="images/robin.webp" alt="Robin Hansson" />
+                        <img src="/assets/images/team/robin.webp" alt="Robin Hansson" />
                         <h5>Likes horses</h5>
                         <a className="card-email" href="mailto:robin@wave.ventures">robin@wave.ventures</a>
                         <a className="card-linkedin" href="https://www.linkedin.com/in/robin-hansson-/">linkedin</a>

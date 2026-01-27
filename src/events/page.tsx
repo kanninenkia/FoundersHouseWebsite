@@ -1,14 +1,13 @@
 import "./page.css";
+import "./pageMobile.css";
 import React, { useEffect, useState, useRef } from "react";
 import { motion, AnimatePresence, useScroll, useTransform, useMotionValue } from "framer-motion";
-import { useNavigate } from 'react-router-dom';
 import ParallaxMotion from '../effects/ParallaxMotion.tsx';
-import { AnimatedHamburger } from '../components/AnimatedHamburger.tsx';
-import { FullScreenMenu } from '../components/FullScreenMenu.tsx';
-import Button from '../components/Button.tsx';
+import { AnimatedHamburger, Button } from '../components/ui';
+import { FullScreenMenu } from '../components/layout';
 import { eventsData } from './hooks/events-data.ts';
 
-const HEADER_IMG_SRC = "/images/Legends Day Still 002.webp";
+const HEADER_IMG_SRC = "/assets/images/events/Legends Day Still 002.webp";
 
 const removeDuplicatePageCssSheets = () => {
   if (typeof document === "undefined") return false;
@@ -84,7 +83,6 @@ const shuffleText = (
 };
 
 export default function EventsPage() {
-  const navigate = useNavigate();
   const [stage, setStage] = useState(1);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -92,7 +90,7 @@ export default function EventsPage() {
   const cursorX = useMotionValue(0);
   const cursorY = useMotionValue(0);
   const [showCustomCursor, setShowCustomCursor] = useState(false);
-  const [displayedTitle, setDisplayedTitle] = useState("EVENTS");
+  const displayedTitle = "EVENTS";
   const [isEventTitle, setIsEventTitle] = useState(false);
   const [displayedDateLocation, setDisplayedDateLocation] = useState("");
   const [hoveredCardId, setHoveredCardId] = useState<number | null>(null);
@@ -465,7 +463,7 @@ export default function EventsPage() {
           exit={{ opacity: 0, scale: 0.8 }}
           transition={{ duration: 0.2 }}
         >
-          <img src="/icons/dragnexplore.svg" alt="Drag to explore" className="cursor-icon" />
+          <img src="/assets/icons/dragnexplore.svg" alt="Drag to explore" className="cursor-icon" />
         </motion.div>
       )}
 
@@ -481,7 +479,7 @@ export default function EventsPage() {
               ease: [0.11, 0.45, 0.08, 1.00]
             }}
           >
-            <img src="/logos/logoWhite.png" alt="Founders House" className="header-logo" />
+            <img src="/assets/logos/logoWhite.png" alt="Founders House" className="header-logo" />
             <div onClick={() => setIsMenuOpen(!isMenuOpen)}>
               <AnimatedHamburger isOpen={isMenuOpen} onClick={() => setIsMenuOpen(!isMenuOpen)} />
             </div>

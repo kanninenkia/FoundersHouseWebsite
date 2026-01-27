@@ -136,7 +136,6 @@ const GridDistortion: React.FC<GridDistortionProps> = ({
       if (width === 0 || height === 0) return;
 
       const containerAspect = width / height;
-      const imageAspect = imageAspectRef.current || 1;
 
       renderer.setSize(width, height);
 

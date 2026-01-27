@@ -31,10 +31,8 @@ export function setupClickHandler(
       const intersects = raycaster.intersectObject(helsinkiModel, true)
 
       if (intersects.length > 0) {
-        const intersection = intersects[0]
-
         // Log the click point coordinates for POI setup
-        logClickPoint(intersection)
+        logClickPoint()
       }
     }
   }
@@ -50,6 +48,6 @@ export function setupClickHandler(
 /**
  * Log click point for POI setup
  */
-function logClickPoint(intersection: THREE.Intersection): void {
+function logClickPoint(): void {
   // Disabled - use camera position logging after POI animation instead
 }

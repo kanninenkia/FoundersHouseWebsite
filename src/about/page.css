@@ -485,7 +485,14 @@
 
 .individuals-profiles .profiles-card img {
     height: 500px;
+    max-width: 90vw;
     margin-bottom: 20px;
+    filter: grayscale(0.9);
+    transition: filter 0.5s ease;
+}
+
+.individuals-profiles .profiles-card img:hover {
+    filter: grayscale(0);
 }
 
 .individuals-profiles .profiles-card h5 {

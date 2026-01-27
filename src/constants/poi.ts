@@ -63,8 +63,8 @@ export const FOUNDERS_HOUSE_POI: PointOfInterest = {
     z: -533.42
   },
   cameraView: {
-    distance: 1007,
-    azimuth: -136,
+    distance: 450,
+    azimuth: 90,
     elevation: 10
   }
 }

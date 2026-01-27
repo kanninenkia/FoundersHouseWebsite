@@ -1,0 +1,495 @@
+/* Tablets */
+@media (min-width: 768px) and (max-width: 1050px) and (orientation: landscape) {
+    .scroll-section .part .part-img-title {
+        font-size: 5rem;
+    }
+    .scroll-section .part-ambitious .part-img-title h3 {
+        font-size: 5rem;
+    }
+    .scroll-section .part-nextgen .part-img-title h3 {
+        font-size: 5rem;
+    }
+
+    .scroll-section .part .part-img-wrapper .part-img-text p {
+        font-size: 1.2rem;
+    }
+    .scroll-section .part-ambitious .part-img-wrapper .part-img-text p,
+    .scroll-section .part-nextgen .part-img-wrapper .part-img-text p,
+    .scroll-section .part-builders .part-img-wrapper .part-img-text p
+    {
+        padding-bottom: 30%;
+    }
+
+    .scroll-section .part-ambitious .bg-shape {
+        top: 10%;
+    }
+    .scroll-section .part-nextgen .bg-shape {
+        top: 10%;
+    }
+    .scroll-section .part-builders .bg-shape {
+        height: 50%;
+        width: 60%;
+        left: 20%;
+        bottom: 0%;
+    }
+
+    .join-section .join-title p {
+        font-size: 3rem;
+        line-height: 3rem;
+    }
+
+    .join-section .join-img .join-img-content h4 {
+        font-size: 1.8rem;
+        margin-bottom: 10px;
+    }
+}
+
+/* Large tablets portrait */
+@media (min-width: 768px) and (max-width: 1050px) and (orientation: portrait) {
+    .quotes-section .quotes-grid {
+        grid-template-columns: 1fr 1fr;
+        padding-bottom: 15%;
+    }
+    
+    /* Flatten the column structure for 2-column grid */
+    .quotes-section .column-left,
+    .quotes-section .column-center,
+    .quotes-section .column-right {
+        display: contents;
+    }
+
+    .scroll-section .part .part-img-wrapper {
+        width: 90%;
+        margin-left: 5%;
+    }
+
+    /*---------------------------------------------------------*/
+    .scroll-section .part .part-img-wrapper .part-img-text p {
+        font-size: 1.8rem;
+    }
+
+    .scroll-section .part .part-img-title {
+        font-size: 13vw;
+    }
+
+    .scroll-section .part .part-img-wrapper .part-img img {
+        width: auto;
+        height: 100%;
+        object-position: center;
+        margin-left: -40%;
+    }
+
+    /*--------------- Obsessive ---------------*/
+    .scroll-section .part-obsessive {
+        margin-top: 20%;
+    }
+
+    .scroll-section .part-obsessive .bg-shape {
+        width: 80%;
+        left: 10%;
+        top: -2%;
+    }
+    .scroll-section .part-obsessive .part-img-wrapper .part-img-text {
+        bottom: 5%;
+        right: 5%;
+        width: 90%;
+        text-align: left;
+    }
+    .scroll-section .part-obsessive .part-img-wrapper .part-img {
+        height: 60vh;
+    }
+    .scroll-section .part-obsessive .part-img-title {
+        top: 0%;
+        left: 5%;
+    }
+    .scroll-section .part-obsessive .part-img-wrapper .part-img-squares {
+        top: 40%;
+        left: 40%;
+    }
+    .scroll-section .part-obsessive .part-img-wrapper .part-img-squares .square-1 {
+        height: 100px;
+        width: 100px;;
+    } 
+    .scroll-section .part-obsessive .part-img-wrapper .part-img-squares .square-2 {
+        height: 100px;
+        width: 100px;
+        right: -70px;
+        bottom: -70px;
+    }
+
+    /*--------------- Ambitious ---------------*/
+    .scroll-section .part-ambitious .part-img-wrapper .part-img {
+        height: 80vh;
+        width: 90%;
+        margin-left: 0%;
+    }
+    .scroll-section .part-ambitious .bg-shape {
+        height: 60%;
+        width: 80%;
+        left: 10%;
+        bottom: 0;
+    }
+    .scroll-section .part-ambitious .part-img-wrapper .part-img-text {
+        bottom: 5%;
+        left: 5%;
+        width: 80%;
+        text-align: left;
+    }
+    .scroll-section .part-ambitious .part-img-title {
+        bottom: 30%;
+        right: -50%;
+    }
+    .scroll-section .part-ambitious .part-img-title h3 {
+        transform: rotate(-90deg);
+        font-size: 10vh;
+    }
+    .scroll-section .part-ambitious .part-img-wrapper .part-img-squares {
+        top: 25%;
+        right: 30%;
+    }
+    .scroll-section .part-ambitious .part-img-wrapper .part-img-squares .square-1 {
+        height: 300px;
+        width: 200px;
+    } 
+    .scroll-section .part-ambitious .part-img-wrapper .part-img-squares .square-2 {
+        height: 200px;
+        width: 200px;
+        right: -150px;
+        bottom: -150px;
+        display: none;
+    }
+
+    /*--------------- Nextgen ---------------*/
+    .scroll-section .part-nextgen .part-img-wrapper .part-img {
+        height: 80vh;
+        width: 90%;
+        margin-left: 10%;
+    }
+    .scroll-section .part-nextgen .bg-shape {
+        height: 80%;
+        width: 80%;
+        left: 10%;
+        top: 27%;
+        background-color: #590D0F;
+    }
+    .scroll-section .part-nextgen .part-img-wrapper .part-img-text {
+        bottom: 5%;
+        right: 5%;
+        width: 90%;
+        text-align: right;
+    }
+    .scroll-section .part-nextgen .part-img-title {
+        bottom: 30%;
+        left: -45%;
+    }
+    .scroll-section .part-nextgen .part-img-title h3 {
+        transform: rotate(-90deg);
+        font-size: 10vh;
+    }
+
+    /*--------------- Builders ---------------*/
+    .scroll-section .part-builders {
+        padding-top: 15%;
+        margin-bottom: 20%;
+    }
+    .scroll-section .part-builders .bg-shape {
+        height: 50%;
+        width: 70%;
+        left: 15%;
+        bottom: -5%;
+        background-color: #590D0F;
+    }
+    .scroll-section .part-builders .part-img-wrapper .part-img-text {
+        bottom: 5%;
+        right: 5%;
+        width: 90%;
+        text-align: right;
+    }
+    .scroll-section .part-builders .part-img-wrapper .part-img {
+        height: 80vh;
+    }
+    .scroll-section .part-builders .part-img-title {
+        top: 10%;
+        left: 5%;
+    }
+    .scroll-section .part-builders .part-img-wrapper .part-img-squares {
+        top: 40%;
+        left: 40%;
+    }
+    .scroll-section .part-builders .part-img-wrapper .part-img-squares .square-1 {
+        height: 200px;
+        width: 200px;;
+    } 
+    .scroll-section .part-builders .part-img-wrapper .part-img-squares .square-2 {
+        height: 200px;
+        width: 200px;
+        right: -150px;
+        bottom: -150px;
+    }
+
+    /*-----------------------------------------------------------------*/
+    .join-section {
+        position: relative;
+        padding: 12% 6%;
+        background-color: #590D0F;
+        z-index: 10;
+    }
+
+    .join-section .join-title p {
+        font-size: 3rem;
+        line-height: 3.5rem;
+    }
+
+    .join-section .join-img .join-img-container {
+        height: 60vh;
+    }
+
+    .join-section .join-img .join-img-img {
+        object-fit: cover;
+        margin-top: -20%;
+        width: auto;
+        height: 100%;
+        transform: scale(1.15);
+        transition: transform 3.5s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .join-section .join-img .join-img-content {
+        width: 90%;
+        position: absolute;
+        z-index: 10;
+        bottom: 20%;
+        left: 5%;
+    }
+
+    .join-section .join-img .join-img-content h4 {
+        font-size: 3rem;
+        line-height: 3.5rem;
+        margin-bottom: 5%;
+    }
+
+    /* Animated squares for join-img */
+    .join-img-square {
+        display: none;
+    }
+}
+
+/* Standard phones */
+@media (max-width: 767px) {
+    .quotes-section .quotes-grid {
+        grid-template-columns: 1fr;
+        padding-bottom: 15%;
+    }
+
+    .scroll-section .part .part-img-wrapper {
+        width: 90%;
+        margin-left: 5%;
+    }
+
+    /*---------------------------------------------------------*/
+    .scroll-section .part .part-img-wrapper .part-img-text p {
+        font-size: 1.2rem;
+    }
+
+    .scroll-section .part .part-img-title {
+        font-size: 13vw;
+    }
+
+    .scroll-section .part .part-img-wrapper .part-img img {
+        width: auto;
+        height: 100%;
+        object-position: center;
+        margin-left: -40%;
+    }
+
+    /*--------------- Obsessive ---------------*/
+    .scroll-section .part-obsessive {
+        margin-top: 20%;    
+    }
+
+    .scroll-section .part-obsessive .bg-shape {
+        width: 80%;
+        left: 10%;
+        top: -2%;
+    }
+    .scroll-section .part-obsessive .part-img-wrapper .part-img-text {
+        bottom: 5%;
+        right: 5%;
+        width: 90%;
+        text-align: left;
+    }
+    .scroll-section .part-obsessive .part-img-wrapper .part-img {
+        height: 60vh;
+    }
+    .scroll-section .part-obsessive .part-img-title {
+        top: 0%;
+        left: 5%;
+    }
+    .scroll-section .part-obsessive .part-img-wrapper .part-img-squares {
+        top: 40%;
+        left: 40%;
+    }
+    .scroll-section .part-obsessive .part-img-wrapper .part-img-squares .square-1 {
+        height: 100px;
+        width: 100px;;
+    } 
+    .scroll-section .part-obsessive .part-img-wrapper .part-img-squares .square-2 {
+        height: 100px;
+        width: 100px;
+        right: -70px;
+        bottom: -70px;
+    }
+
+    /*--------------- Ambitious ---------------*/
+    .scroll-section .part-ambitious .part-img-wrapper .part-img {
+        height: 80vh;
+        width: 90%;
+        margin-left: 0%;
+    }
+    .scroll-section .part-ambitious .bg-shape {
+        height: 60%;
+        width: 80%;
+        left: 10%;
+        bottom: 0;
+    }
+    .scroll-section .part-ambitious .part-img-wrapper .part-img-text {
+        bottom: 5%;
+        left: 5%;
+        width: 80%;
+        text-align: left;
+    }
+    .scroll-section .part-ambitious .part-img-title {
+        bottom: 30%;
+        right: -50%;
+    }
+    .scroll-section .part-ambitious .part-img-title h3 {
+        transform: rotate(-90deg);
+        font-size: 10vh;
+    }
+    .scroll-section .part-ambitious .part-img-wrapper .part-img-squares {
+        top: 25%;
+        right: 30%;
+    }
+    .scroll-section .part-ambitious .part-img-wrapper .part-img-squares .square-1 {
+        height: 300px;
+        width: 200px;
+    } 
+    .scroll-section .part-ambitious .part-img-wrapper .part-img-squares .square-2 {
+        height: 200px;
+        width: 200px;
+        right: -150px;
+        bottom: -150px;
+        display: none;
+    }
+
+    /*--------------- Nextgen ---------------*/
+    .scroll-section .part-nextgen .part-img-wrapper .part-img {
+        height: 80vh;
+        width: 90%;
+        margin-left: 0%;
+    }
+    .scroll-section .part-nextgen .bg-shape {
+        height: 80%;
+        width: 80%;
+        left: 10%;
+        top: 27%;
+        background-color: #590D0F;
+    }
+    .scroll-section .part-nextgen .part-img-wrapper .part-img-text {
+        bottom: 5%;
+        left: 5%;
+        width: 90%;
+        text-align: left;
+    }
+    .scroll-section .part-nextgen .part-img-title {
+        bottom: 30%;
+        right: -50%;
+    }
+    .scroll-section .part-nextgen .part-img-title h3 {
+        transform: rotate(-90deg);
+        font-size: 10vh;
+    }
+
+    /*--------------- Builders ---------------*/
+    .scroll-section .part-builders {
+        padding-top: 15%;
+        margin-bottom: 20%;
+    }
+    .scroll-section .part-builders .bg-shape {
+        height: 50%;
+        width: 70%;
+        left: 15%;
+        bottom: -5%;
+        background-color: #590D0F;
+    }
+    .scroll-section .part-builders .part-img-wrapper .part-img-text {
+        bottom: 5%;
+        right: 5%;
+        width: 90%;
+        text-align: right;
+    }
+    .scroll-section .part-builders .part-img-wrapper .part-img {
+        height: 80vh;
+    }
+    .scroll-section .part-builders .part-img-title {
+        top: 10%;
+        left: 5%;
+    }
+    .scroll-section .part-builders .part-img-wrapper .part-img-squares {
+        top: 40%;
+        left: 40%;
+    }
+    .scroll-section .part-builders .part-img-wrapper .part-img-squares .square-1 {
+        height: 200px;
+        width: 200px;;
+    } 
+    .scroll-section .part-builders .part-img-wrapper .part-img-squares .square-2 {
+        height: 200px;
+        width: 200px;
+        right: -150px;
+        bottom: -150px;
+    }
+
+    /*-----------------------------------------------------------------*/
+    .join-section {
+        position: relative;
+        padding: 12% 6%;
+        background-color: #590D0F;
+        z-index: 10;
+    }
+
+    .join-section .join-title p {
+        font-size: 2rem;
+        line-height: 2.5rem;
+    }
+
+    .join-section .join-img .join-img-container {
+        height: 60vh;
+    }
+
+    .join-section .join-img .join-img-img {
+        object-fit: cover;
+        margin-top: -20%;
+        width: auto;
+        height: 100%;
+        transform: scale(1.15);
+        transition: transform 3.5s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .join-section .join-img .join-img-content {
+        width: 90%;
+        position: absolute;
+        bottom: 15%;
+        left: 5%;
+    }
+
+    .join-section .join-img .join-img-content h4 {
+        font-size: 2rem;
+        line-height: 2.4rem;
+        margin-bottom: 5%;
+    }
+
+    /* Animated squares for join-img */
+    .join-img-square {
+        display: none;
+    }
+}

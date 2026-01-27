@@ -39,9 +39,6 @@ export function createCamera(): THREE.PerspectiveCamera {
 export function createRenderer(container: HTMLElement): THREE.WebGLRenderer {
   const performanceProfile = detectPerformanceTier()
 
-  // CHROME FIX: Detect Chrome browser for optimizations
-  const isChrome = /Chrome/.test(navigator.userAgent) && /Google Inc/.test(navigator.vendor)
-
   const renderer = new THREE.WebGLRenderer({
     antialias: performanceProfile.antialias,
     powerPreference: performanceProfile.tier === 'high' ? 'high-performance' : 'default',

@@ -4,9 +4,7 @@ import postProcessFragmentShader from '../shaders/postProcessFragment.glsl?raw'
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js'
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js'
 import { ShaderPass } from 'three/examples/jsm/postprocessing/ShaderPass.js'
-import { COLORS } from '../constants/designSystem'
-
-export function setupPostProcessing(renderTarget: THREE.WebGLRenderTarget, perlinTexture: THREE.DataTexture) {
+export function setupPostProcessing(renderTarget: THREE.WebGLRenderTarget) {
   const scene = new THREE.Scene()
   const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1)
 

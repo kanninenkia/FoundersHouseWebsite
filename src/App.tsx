@@ -1,16 +1,13 @@
-import { useState, useEffect, useRef, lazy, Suspense } from 'react'
+import { useState, useEffect, useRef, lazy } from 'react'
 import { BrowserRouter, Routes, Route, useNavigate, useLocation } from 'react-router-dom'
-import { LoadingScreen } from './components/LoadingScreen'
-import { TransitionOverlay } from './components/transition'
-import PageTransition from './components/PageTransition'
+import { LoadingScreen, TransitionOverlay, PageTransition, NoiseLayer } from './components/transitions'
 import Lenis from 'lenis'
 import 'lenis/dist/lenis.css'
 import './App.css'
-import NoiseLayer from './components/NoiseLayer'
 import { AnimatePresence } from 'framer-motion'
 
 // Lazy load route components
-const Home = lazy(() => import('./components/home').then(module => ({ default: module.Home })))
+const Home = lazy(() => import('./home').then(module => ({ default: module.Home })))
 const AboutPage = lazy(() => import('./about/page'))
 const JoinPage = lazy(() => import('./join/page'))
 const EventsPage = lazy(() => import('./events/page'))
@@ -21,6 +18,7 @@ function AppContent() {
   const isInitialMount = useRef(true)
   const [isTransitionActive, setIsTransitionActive] = useState(false)
   const [isReturnVisit, setIsReturnVisit] = useState(false)
+  const [hasMounted, setHasMounted] = useState(false)
 
   const [scrollProgress, setScrollProgress] = useState(() => {
     if (performance.navigation.type !== 1) {
@@ -48,6 +46,10 @@ function AppContent() {
     sessionStorage.setItem('scrollProgress', scrollProgress.toString());
   }, [scrollProgress]);
 
+  useEffect(() => {
+    setHasMounted(true)
+  }, [])
+
 
   useEffect(() => {
     const lenis = new Lenis({
@@ -56,7 +58,8 @@ function AppContent() {
       orientation: 'vertical',
       smoothWheel: true,
       wheelMultiplier: 1,
-      touchMultiplier: 2,
+      touchMultiplier: 0.5,
+      syncTouch: true,
     })
 
     function raf(time: number) {
@@ -91,25 +94,27 @@ function AppContent() {
   return (
     <div className="App">
       <NoiseLayer />
-      <Suspense fallback={<div style={{ background: '#590D0F', width: '100vw', height: '100vh' }} />}>
-        <AnimatePresence mode="sync">
-          <Routes location={location} key={location.pathname}>
-          <Route path="/" element={<LoadingScreen
-                onComplete={() => {
-                  sessionStorage.setItem('hasVisitedMap', 'true')
-                }}
-                duration={6000}
-                scrollProgress={scrollProgress}
-                onScrollProgressChange={setScrollProgress}
-                isReturnVisit={isReturnVisit}
-              />} />
-            <Route path="/home" element={<PageTransition><Home /></PageTransition>} />
-            <Route path="/about" element={<PageTransition><AboutPage /></PageTransition>} />
-            <Route path="/join" element={<PageTransition><JoinPage /></PageTransition>} />
-            <Route path="/events" element={<PageTransition><EventsPage /></PageTransition>} />
-          </Routes>
-        </AnimatePresence>
-      </Suspense>
+      <AnimatePresence mode="wait">
+        <Routes location={location} key={location.pathname}>
+        <Route path="/" element={
+          <PageTransition skipEnter={!hasMounted}>
+            <LoadingScreen
+              onComplete={() => {
+                sessionStorage.setItem('hasVisitedMap', 'true')
+              }}
+              duration={6000}
+              scrollProgress={scrollProgress}
+              onScrollProgressChange={setScrollProgress}
+              isReturnVisit={isReturnVisit}
+            />
+          </PageTransition>
+        } />
+          <Route path="/home" element={<PageTransition><Home /></PageTransition>} />
+          <Route path="/about" element={<PageTransition><AboutPage /></PageTransition>} />
+          <Route path="/join" element={<PageTransition><JoinPage /></PageTransition>} />
+          <Route path="/events" element={<PageTransition><EventsPage /></PageTransition>} />
+        </Routes>
+      </AnimatePresence>
 
       <TransitionOverlay isActive={isTransitionActive} />
     </div>

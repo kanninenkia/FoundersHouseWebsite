@@ -1,6 +1,9 @@
 import { motion, useMotionValue, animate } from "framer-motion";
 import { useEffect, ReactNode } from "react";
 
+const isSafari = typeof navigator !== "undefined" &&
+  /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+
 interface ParallaxMotionProps {
   children: ReactNode;
   speedX?: number;
@@ -26,6 +29,7 @@ const ParallaxMotion = ({
   const parallaxY = useMotionValue(0);
 
   useEffect(() => {
+    if (isSafari) return;
     const handle = (e: MouseEvent) => {
       const { innerWidth, innerHeight } = window;
       const normX = (e.clientX / innerWidth) * 2 - 1;
@@ -38,6 +42,7 @@ const ParallaxMotion = ({
   }, [mouseX, mouseY]);
 
   useEffect(() => {
+    if (isSafari) return;
     const unsubX = mouseX.on("change", (v) => {
       animate(parallaxX, v * speedX, {
         ease: easing as any,

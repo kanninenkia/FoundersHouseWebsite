@@ -3,19 +3,13 @@
  * Manages building highlighting for Points of Interest
  */
 import * as THREE from 'three'
-import { POINTS_OF_INTEREST } from '../../constants/poi'
 
 export class POIHighlightManager {
   private highlightedMeshes: Map<THREE.Mesh, THREE.Material | THREE.Material[]> = new Map()
   private highlightedPOI: string | null = null
-  private helsinkiModel: THREE.Group | null = null
-  private camera: THREE.PerspectiveCamera
   private highlightMaterial: THREE.MeshStandardMaterial
 
-  constructor(camera: THREE.PerspectiveCamera, helsinkiModel: THREE.Group | null = null) {
-    this.camera = camera
-    this.helsinkiModel = helsinkiModel
-
+  constructor() {
     // Create a single reusable highlight material
     this.highlightMaterial = new THREE.MeshStandardMaterial({
       color: 0xAD1013,
@@ -28,18 +22,11 @@ export class POIHighlightManager {
   }
 
   /**
-   * Set the Helsinki model reference
-   */
-  public setModel(model: THREE.Group | null): void {
-    this.helsinkiModel = model
-  }
-
-  /**
    * Highlight buildings near a POI by changing their color to red
    * Uses raycasting from camera to find meshes at the POI location
    * DISABLED: No highlighting applied
    */
-  public highlightPOI(poiName: string, maxIntersections: number = 20): void {
+  public highlightPOI(poiName: string): void {
     // Highlighting disabled - do nothing
     this.highlightedPOI = poiName
   }

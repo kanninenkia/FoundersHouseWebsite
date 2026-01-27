@@ -66,7 +66,6 @@ export class HelsinkiScene {
   private suppressAutoCentering: boolean = false
   private originalMinPolarAngle: number | null = null
   private originalMaxPolarAngle: number | null = null
-  private justFinishedPOIAnimation: boolean = false
   private angleRestoreAnimation: {
     active: boolean
     startTime: number
@@ -103,14 +102,14 @@ export class HelsinkiScene {
     this.renderTarget = createRenderTarget()
     this.perlinTexture = this.generatePerlinTexture()
 
-    const { material: ppMaterial } = setupPostProcessing(this.renderTarget, this.perlinTexture)
+    const { material: ppMaterial } = setupPostProcessing(this.renderTarget)
     this.postProcessMaterial = ppMaterial
     const composerResult = setupComposer(this.renderer, this.scene, this.camera, this.postProcessMaterial)
     this.composer = composerResult.composer
 
     setupSceneLighting(this.scene)
     this.fog = setupSceneFog(this.scene, this.isNightMode)
-    this.poiHighlightManager = new POIHighlightManager(this.camera)
+    this.poiHighlightManager = new POIHighlightManager()
 
     this.autoTourManager = new AutoTourManager()
 
@@ -123,7 +122,7 @@ export class HelsinkiScene {
     this.createBoundaryWireframe()
 
     loadDualModels({
-      mainMapPath: '/models/fh.glb',
+      mainMapPath: '/assets/models/fh.glb',
       scene: this.scene,
       camera: this.camera,
       controls: this.controls,
@@ -133,8 +132,6 @@ export class HelsinkiScene {
       renderer: this.renderer,
     }).then((result) => {
       this.helsinkiModel = result.mainMap
-      this.poiHighlightManager.setModel(result.mainMap)
-      this.foundersHouseMarker.setModel(result.mainMap, this.camera)
     }).catch(() => {
     })
 
@@ -395,7 +392,6 @@ export class HelsinkiScene {
 
       if (!result.stillAnimating) {
         this.poiAnimation = null
-        this.justFinishedPOIAnimation = true
       }
     }
 
@@ -404,7 +400,6 @@ export class HelsinkiScene {
     if (!isPOIAnimating && !isAngleRestoring) {
       // CHROME FIX: Use clamped delta for smoother control updates
       this.controls.update(clampedDelta)
-      this.justFinishedPOIAnimation = false
     } else if (!isPOIAnimating && isAngleRestoring) {
       // During angle restoration, keep target in sync but don't update controls
       if (this.controls.target) {
@@ -499,11 +494,6 @@ export class HelsinkiScene {
         }
       }
     }
-  }
-
-  private flyToNextPOI(): void {
-    // Auto-tour disabled - this method is no longer used
-    return
   }
 
   public stopAutoTour(): void {
@@ -634,7 +624,7 @@ export class HelsinkiScene {
         currentVelocity: new THREE.Vector3(),
         currentTargetVelocity: new THREE.Vector3(),
         onComplete: () => {
-          this.poiHighlightManager.highlightPOI(poiName, 200)
+          this.poiHighlightManager.highlightPOI(poiName)
           this.controls.setTarget(hardcodedTarget.x, hardcodedTarget.y, hardcodedTarget.z)
           this.controls.minDistance = 700
           if (this.controls.syncInternalState) {
@@ -691,7 +681,7 @@ export class HelsinkiScene {
             currentVelocity: new THREE.Vector3(),
             currentTargetVelocity: new THREE.Vector3(),
             onComplete: () => {
-              this.poiHighlightManager.highlightPOI(poiName, 200)
+              this.poiHighlightManager.highlightPOI(poiName)
               this.controls.setTarget(clampedPOITarget.x, clampedPOITarget.y, clampedPOITarget.z)
               this.controls.minDistance = 700
               if (this.controls.syncInternalState) {
@@ -715,7 +705,7 @@ export class HelsinkiScene {
           finalElevation,
           duration,
           () => {
-            this.poiHighlightManager.highlightPOI(poiName, 200)
+            this.poiHighlightManager.highlightPOI(poiName)
 
             // CRITICAL FIX: Use setTarget() method to properly sync orbit controls
             // Then make camera look at target to prevent OrbitControls from recalculating
@@ -786,8 +776,8 @@ export class HelsinkiScene {
     })
   }
 
-  public highlightPOI(poiName: keyof typeof POINTS_OF_INTEREST, maxMeshes: number = 20): void {
-    this.poiHighlightManager.highlightPOI(poiName, maxMeshes)
+  public highlightPOI(poiName: keyof typeof POINTS_OF_INTEREST): void {
+    this.poiHighlightManager.highlightPOI(poiName)
   }
 
   public clearHighlights(): void {
