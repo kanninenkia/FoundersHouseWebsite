@@ -8,6 +8,7 @@ import { HelsinkiScene } from '../../core'
 import type { PointOfInterest } from '../../constants/poi'
 import { POINTS_OF_INTEREST } from '../../constants/poi'
 import { POINavigator } from './POINavigator'
+import POILayer from './POILayer'
 import { MagneticElement } from '../ui'
 import { AnimatedHamburger, Button } from '../ui'
 import { FullScreenMenu } from '../layout'
@@ -59,6 +60,7 @@ export const HelsinkiViewer = ({
   const lastInteractionTime = useRef<number>(Date.now())
   const [cursorPosition, setCursorPosition] = useState({ x: 0, y: 0 })
   const [showDragIndicator, setShowDragIndicator] = useState(true)
+  const [activePOIKey, setActivePOIKey] = useState<string | null>('FOUNDERS_HOUSE')
 
   const hasInteractedRef = useRef(false)
   const [isTransitionActive, setIsTransitionActive] = useState(false)
@@ -356,6 +358,7 @@ export const HelsinkiViewer = ({
       )?.[0]
 
       if (poiKey) {
+        setActivePOIKey(poiKey)
         setIsCameraFlying(true)
         ;(sceneRef.current as any).focusPOI(poiKey)
 
@@ -373,6 +376,13 @@ export const HelsinkiViewer = ({
                 className="helsinki-container"
       >
         <div className={`vignette-overlay ${isCameraFlying ? 'active' : ''}`} />
+        <POILayer
+          sceneRef={sceneRef}
+          visible={scrollProgress >= 1}
+          activePOIKey={activePOIKey}
+          isCameraFlying={isCameraFlying}
+          onPOISelect={handlePOISelect}
+        />
       </div>
 
 

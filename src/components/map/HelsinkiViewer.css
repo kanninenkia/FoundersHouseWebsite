@@ -36,6 +36,9 @@
 
 .helsinki-container canvas {
   opacity: 1 !important;
+  position: absolute;
+  inset: 0;
+  z-index: 1;
 }
 
 /* Apply grayscale filter - NOTE: This gets overridden by inline style in HelsinkiViewer.tsx */

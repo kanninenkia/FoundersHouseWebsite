@@ -1,0 +1,110 @@
+.poi-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+}
+
+.poi-layer-item {
+  position: absolute;
+  padding: 6px 10px;
+  background: rgba(216, 46, 17, 0.55);
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  border-radius: 2px;
+  white-space: nowrap;
+  transform-origin: center;
+  transform:
+    translate(-50%, -50%)
+    translate(var(--poi-x, 0px), var(--poi-y, 0px))
+    rotateX(70deg)
+    scaleY(0.85)
+    scale(var(--poi-scale, 1));
+  will-change: transform, opacity;
+  opacity: 0;
+  pointer-events: auto;
+  transition: background 200ms ease, padding 200ms ease;
+}
+
+.poi-layer-item::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: 100%;
+  width: 0.5px;
+  height: 0;
+  background: #8B1215;
+  transform: translateX(-50%) scaleY(0.6);
+  transform-origin: bottom;
+  opacity: 0;
+  transition: height 200ms ease, opacity 200ms ease, transform 200ms ease;
+  pointer-events: none;
+}
+
+.poi-dot {
+  display: none;
+  width: 9px;
+  height: 9px;
+  border-radius: 999px;
+  background: rgba(216, 46, 17, 0.85);
+  transition: opacity 200ms ease, transform 200ms ease;
+  pointer-events: none;
+}
+
+.poi-label-text {
+  display: inline-block;
+  transition: opacity 200ms ease, transform 200ms ease;
+}
+
+.poi-layer-item.is-distant {
+  padding: 0;
+  background: transparent;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.poi-layer-item.is-distant::before {
+  opacity: 0;
+  height: 0;
+  transform: translateX(-50%) scaleY(0.6);
+}
+
+.poi-layer-item.is-distant .poi-dot {
+  display: block;
+  opacity: 1;
+  transform: scale(1);
+}
+
+.poi-layer-item.is-distant .poi-label-text {
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 28px);
+  padding: 6px 10px;
+  background: rgba(216, 46, 17, 0.55);
+  border-radius: 2px;
+  opacity: 0;
+  transform: translateX(-50%) scale(0.9);
+  pointer-events: auto;
+  transition-delay: 0ms;
+}
+
+.poi-layer-item.is-distant:hover::before,
+.poi-layer-item.is-distant:focus-visible::before {
+  opacity: 1;
+  height: 22px;
+  transform: translateX(-50%) scaleY(1);
+  transition-delay: 0ms;
+}
+
+.poi-layer-item.is-distant:hover .poi-label-text,
+.poi-layer-item.is-distant:focus-visible .poi-label-text {
+  opacity: 1;
+  transform: translateX(-50%) scale(1);
+  transition-delay: 120ms;
+}
