@@ -86,7 +86,30 @@
   }
 }
 
-@media (max-width: 768px) {
+@media (max-width: 768px), (max-width: 1180px) and (orientation: landscape) {
+  .not-found-page {
+    position: relative;
+    min-height: 100vh;
+    max-height: 100vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+    display: block;
+  }
+
+  .not-found-image-pane {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+  }
+
+  .not-found-content-pane {
+    position: relative;
+    z-index: 1;
+    min-height: 100vh;
+    background: linear-gradient(180deg, rgba(26, 5, 4, 0.6) 0%, rgba(26, 5, 4, 0.35) 45%, rgba(26, 5, 4, 0.65) 100%);
+    backdrop-filter: blur(2px);
+  }
+
   .not-found-content-pane {
     padding: 2.5rem 2rem 3rem;
   }

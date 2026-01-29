@@ -90,6 +90,7 @@
 .scroll-section .part .part-img-wrapper .part-img-squares {
     position: absolute;
     z-index: 10;
+    pointer-events: none;
 }
 
 .scroll-section .part .part-img-title {

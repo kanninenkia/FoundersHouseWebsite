@@ -5,15 +5,16 @@
 
 import { useEffect, useRef, useState, useCallback } from 'react'
 import { HelsinkiScene } from '../../core'
+import { motion } from 'framer-motion'
 import type { PointOfInterest } from '../../constants/poi'
 import { POINTS_OF_INTEREST } from '../../constants/poi'
 import { POINavigator } from './POINavigator'
 import POILayer from './POILayer'
-import { MagneticElement } from '../ui'
-import { AnimatedHamburger, Button } from '../ui'
-import { FullScreenMenu } from '../layout'
+import { Button } from '../ui'
+import { NavBar } from '../layout'
 import './HelsinkiViewer.css'
 import './HelsinkiViewerMobile.css'
+import ParallaxMotion from '../../effects/ParallaxMotion'
 
 interface MapLoadingState {
   isLoaded: boolean
@@ -56,11 +57,14 @@ export const HelsinkiViewer = ({
   const [showUIState, setShowUIState] = useState(false)
   const fadeTimers = useRef<{ hero?: NodeJS.Timeout; ui?: NodeJS.Timeout }>({})
   const [isCameraFlying, setIsCameraFlying] = useState(false)
-  const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [showNavBar, setShowNavBar] = useState(false)
+  const [showCustomCursor, setShowCustomCursor] = useState(false)
   const lastInteractionTime = useRef<number>(Date.now())
   const [cursorPosition, setCursorPosition] = useState({ x: 0, y: 0 })
+  const targetCursorPosition = useRef({ x: 0, y: 0 })
   const [showDragIndicator, setShowDragIndicator] = useState(true)
   const [activePOIKey, setActivePOIKey] = useState<string | null>('FOUNDERS_HOUSE')
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 })
 
   const hasInteractedRef = useRef(false)
   const [isTransitionActive, setIsTransitionActive] = useState(false)
@@ -101,16 +105,20 @@ export const HelsinkiViewer = ({
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
-       setCursorPosition({ x: e.clientX, y: e.clientY })
+       targetCursorPosition.current = { x: e.clientX, y: e.clientY }
       const target = document.elementFromPoint(e.clientX, e.clientY)
       const isInteractive = !!target?.closest(
-        'a, button, .clickable, .hamburger-menu, .logo-container, .poi-navigator-wrapper, .full-screen-menu'
+        'a, button, .clickable, .navbar, .navbar-hamburger, .navbar-logo-container, .poi-navigator-wrapper, .full-screen-menu'
       )
       if (isInteractive !== hoveringInteractiveRef.current) {
         hoveringInteractiveRef.current = isInteractive
         setIsHoveringInteractive(isInteractive)
       }
-
+      // Update mousePos for parallax
+      const { innerWidth, innerHeight } = window
+      const x = (e.clientX / innerWidth) * 2 - 1
+      const y = (e.clientY / innerHeight) * 2 - 1
+      setMousePos({ x, y })
     }
 
     window.addEventListener('mousemove', handleMouseMove)
@@ -120,27 +128,58 @@ export const HelsinkiViewer = ({
     }
   }, [])
 
+
+  useEffect(() => {
+    let animationFrameId: number
+
+    const smoothCursor = () => {
+      setCursorPosition(prev => {
+        const dx = targetCursorPosition.current.x - prev.x
+        const dy = targetCursorPosition.current.y - prev.y
+        
+        // Lerp factor - lower = smoother but slower, higher = faster but less smooth
+        const lerp = 0.3
+        
+        return {
+          x: prev.x + dx * lerp,
+          y: prev.y + dy * lerp
+        }
+      })
+      
+      animationFrameId = requestAnimationFrame(smoothCursor)
+    }
+
+    animationFrameId = requestAnimationFrame(smoothCursor)
+
+    return () => cancelAnimationFrame(animationFrameId)
+  }, [])
+
+
   useEffect(() => {
     if (scrollProgress >= 1) {
       setShowHeroText(false)
       setShowUIState(false)
       if (fadeTimers.current.hero) clearTimeout(fadeTimers.current.hero)
-      if (fadeTimers.current.ui) clearTimeout(fadeTimers.current.ui)
       fadeTimers.current.hero = setTimeout(() => {
         setShowHeroText(true)
       }, 800)
-      fadeTimers.current.ui = setTimeout(() => {
-        setShowUIState(true)
-      }, 1800)
+      setShowUIState(true)
+      setTimeout(() => {
+        setShowNavBar(true)
+      }, 2500)
+      // Delay custom cursor fade-in by 3.5 seconds
+      setTimeout(() => {
+        setShowCustomCursor(true)
+      }, 3500)
     } else {
       setShowHeroText(false)
       setShowUIState(false)
+      setShowNavBar(false)
+      setShowCustomCursor(false)
       if (fadeTimers.current.hero) clearTimeout(fadeTimers.current.hero)
-      if (fadeTimers.current.ui) clearTimeout(fadeTimers.current.ui)
     }
     return () => {
       if (fadeTimers.current.hero) clearTimeout(fadeTimers.current.hero)
-      if (fadeTimers.current.ui) clearTimeout(fadeTimers.current.ui)
     }
   }, [scrollProgress])
 
@@ -388,43 +427,11 @@ export const HelsinkiViewer = ({
       </div>
 
 
-      {/* Logo - Top Left with Magnetic Effect & Rotation */}
-      <MagneticElement
-        className="logo-container"
-        style={{
-          opacity: showUIState && !isTransitionActive && !isMenuOpen ? 1 : 0,
-          transition: isTransitionActive
-            ? 'opacity 1.5s cubic-bezier(0.22, 1, 0.36, 1)'
-            : 'opacity 0.8s cubic-bezier(0.22, 1, 0.36, 1)',
-          pointerEvents: showUIState && !isMenuOpen ? 'auto' : 'none',
-        }}
-        strength={0.25}
-        range={120}
-        rotate={true}
-        rotateDegrees={5}
-      >
-        <img src="/assets/logos/logo.svg" alt="Founders House Logo" className="cube-logo" />
-      </MagneticElement>
-
-      <MagneticElement
-        className="hamburger-menu"
-        style={{
-          opacity: showUIState && !isTransitionActive && !isMenuOpen ? 1 : 0,
-          transition: isTransitionActive
-            ? 'opacity 1.5s cubic-bezier(0.22, 1, 0.36, 1)'
-            : 'opacity 0.8s cubic-bezier(0.22, 1, 0.36, 1)',
-          pointerEvents: showUIState && !isMenuOpen ? 'auto' : 'none',
-        }}
-        strength={0.25}
-        range={120}
-      >
-        <AnimatedHamburger
-          isOpen={isMenuOpen}
-          onClick={() => setIsMenuOpen(!isMenuOpen)}
-          color="#D82E11"
-        />
-      </MagneticElement>
-
+      <NavBar 
+        logoColor="light"
+        hamburgerColor="#D82E11"
+        opacity={showNavBar && !isTransitionActive ? 1 : 0}
+      />
       <div
         className="ui-overlay"
         style={{
@@ -440,7 +447,7 @@ export const HelsinkiViewer = ({
         className="hero-text-container"
         style={{
           opacity: showHeroText ? heroTextOpacity : 0,
-          transition: 'opacity 0.6s cubic-bezier(0.22, 1, 0.36, 1)',
+          transition: 'opacity 3.6s cubic-bezier(0.11, 0.45, 0.08, 1.00) 0.6s',
           pointerEvents: 'none',
         }}
       >
@@ -464,51 +471,73 @@ export const HelsinkiViewer = ({
         )}
 
         <div className="hero-text-wrapper">
-          <div className="hero-subtext-row">
-            <p className="hero-subtext hero-subtext-left">BUILT FOR THE OBSESSED.</p>
+         <div 
+            className="hero-subtext-row"
+            style={{
+              transform: `translate(${mousePos.x * 8}px, ${mousePos.y * 8}px)`,
+              transition: 'transform 2s cubic-bezier(0.17, 0.67, 0.3, 0.99)'
+            }}
+          >
+                        <p className="hero-subtext hero-subtext-left">BUILT FOR THE OBSESSED.</p>
             <p className="hero-subtext hero-subtext-right">BUILT FOR THE EXCEPTIONAL.</p>
           </div>
-          <h1 className="hero-title">
-            <span className="hero-title-founders">FOUNDERS</span> <span className="hero-title-house">HOUSE</span>
+         <h1 
+            className="hero-title"
+            style={{
+              transform: `translate(${mousePos.x * 15}px, ${mousePos.y * 15}px)`,
+              transition: 'transform 2s cubic-bezier(0.17, 0.67, 0.3, 0.99)'
+            }}
+          >
+                        <span className="hero-title-founders">FOUNDERS</span> <span className="hero-title-house">HOUSE</span>
           </h1>
-
-          {showHeroText && heroTextOpacity > 0.5 && (
-            <div className="hero-line-wrapper">
-              <div className="hero-vertical-line"></div>
-              <a 
-                href="#" 
-                className="hero-learn-more hero-learn-more-desktop clickable"
-                onClick={(e) => handleLearnMoreClick(e)}
-              >
-                Learn more
-              </a>
-              <Button className="hero-learn-more-btn" onClick={() => handleLearnMoreClick()}>
-                Learn more
-              </Button>
-            </div>
-          )}
+          <div 
+            className="hero-line-wrapper"
+            style={{
+              opacity: showHeroText ? heroTextOpacity : 0,
+              pointerEvents: showHeroText && heroTextOpacity > 0.5 ? 'auto' : 'none',
+              transition: 'opacity 0.3s cubic-bezier(0.22, 1, 0.36, 1), transform 2s cubic-bezier(0.17, 0.67, 0.3, 0.99)',
+              transform: `translate(${mousePos.x * 24}px, ${mousePos.y * 24}px)`            }}
+          >
+            <Button 
+              className="hero-learn-more-btn" 
+              onClick={() => handleLearnMoreClick()}
+            >
+              Learn more
+            </Button>
+          </div>
         </div>
       </div>
 
       {showUIState && (
-        <div className="poi-navigator-wrapper">
+        <motion.div 
+          className="poi-navigator-wrapper"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ 
+            delay: 0,
+            duration: 0.4,
+            ease: [0.22, 1, 0.36, 1]
+          }}
+        > 
           <POINavigator onPOISelect={handlePOISelect} initialPOI="FOUNDERS_HOUSE" />
-        </div>
+        </motion.div>
       )}
 
-      {scrollProgress >= 1 && !isHoveringInteractive && !isMenuOpen && (
-        <div
+      {scrollProgress >= 1 && (
+       
+       <motion.div
           className="drag-cursor-indicator"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: showCustomCursor && !isHoveringInteractive ? 1 : 0 }}
+          transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
           style={{
             left: `${cursorPosition.x}px`,
             top: `${cursorPosition.y}px`,
           }}
         >
-          <img src="/assets/icons/dragnexplore.svg" alt="Drag to explore" className="cursor-icon" />
-        </div>
+          <img src="/assets/icons/mapdragicon.svg" alt="Drag to explore" className="cursor-icon" />
+        </motion.div>
       )}
-
-      <FullScreenMenu isOpen={isMenuOpen} onClose={() => setIsMenuOpen(false)} />
     </>
   )
 }

@@ -125,12 +125,8 @@ export const POINavigator = ({ onPOISelect, initialPOI = 'FOUNDERS_HOUSE' }: POI
       className="poi-navigator"
       role="navigation"
       aria-label="Points of interest"
-      initial={{ opacity: 0 }}
+      initial={{ opacity: 1 }}
       animate={{ opacity: 1 }}
-      transition={{ 
-        duration: 0.5, 
-        ease: [0.22, 1, 0.36, 1]
-      }}
     >
       <div className="poi-list" role="tablist">
         {poiList.map((poi, index) => {
@@ -164,13 +160,6 @@ export const POINavigator = ({ onPOISelect, initialPOI = 'FOUNDERS_HOUSE' }: POI
         })}
       </div>
 
-      {/* Vector path component - peaks at the highlighted POI */}
-      <VectorPath
-        selectedIndex={selectedIndex}
-        totalItems={poiList.length}
-        isReady={isInitialAnimationComplete}
-      />
-
       <div className={`poi-fan ${isMobileMenuOpen ? 'open' : ''}`} aria-hidden={!isMobileMenuOpen}>
         {poiList
           .filter((poi) => poi.key !== 'FOUNDERS_HOUSE')
@@ -188,7 +177,7 @@ export const POINavigator = ({ onPOISelect, initialPOI = 'FOUNDERS_HOUSE' }: POI
                   opacity: isMobileMenuOpen ? 1 : 0,
                   x: isMobileMenuOpen ? offset.x : leadClosedX,
                   y: isMobileMenuOpen ? offset.y : 0,
-                  scale: isMobileMenuOpen ? 1 : 0.7
+                  scale: isMobileMenuOpen ? 1 : 0.9
                 }}
                 transition={{
                   duration: 0.45,
@@ -235,7 +224,6 @@ export const POINavigator = ({ onPOISelect, initialPOI = 'FOUNDERS_HOUSE' }: POI
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ 
-          delay: 0.2, 
           duration: 0.4,
           ease: [0.22, 1, 0.36, 1]
         }}
@@ -281,33 +269,7 @@ const POIButton = ({
 }: POIButtonProps) => {
   const buttonRef = useRef<HTMLButtonElement>(null)
 
-  const mouseX = useMotionValue(0)
-  const mouseY = useMotionValue(0)
-
-  const springConfig = { damping: 28, stiffness: 400, mass: 0.5 }
-  const x = useSpring(mouseX, springConfig)
-  const y = useSpring(mouseY, springConfig)
-
-  const handleMouseMove = (e: React.MouseEvent<HTMLButtonElement>) => {
-    if (!buttonRef.current) return
-    const rect = buttonRef.current.getBoundingClientRect()
-    const centerX = rect.left + rect.width / 2
-    const centerY = rect.top + rect.height / 2
-
-    const distanceX = e.clientX - centerX
-    const distanceY = e.clientY - centerY
-
-    const distance = Math.sqrt(distanceX * distanceX + distanceY * distanceY)
-    const maxDistance = 100
-    const strength = Math.max(0, 1 - distance / maxDistance)
-
-    mouseX.set(distanceX * 0.2 * strength)
-    mouseY.set(distanceY * 0.2 * strength)
-  }
-
   const handleMouseLeave = () => {
-    mouseX.set(0)
-    mouseY.set(0)
     onHoverEnd()
   }
 
@@ -318,7 +280,6 @@ const POIButton = ({
       ref={buttonRef}
       className={`poi-item ${isActive ? 'active' : ''} ${isFocused ? 'keyboard-focused' : ''}`}
       onClick={onClick}
-      onMouseMove={handleMouseMove}
       onMouseEnter={onHoverStart}
       onMouseLeave={handleMouseLeave}
       role="tab"
@@ -328,7 +289,7 @@ const POIButton = ({
       initial={{
         opacity: 0,
         x: initialX,
-        scale: 0.4
+        scale: 0.8
       }}
       animate={{
         opacity: isActive ? 1 : 0.6,
@@ -360,11 +321,6 @@ const POIButton = ({
         }
       }}
       onAnimationComplete={onAnimationComplete}
-      style={{
-        x,
-        y,
-        cursor: 'pointer'
-      }}
     >
       {poi.name.toUpperCase()}
     </motion.button>

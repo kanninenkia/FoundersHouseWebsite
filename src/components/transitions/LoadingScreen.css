@@ -72,32 +72,33 @@
   position: fixed;
   top: 40vh;
   left: 50%;
-  width: 90vw;
+  width: 100vw;
   height: 100vh;
   background: transparent;
   z-index: 2;
   opacity: 1;
-  animation: mapExpandToFull 1.2s cubic-bezier(0.4, 0.25, 0, 1) forwards;
+  animation: mapExpandToFull 1.2s cubic-bezier(.4,.25,0,1) forwards;
   will-change: top, left, width, height, transform;
   overflow: hidden;
-  transform: translateX(-50%);
+  transform: translateX(-50%) scaleX(0.9);
   transition: none;
+  transform-origin: top center;
 }
 
 @keyframes mapExpandToFull {
   0% {
     top: 40vh;
     left: 50%;
-    width: 90vw;
+    width: 100vw;
     height: 100vh;
-    transform: translateX(-50%);
+    transform: translateX(-50%) scaleX(0.9);
   }
   100% {
     top: 0;
-    left: 0;
+    left: 50%;
     width: 100vw;
     height: 100vh;
-    transform: none;
+    transform: translateX(-50%) scaleX(1);
   }
 }
 .text-page .corner-label.fade-in-persist {
@@ -121,12 +122,11 @@
   }
 }
 
-
 .map-container.slide-in {
   position: fixed;
   top: 100vh;
   left: 50%;
-  width: 90vw;
+  width: 100vw;
   height: 100vh;
   background: transparent;
   z-index: 2;
@@ -134,7 +134,7 @@
   animation: mapSlideInToForty 1.8s cubic-bezier(0.3, 0.43, 0, 1) forwards;
   will-change: top, left, width, transform;
   overflow: hidden;
-  transform: translateX(-50%);
+  transform: translateX(-50%) scaleX(0.9);
   transition: none;
 }
 
@@ -142,16 +142,16 @@
   0% {
     top: 100vh;
     left: 50%;
-    width: 90vw;
+    width: 100vw;
     height: 100vh;
-    transform: translateX(-50%) scale(0.95);
+    transform: translateX(-50%) scaleX(0.9);
   }
   100% {
     top: 40vh;
     left: 50%;
-    width: 90vw;
+    width: 100vw;
     height: 100vh;
-    transform: translateX(-50%) scale(1);
+    transform: translateX(-50%) scaleX(0.9);
   }
 }
 .fade-up-text {
@@ -257,6 +257,7 @@
   height: 100%;
   object-fit: cover;
   display: block;
+  filter: grayscale(0.9) brightness(0.5);
 }
 
 /* Static background image - no cycling */
@@ -304,8 +305,9 @@
 }
 
 .loading-logo img {
-  width: auto;
   display: block;
+  height: 76px;
+  width: auto;
 }
 
 .loading-bar-container {
@@ -315,7 +317,7 @@
   transform: translateX(-50%);
   width: 45%;
   max-width: 90vw;
-  height: 2px;
+  height: 1px;
   background: rgba(255, 255, 255, 0.3);
   border-radius: 1px;
   overflow: hidden;
@@ -405,7 +407,7 @@
   bottom: 1.5rem;
   width: 40px;
   height: 1px;
-  background: #FFFFFF;
+  background: #FFF8F2;
   z-index: 3;
   opacity: 0;
   animation: fadeInCornerElements 2.6s cubic-bezier(0.3, 0.43, 0, 1) forwards;
@@ -421,7 +423,7 @@
 .text-page::after {
   right: 1.5rem;
   animation: fadeInCornerElements 0.2s ease-out forwards;
-  background: #FFFFFF;
+  background: #FFF8F2;
   height: 1px;
   bottom: 1.5rem;
 }
@@ -506,7 +508,7 @@
   font-family: 'IBM Plex Sans', sans-serif;
   font-weight: 700;
   font-size: clamp(2.5rem, 6vw, 5rem);
-  color: #FFFFFF;
+  color: #FFF8F2;
   letter-spacing: -0.02em;
   text-transform: uppercase;
   line-height: 1;
@@ -569,7 +571,7 @@
   font-family: 'IBM Plex Sans', sans-serif;
   font-weight: 400;
   font-size: clamp(0.65rem, 1vw, 0.85rem);
-  color: #FFFFFF;
+  color: #FFF8F2;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   opacity: 0;
@@ -776,8 +778,11 @@
 /* Skip intro button - minimal, founder-friendly style */
 .skip-intro-button {
   position: fixed;
-  bottom: 2rem;
-  right: 2rem;
+  bottom: 1rem;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   padding: 0;
   background: transparent;
   border: none;
@@ -830,3 +835,96 @@
   }
 }
 
+
+
+/* Landscape Tablets */
+@media (min-width: 768px) and (max-width: 1200px) and (orientation: landscape) {
+
+}
+
+/* Portrait Tablets */
+@media (min-width: 768px) and (max-width: 1050px) and (orientation: portrait) {
+  .text-page .text-centered {
+    gap: 0.03em;
+  }
+
+  .text-page .text-centered div {
+    font-size: 6.2vw;
+    line-height: 6.2vw;
+  }
+}
+
+/* Standard phones */
+@media (max-width: 767px) {
+  .text-page .text-centered {
+    gap: 0;
+  }
+
+  .text-page .text-centered div {
+    font-size: 13vw;
+    line-height: 13vw;
+    white-space: normal;
+    text-align: left;
+    max-width: 90vw;
+  }
+
+  .fade-up-wrapper {
+    height: auto;
+    min-height: 80px;
+  }
+
+  /* Smaller logo on mobile */
+  .loading-logo img {
+    display: block;
+    height: auto;
+    width: 80vw;
+  }
+
+  .loading-bar-container {
+    width: 80%;
+  }
+
+  /* Map slides in lower on mobile to avoid overlapping text */
+  .map-container.slide-in {
+    animation: mapSlideInToFortyMobile 1.8s cubic-bezier(0.3, 0.43, 0, 1) forwards;
+  }
+
+  @keyframes mapSlideInToFortyMobile {
+    0% {
+      top: 100vh;
+      left: 50%;
+      width: 90vw;
+      height: 100vh;
+      transform: translateX(-50%) scale(0.95);
+    }
+    100% {
+      top: 50vh;
+      left: 50%;
+      width: 90vw;
+      height: 100vh;
+      transform: translateX(-50%) scale(1);
+    }
+  }
+
+  /* Map expands from lower position */
+  .map-container.expand {
+    animation: mapExpandToFullMobile 1.2s cubic-bezier(0.4, 0.25, 0, 1) forwards;
+  }
+
+  @keyframes mapExpandToFullMobile {
+    0% {
+      top: 50vh;
+      left: 50%;
+      width: 90vw;
+      height: 100vh;
+      transform: translateX(-50%);
+    }
+    100% {
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      transform: none;
+    }
+  }
+}

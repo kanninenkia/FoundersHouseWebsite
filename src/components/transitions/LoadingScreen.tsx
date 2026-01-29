@@ -275,6 +275,11 @@ export const LoadingScreen = ({ onComplete, duration, scrollProgress, isReturnVi
       transition={{ duration: 0 }}
     >
       <div className="loading-content">
+        <section className="visually-hidden" aria-label="Founders House summary">
+          <h1>Founders House</h1>
+          <p>Built for the obsessed. Built for the exceptional.</p>
+          <p>Premium community space in Helsinki for ambitious founders.</p>
+        </section>
         <div className={`loading-text text-page${stage === 'map-slide-in' ? ' text-pushed-by-box' : ''}`} style={{ pointerEvents: 'none', zIndex: 0, position: 'fixed', inset: 0 }}>
           {!isReturnVisit && (stage === 'text1' || stage === 'text2' || stage === 'map-slide-in' || stage === 'map-expand') && <>
             <span
@@ -376,7 +381,7 @@ export const LoadingScreen = ({ onComplete, duration, scrollProgress, isReturnVi
             onClick={handleSkip}
             aria-label="Skip to map"
           >
-            → Explore
+            skip ahead
           </button>
         )}
       </div>

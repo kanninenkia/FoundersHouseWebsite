@@ -27,8 +27,9 @@ export default function NotFoundPage() {
   useEffect(() => {
     const previousOverflow = document.body.style.overflow;
     const previousHtmlOverflow = document.documentElement.style.overflow;
-    document.body.style.overflow = "hidden";
-    document.documentElement.style.overflow = "hidden";
+    const isMobile = window.matchMedia("(max-width: 768px), (max-width: 1180px) and (orientation: landscape)").matches;
+    document.body.style.overflow = isMobile ? "auto" : "hidden";
+    document.documentElement.style.overflow = isMobile ? "auto" : "hidden";
     return () => {
       document.body.style.overflow = previousOverflow;
       document.documentElement.style.overflow = previousHtmlOverflow;

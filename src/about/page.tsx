@@ -5,7 +5,7 @@ import GridDistortion from '../effects/GridDistortion.tsx';
 import ParallaxMotion from '../effects/ParallaxMotion.tsx';
 import "./page.css";
 import "./pageMobile.css";
-import { Footer } from "../components/layout";
+import { Footer, NavBar } from "../components/layout";
 
 const HEADER_IMG_SRC = "/assets/images/membership/join-process.webp";
 const SECTION2_IMG_SRC = "/assets/images/events/Wave x Maki Photo (2).webp";
@@ -28,6 +28,7 @@ const PROFILE_IMAGES = [
 
 export default function AboutPage() {
   const [stage, setStage] = useState(1);
+    const [showNavBar, setShowNavBar] = useState(false);
   // For team hover effect
   const [hoveredMember, setHoveredMember] = useState<string | null>(null);
   const teamRef = useRef<HTMLDivElement>(null);
@@ -53,6 +54,13 @@ export default function AboutPage() {
       const img = new Image();
       img.src = src;
     });
+  }, []);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowNavBar(true);
+    }, 6000);
+    return () => clearTimeout(timer);
   }, []);
 
   useEffect(() => {
@@ -155,6 +163,13 @@ export default function AboutPage() {
 
   return (
     <div style={{ position: "relative", maxWidth: "100%", minHeight: "100vh", background: "#2B0906" }}>
+      <NavBar logoColor="dark" hamburgerColor="#FFF8F2" opacity={showNavBar ? 1 : 0} />
+
+<section className="visually-hidden" aria-label="About Founders House">
+        <h1>About Founders House</h1>
+        <p>Founders House is a premium community space in Helsinki for ambitious founders.</p>
+        <p>Learn about the mission, team, and vision behind the community.</p>
+      </section>
       {/*---------------------------------------------------------------------*/}
       {/* Persistent animated image container */}
       {/*---------------------------------------------------------------------*/}
@@ -287,7 +302,7 @@ export default function AboutPage() {
                       className="header-h1"
                       initial={{ y: 175 }}
                       animate={{ y: 0 }}
-                      transition={{ delay: 2.4, duration: 1.3, ease: [0.11, 0.45, 0.08, 1.00] }}
+                      transition={{ delay: 1.8, duration: 1.8, ease: [0.11, 0.45, 0.08, 1.00] }}
                       >
                         ABOUT
                     </motion.h1>
@@ -322,8 +337,32 @@ export default function AboutPage() {
               
               <motion.div className="section-2-content" style={{ y: section2Content }}>
                 <ParallaxMotion speedX={30} speedY={32} easing={[0.17, 0.67, 0.3, 0.99]}>
-                  <p>FOUNDERS HOUSE HELSINKI IS THE HOME FOR EUROPE’S TOP NEXT-GEN FOUNDERS. THE BUILDERS WHO THINK DIFFERENTLY, MOVE FASTER THAN ANYONE ELSE AND RAISE THE BAR FOR EVERYONE AROUND.</p>
-                </ParallaxMotion>
+                  <div style={{ position: 'relative', display: 'inline-block', overflow: 'hidden' }}>
+                    <motion.p
+                      initial={{ y: 80 }}
+                      whileInView={{ y: 0 }}
+                      viewport={{ once: true, amount: 0.3 }}
+                      transition={{ duration: 1.2, ease: [0.11, 0.45, 0.08, 1.00] }}
+                      style={{ position: 'relative', zIndex: 0 }}
+                    >
+                      FOUNDERS HOUSE HELSINKI IS THE HOME FOR EUROPE'S TOP NEXT-GEN FOUNDERS. THE BUILDERS WHO THINK DIFFERENTLY, MOVE FASTER THAN ANYONE ELSE AND RAISE THE BAR FOR EVERYONE AROUND.
+                    </motion.p>
+                    <motion.div
+                      initial={{ translateY: "0%" }}
+                      whileInView={{ translateY: "101%" }}
+                      viewport={{ once: true, amount: 0.3 }}
+                      transition={{ duration: 1.2, ease: [0.11, 0.45, 0.08, 1.00] }}
+                      style={{
+                        position: "absolute",
+                        top: 0,
+                        left: 0,
+                        width: "100%",
+                        height: "100%",
+                        backgroundColor: "#D82E11",
+                        zIndex: 1
+                      }}
+                    />
+                  </div>                </ParallaxMotion>
               </motion.div>
             </div>
 
@@ -346,7 +385,7 @@ export default function AboutPage() {
                   </ParallaxMotion>
                 </div>
                 <ParallaxMotion speedX={70} speedY={70} delay={5}>
-                  <motion.p style={isTabletPortrait ? {} : { y: section3text }}>WE SUPPORT THESE FOUNDERS DURING THE MOST CRITICAL EARLY STAGES OF BUILDING THROUGH A TIGHT COMMUNITY SHAPED BY COLLABORATION AND SHARED AMBITION—ALL UNDER THE SAME ROOF. BY BRINGING THESE PEOPLE TOGETHER WE CREATE THE CONDITIONS FOR AMBITIOUS COMPANIES TO BE BUILT FASTER AND AT A HIGHER LEVEL. HERE TALENT CONENTRATES AND POTENTIAL MULTIPLIES. </motion.p>
+                  <motion.p style={isTabletPortrait ? {} : { y: section3text }}>WE SUPPORT THESE FOUNDERS DURING THE MOST CRITICAL EARLY STAGES OF BUILDING THROUGH A TIGHT COMMUNITY SHAPED BY COLLABORATION AND SHARED AMBITION—ALL UNDER THE SAME ROOF. BY BRINGING THESE PEOPLE TOGETHER WE CREATE THE CONDITIONS FOR AMBITIOUS COMPANIES TO BE BUILT FASTER AND AT A HIGHER LEVEL. HERE TALENT CONENTRATES AND POTENTIAL MULTIPLIES.</motion.p>
                 </ParallaxMotion>
               </div>
             </motion.div>
@@ -368,8 +407,33 @@ export default function AboutPage() {
               {/* Add a tall test section to enable scrolling */}
               <motion.div className="section-4-content" style={{ y: section4Content }}>
                 <ParallaxMotion speedX={30} speedY={32} easing={[0.17, 0.67, 0.3, 0.99]}>
-                  <p>Founders House Helsinki is the hub for Finland’s most promising next-gen startups. A home for builders who move faster than anyone else, think differently, and raise the bar for everyone around them.</p>
-                </ParallaxMotion>
+                  <div style={{ position: 'relative', display: 'inline-block', overflow: 'hidden' }}>
+                    <motion.p
+                      initial={{ y: 80 }}
+                      whileInView={{ y: 0 }}
+                      viewport={{ once: true, amount: 0.3 }}
+                      transition={{ duration: 1.2, ease: [0.11, 0.45, 0.08, 1.00] }}
+                      style={{ position: 'relative', zIndex: 0 }}
+                    >
+                      Founders House Helsinki is the hub for Finland's most promising next-gen startups. A home for builders who move faster than anyone else, think differently, and raise the bar for everyone around them.
+                    </motion.p>
+                    <motion.div
+                      initial={{ translateY: "0%" }}
+                      whileInView={{ translateY: "101%" }}
+                      viewport={{ once: true, amount: 0.3 }}
+                      transition={{ duration: 1.2, ease: [0.11, 0.45, 0.08, 1.00] }}
+                      style={{
+                        position: "absolute",
+                        top: 0,
+                        left: 0,
+                        width: "100%",
+                        height: "100%",
+                        backgroundColor: "#D82E11",
+                        zIndex: 1
+                      }}
+                    />
+                  </div>
+                                  </ParallaxMotion>
               </motion.div>
             </motion.div>
 
@@ -440,8 +504,33 @@ export default function AboutPage() {
               </motion.div>
               <div className="team-text-wrapper">
                 <ParallaxMotion speedX={25} speedY={25} delay={10} easing={[0.17, 0.67, 0.3, 0.99]}>
-                  <h3>THE TEAM</h3>
-                </ParallaxMotion>
+                  <div style={{ position: 'relative', display: 'inline-block', overflow: 'hidden' }}>
+                    <motion.h3
+                      initial={{ y: 80 }}
+                      whileInView={{ y: 0 }}
+                      viewport={{ once: true, amount: 0.3 }}
+                      transition={{ duration: 1.2, ease: [0.11, 0.45, 0.08, 1.00] }}
+                      style={{ position: 'relative', zIndex: 0 }}
+                    >
+                      THE TEAM
+                    </motion.h3>
+                    <motion.div
+                      initial={{ translateY: "0%" }}
+                      whileInView={{ translateY: "101%" }}
+                      viewport={{ once: true, amount: 0.3 }}
+                      transition={{ duration: 1.2, ease: [0.11, 0.45, 0.08, 1.00] }}
+                      style={{
+                        position: "absolute",
+                        top: 0,
+                        left: 0,
+                        width: "100%",
+                        height: "100%",
+                        backgroundColor: "#D82E11",
+                        zIndex: 1
+                      }}
+                    />
+                  </div>
+                                  </ParallaxMotion>
               </div>
             </motion.div>
 

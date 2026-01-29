@@ -9,7 +9,7 @@ import * as THREE from 'three'
 export const COLORS = {
   // Day Mode Colors
   day: {
-    sky: 0xFFF8F2,         // Cream background
+    sky: 0xFFF8F2,         // Dark red background (visible)
     wireframe: 0x2b0a05,   // Dark brown wireframe
     wireframeOpacity: 0.35, // Day wireframe opacity
   },
@@ -78,11 +78,11 @@ export const SCENE_CONFIG = {
   lighting: {
     ambient: {
       color: 0xffffff,
-      intensity: 1.6, // Lift dark areas without washing highlights
+      intensity: 3, // Increased to illuminate against dark background
     },
     directional: {
-      color: 0xffffff,
-      intensity: 1.5, // Slight boost to keep contrast while lifting shadows
+      color: 0xffffff,  // White light for proper illumination
+      intensity: 2.0, // Increased for visibility
       position: { x: 500, y: 1000, z: 500 }, // Higher sun position for better lighting angle
       shadow: {
         left: -10000,
@@ -92,8 +92,8 @@ export const SCENE_CONFIG = {
       },
     },
     hemisphere: {
-      skyColor: 0xffffff,
-      groundColor: 0xb5b5b5, // Slightly lighter ground bounce for dark facades
+      skyColor: 0x9E1B1E,
+      groundColor: 0x3a0808, // Dark ground to match dark background
       intensity: 0.9, // More fill light in dense areas
     },
   },
@@ -124,7 +124,7 @@ export const FOG = {
   near: 400,   // Fog starts at reasonable distance
   far: 1200,   // Fog extends to create depth
   colors: {
-    day: 0xFFF8F2,  // Cream fog to match sky
+    day: 0xFFF8F2,  // Dark red fog to match sky light: #FFF8F2, red: #771113
     night: 0x0a0a15,
   },
 } as const

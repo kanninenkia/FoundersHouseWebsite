@@ -8,7 +8,7 @@ interface ParallaxMotionProps {
   easing?: number[];
   delay?: number; // in ms
   background?: string;
-  scale?: number;
+    scale?: number;
   [key: string]: any;
 }
 
@@ -19,7 +19,7 @@ const ParallaxMotion = ({
   easing = [0.12, 0.26, 0, 1],
   delay = 0,
   background,
-  scale = 1,
+    scale = 1,
   ...rest
 }: ParallaxMotionProps) => {
   const mouseX = useMotionValue(0);
@@ -31,7 +31,9 @@ const ParallaxMotion = ({
   // Check if parallax should be disabled based on screen size
   useEffect(() => {
     const checkScreenSize = () => {
-      setIsDisabled(window.innerWidth < 1200);
+      const disabled = window.innerWidth < 1200;
+      console.log('[ParallaxMotion] Screen width:', window.innerWidth, 'Disabled:', disabled);
+      setIsDisabled(disabled);
     };
     checkScreenSize();
     window.addEventListener("resize", checkScreenSize);
@@ -39,8 +41,12 @@ const ParallaxMotion = ({
   }, []);
 
   useEffect(() => {
-    if (isDisabled) return; // Don't attach listeners if disabled
+    if (isDisabled) {
+      console.log('[ParallaxMotion] Parallax disabled for screen size');
+      return; // Don't attach listeners if disabled
+    }
     
+    console.log('[ParallaxMotion] Attaching mousemove listener');
     const handle = (e: MouseEvent) => {
       const { innerWidth, innerHeight } = window;
       const normX = (e.clientX / innerWidth) * 2 - 1;
@@ -49,7 +55,10 @@ const ParallaxMotion = ({
       mouseY.set(normY);
     };
     window.addEventListener("mousemove", handle);
-    return () => window.removeEventListener("mousemove", handle);
+    return () => {
+      console.log('[ParallaxMotion] Removing mousemove listener');
+      window.removeEventListener("mousemove", handle);
+    };
   }, [mouseX, mouseY, isDisabled]);
 
   useEffect(() => {

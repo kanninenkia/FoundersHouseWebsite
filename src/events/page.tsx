@@ -3,7 +3,8 @@ import "./pageMobile.css";
 import React, { useEffect, useState, useRef } from "react";
 import { motion, AnimatePresence, useScroll, useTransform, useMotionValue } from "framer-motion";
 import ParallaxMotion from '../effects/ParallaxMotion.tsx';
-import { AnimatedHamburger, Button } from '../components/ui';
+import { Button } from '../components/ui';
+import { NavBar } from '../components/layout';
 import { FullScreenMenu } from '../components/layout';
 import { eventsData } from './hooks/events-data.ts';
 
@@ -84,7 +85,7 @@ const shuffleText = (
 
 export default function EventsPage() {
   const [stage, setStage] = useState(1);
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [showNavBar, setShowNavBar] = useState(false);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const trackRef = useRef<HTMLDivElement>(null);
   const cursorX = useMotionValue(0);
@@ -100,6 +101,14 @@ export default function EventsPage() {
     const matches = window.matchMedia('(max-width: 768px)').matches;
     return matches;
   });
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowNavBar(true);
+    }, 6000);
+    return () => clearTimeout(timer);
+  }, []);
+
   const [isCardLocked, setIsCardLocked] = useState(false);
   const titleRef = useRef<HTMLHeadingElement>(null);
   const descriptionRef = useRef<HTMLHeadingElement>(null);
@@ -362,11 +371,11 @@ export default function EventsPage() {
         'a, button, .hamburger-button, .calendar-button, .events-calendar-button, .events-header, .event-card, .event-card-image'
       );
       // Hide custom cursor when hovering over interactive elements OR when menu is open
-      setShowCustomCursor(!isInteractive && !isMenuOpen);
+      setShowCustomCursor(!isInteractive);
       document.body.classList.toggle('events-cursor-interactive', isInteractive);
     };
     // Only show custom cursor initially if menu is closed
-    setShowCustomCursor(!isMenuOpen);
+    setShowCustomCursor(true);
     window.addEventListener('mousemove', handleMouseMove);
 
     return () => {
@@ -374,7 +383,7 @@ export default function EventsPage() {
       setShowCustomCursor(false);
       document.body.classList.remove('events-cursor-interactive');
     };
-  }, [stage, isMenuOpen]);
+  }, [stage]);
 
   useEffect(() => {
     document.body.classList.add('events-cursor');
@@ -480,6 +489,12 @@ export default function EventsPage() {
       className="events-page"
       style={{ position: "relative", maxWidth: "100%", minHeight: "100vh", height: "100vh", overflow: "hidden", background: "#2B0906" }}
     >
+      <section className="visually-hidden" aria-label="Founders House events">
+        <h1>Founders House Events</h1>
+        <p>Curated founder events in Helsinki.</p>
+        <p>Discover upcoming gatherings and community moments.</p>
+      </section>
+
       {/* Custom Cursor */}
       {showCustomCursor && (
         <motion.div
@@ -497,27 +512,9 @@ export default function EventsPage() {
         </motion.div>
       )}
 
-      <AnimatePresence>
-        {stage === 2 && (
-          <motion.header
-            className="events-header"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{
-              delay: 2.6,
-              duration: 1,
-              ease: [0.11, 0.45, 0.08, 1.00]
-            }}
-          >
-            <img src="/assets/logos/logoWhite.png" alt="Founders House" className="header-logo" />
-            <div onClick={() => setIsMenuOpen(!isMenuOpen)}>
-              <AnimatedHamburger isOpen={isMenuOpen} onClick={() => setIsMenuOpen(!isMenuOpen)} />
-            </div>
-          </motion.header>
-        )}
-      </AnimatePresence>
+      <NavBar logoColor="dark" hamburgerColor="#FFF8F2" opacity={showNavBar ? 1 : 0} />
 
-      <FullScreenMenu isOpen={isMenuOpen} onClose={() => setIsMenuOpen(false)} />
+
       {/*---------------------------------------------------------------------*/}
       {/* Persistent animated image container */}
       {/*---------------------------------------------------------------------*/}

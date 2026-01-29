@@ -31,7 +31,7 @@
   transform: translateZ(0);
   backface-visibility: hidden;
   -webkit-font-smoothing: antialiased;
-  background: linear-gradient(to bottom, #FFF8F2 0%, #FFF8F2 52%, transparent 100%);
+  background: transparent;
 }
 
 .helsinki-container canvas {
@@ -44,7 +44,7 @@
 /* Apply grayscale filter to main canvas */
 /* BRIGHTNESS: Moderate values - grayscale 95%, brightness 1.50, contrast 0.88 */
 .helsinki-container canvas {
-  filter: grayscale(95%) brightness(1.50) contrast(0.88);
+  filter: grayscale(0) brightness(1) contrast(1);
   transition: filter 0.3s cubic-bezier(0.22, 1, 0.36, 1);
   will-change: filter;
   backface-visibility: hidden;
@@ -65,9 +65,7 @@
   left: 0;
   right: 0;
   height: 8vh;
-  background: linear-gradient(to top, rgba(255, 248, 242, 0.15) 0%, transparent 100%);
-  backdrop-filter: blur(3px);
-  -webkit-backdrop-filter: blur(3px);
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.15) 0%, transparent 100%);
   pointer-events: none !important; /* CRITICAL: Must not block canvas interactions */
   z-index: 1;
 }
@@ -188,7 +186,7 @@
   white-space: pre-wrap;
 }
 
-/* Loading Overlay - Chartogne style */
+/* Loading Overlay */
 .loading-overlay {
   position: fixed;
   top: 0;
@@ -399,7 +397,7 @@
 .hero-title {
   font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   font-size: clamp(3rem, 8.7vw, 8.7rem);
-  color: #8B1215;
+  color: #D82E11;
   letter-spacing: -0.04em;
   margin: 0;
   line-height: 1;
@@ -473,7 +471,8 @@
 }
 
 .hero-learn-more-btn {
-  display: none;
+  display: block;
+  transform: scale(0.8);
 }
 
 /* Enable clicking when visible */
@@ -530,7 +529,7 @@
   letter-spacing: 0.05em;
   text-align: center;
   line-height: 1.3;
-  color: #8B1215;
+  color: #D82E11;
   opacity: 0.4;
   white-space: nowrap;
 }
@@ -611,7 +610,7 @@
 
 /* Cursor states - hide default cursor, use custom cursor instead */
 .helsinki-container {
-  cursor: none;
+  cursor: grab;
 }
 
 .helsinki-container:active {
@@ -642,9 +641,9 @@
 .cursor-icon {
   width: auto;
   height: auto;
-  transform: translate(-50%, -50%);
-  max-width: 150px;
-  max-height: 150px;
+  transform: translate(0, 0);
+  width: 100px;
+  height: auto;
 }
 
 /* Hide cursor indicator for reduced motion */

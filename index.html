@@ -28,26 +28,41 @@
     <meta name="twitter:description" content="Built for the obsessed. Built for the exceptional." />
     <meta name="twitter:image" content="/assets/images/events/The Legends Day.webp" />
     -->
-
-    <!-- TODO: Add Structured Data (Schema.org) for SEO
-         Helps Google show rich snippets in search results (logo, location, etc.)
-         Also required for Awwwards Developer Award (Semantics/SEO category)
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
-      "@type": "Organization",
-      "name": "Founders House",
-      "description": "Built for the obsessed. Built for the exceptional.",
-      "url": "https://foundershouse.com",
-      "logo": "https://foundershouse.com/assets/logos/logo.svg",
-      "address": {
-        "@type": "PostalAddress",
-        "addressLocality": "Helsinki",
-        "addressCountry": "FI"
-      }
+      "@graph": [
+        {
+          "@type": "Organization",
+          "@id": "https://foundershouse.com/#organization",
+          "name": "Founders House",
+          "url": "https://foundershouse.com",
+          "logo": "https://foundershouse.com/assets/logos/logo.svg",
+          "description": "Built for the obsessed. Built for the exceptional. A premium community space in Helsinki for ambitious founders.",
+          "address": {
+            "@type": "PostalAddress",
+            "addressLocality": "Helsinki",
+            "addressCountry": "FI"
+          }
+        },
+        {
+          "@type": "WebSite",
+          "@id": "https://foundershouse.com/#website",
+          "url": "https://foundershouse.com",
+          "name": "Founders House",
+          "publisher": { "@id": "https://foundershouse.com/#organization" }
+        },
+        {
+          "@type": "WebPage",
+          "@id": "https://foundershouse.com/#webpage",
+          "url": "https://foundershouse.com/",
+          "name": "Founders House - Helsinki",
+          "description": "Built for the obsessed. Built for the exceptional. A premium community space in Helsinki for ambitious founders.",
+          "isPartOf": { "@id": "https://foundershouse.com/#website" }
+        }
+      ]
     }
     </script>
-    -->
 
     <title>FOUNDERS HOUSE</title>
     <style>

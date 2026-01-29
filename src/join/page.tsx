@@ -5,7 +5,7 @@ import GridDistortion from '../effects/GridDistortion.tsx';
 import ParallaxMotion from '../effects/ParallaxMotion.tsx';
 import "./page.css";
 import { HelsinkiViewer } from "../components/map";
-import { Footer } from "../components/layout";
+import { Footer, NavBar } from "../components/layout";
 import { Button } from "../components/ui";
 
 const HEADER_IMG_SRC = "/assets/images/membership/horses.webp";
@@ -15,6 +15,7 @@ const PROCESS_SRC = "/assets/images/membership/join-process.webp";
 
 export default function JoinPage() {
   const [stage, setStage] = useState(1);
+  const [showNavBar, setShowNavBar] = useState(false);
   const [enableScrollScale, setEnableScrollScale] = useState(false);
   // For team hover effect
   const [hoveredMember, setHoveredMember] = useState<string | null>(null);
@@ -32,6 +33,13 @@ export default function JoinPage() {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [hoveredMember]);
+
+    useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowNavBar(true);
+    }, 6000);
+    return () => clearTimeout(timer);
+  }, []);
 
   // Parallax setup
   const yScroll = useMotionValue(0);
@@ -90,6 +98,12 @@ export default function JoinPage() {
 
   return (
     <div style={{ position: "relative", maxWidth: "100%", minHeight: "100vh", background: "#2B0906" }}>
+      <NavBar logoColor="dark" hamburgerColor="#FFF8F2" opacity={showNavBar ? 1 : 0} />
+      <section className="visually-hidden" aria-label="Join Founders House">
+        <h1>Join Founders House</h1>
+        <p>Apply to become part of Founders House in Helsinki.</p>
+        <p>Membership is designed for ambitious founders building the next generation of companies.</p>
+      </section>
       {/*---------------------------------------------------------------------*/}
       {/* Persistent animated image container */}
       {/*---------------------------------------------------------------------*/}
@@ -317,19 +331,70 @@ export default function JoinPage() {
                   <h3>Application process</h3>
                 </ParallaxMotion>
                 <ParallaxMotion speedX={30} speedY={32} easing={[0.17, 0.67, 0.3, 0.99]}>
-                  <p>We run two application pushes a year, in February and September, but since we know building a company doesn’t look at the time, we have room for exceptional cases when timing matters.</p>
-                  <br />
-                  <p>Selected founders are invited to interviews with the Founders House Helsinki team. After that, the council chooses which founders receive Residency or Membership.</p>
+                  <div style={{ position: 'relative', display: 'inline-block', overflow: 'hidden' }}>
+                    <motion.p
+                      style={{ position: 'relative', zIndex: 0 }}
+                      initial={{ y: 80 }}
+                      whileInView={{ y: 0 }}
+                      viewport={{ once: true, amount: 0.3 }}
+                      transition={{ duration: 1.2, ease: [0.11, 0.45, 0.08, 1.00] }}
+                    >
+                      We run two application pushes a year, in February and September, but since we know building a company doesn't look at the time, we have room for exceptional cases when timing matters.
+                      <br /><br />
+                      Selected founders are invited to interviews with the Founders House Helsinki team. After that, the council chooses which founders receive Residency or Membership.
+                    </motion.p>
+                    <motion.div
+                      initial={{ translateY: "0%" }}
+                      whileInView={{ translateY: "101%" }}
+                      viewport={{ once: true, amount: 0.3 }}
+                      transition={{ duration: 1.2, ease: [0.11, 0.45, 0.08, 1.00] }}
+                      style={{
+                        position: "absolute",
+                        top: 0,
+                        left: 0,
+                        width: "100%",
+                        height: "100%",
+                        backgroundColor: "#D82E11",
+                        zIndex: 1
+                      }}
+                    />
+                  </div>
                 </ParallaxMotion>
               </motion.div>
 
-              <motion.div className="last-section-content" style={{ y: section2Content }}>
+
+              <motion.div className="last-section-content community-content" style={{ y: section2Content }}>
                 <ParallaxMotion speedX={50} speedY={52} easing={[0.17, 0.67, 0.3, 0.99]}>
                   <h3 style={{ color: "white" }}>Join our community</h3>
                 </ParallaxMotion>
                 <ParallaxMotion speedX={50} speedY={52} easing={[0.17, 0.67, 0.3, 0.99]}>
-                  <p style={{ color: "white" }}>We’re also hosting a few open community events during the year, so if you want to be part of our community follow us on Linkedin and keep an eye on our Luma calendar so you don't miss out.</p>
-                </ParallaxMotion>
+                 <div style={{ position: 'relative', display: 'inline-block', overflow: 'hidden' }}>
+                    <motion.p
+                      style={{ color: "white", position: 'relative', zIndex: 0 }}
+                      initial={{ y: 80 }}
+                      whileInView={{ y: 0 }}
+                      viewport={{ once: true, amount: 0.3 }}
+                      transition={{ duration: 1.2, ease: [0.11, 0.45, 0.08, 1.00] }}
+                    >
+                      We're also hosting a few open community events during the year, so if you want to be part of our community follow us on Linkedin and keep an eye on our Luma calendar so you don't miss out.
+                    </motion.p>
+                    <motion.div
+                      initial={{ translateY: "0%" }}
+                      whileInView={{ translateY: "101%" }}
+                      viewport={{ once: true, amount: 0.3 }}
+                      transition={{ duration: 1.2, ease: [0.11, 0.45, 0.08, 1.00] }}
+                      style={{
+                        position: "absolute",
+                        top: 0,
+                        left: 0,
+                        width: "100%",
+                        height: "100%",
+                        backgroundColor: "#D82E11",
+                        zIndex: 1
+                      }}
+                    />
+                  </div>
+                                  </ParallaxMotion>
               </motion.div>
             </div>
 

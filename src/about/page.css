@@ -194,6 +194,7 @@
 
 .section-3 .img-container img {
     height: 500px;
+    filter: grayscale(0.9);
 }
 
 .section-3 .img-container .img-1 {
@@ -269,12 +270,22 @@
     position: relative;
     padding: 8% 8% 0 8%;
     background: #2B0906;
+    z-index: 5;
 }
 
 .section-5 .content-img-container {
     overflow: hidden;
     position: relative;
     height: 800px;
+}
+
+.section-5 .section-5-map-img-container {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    z-index: 1;
 }
 
 .section-5-map-img {
@@ -354,6 +365,7 @@
     text-transform: uppercase;
 }
 
+/*----------------------------------------------*/
 
 .last-section {
     position: relative;
@@ -512,5 +524,6 @@
     font-size: 1.1rem;
     font-weight: 400;
     text-decoration: none;
+    text-transform: uppercase;
     color: #FFF8F2;
 }

@@ -32,90 +32,76 @@
 }
 
 
-/* Gradual blur overlay using stacked divs - Subtle dark vignette effect */
+/* Gradual blur overlay using stacked divs */
 .gradient-blur {
   position: fixed;
   z-index: 5;
   inset: auto 0 0 0;
-  height: 160px;
-  pointer-events: none !important; /* CRITICAL: Must not block canvas interactions */
-  will-change: backdrop-filter;
-  transform: translateZ(0);
-  user-select: none;
-  -webkit-user-select: none;
-  background: linear-gradient(to top, 
-    rgba(0, 0, 0, 0.6) 0%, 
-    rgba(0, 0, 0, 0.35) 20%,
-    rgba(0, 0, 0, 0.15) 40%,
-    transparent 70%
-  );
+  height: 150px;
+  pointer-events: none;
 }
 .gradient-blur > div,
 .gradient-blur::before,
 .gradient-blur::after {
   position: absolute;
   inset: 0;
-  will-change: backdrop-filter;
-  pointer-events: none !important; /* CRITICAL: Must not block canvas interactions */
-  user-select: none;
-  -webkit-user-select: none;
 }
 .gradient-blur::before {
   content: "";
   z-index: 1;
   backdrop-filter: blur(0px);
   -webkit-backdrop-filter: blur(0px);
-  mask-image: linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,1) 12.5%, rgba(0,0,0,1) 25%, rgba(0,0,0,0) 37.5%);
+  mask: linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,1) 12.5%, rgba(0,0,0,1) 25%, rgba(0,0,0,0) 37.5%);
   -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,1) 12.5%, rgba(0,0,0,1) 25%, rgba(0,0,0,0) 37.5%);
 }
 .gradient-blur > div:nth-of-type(1) {
   z-index: 2;
-  backdrop-filter: blur(0.5px);
-  -webkit-backdrop-filter: blur(0.5px);
-  mask-image: linear-gradient(to bottom, rgba(0,0,0,0) 12.5%, rgba(0,0,0,1) 25%, rgba(0,0,0,1) 37.5%, rgba(0,0,0,0) 50%);
+  backdrop-filter: blur(1px);
+  -webkit-backdrop-filter: blur(1px);
+  mask: linear-gradient(to bottom, rgba(0,0,0,0) 12.5%, rgba(0,0,0,1) 25%, rgba(0,0,0,1) 37.5%, rgba(0,0,0,0) 50%);
   -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,0) 12.5%, rgba(0,0,0,1) 25%, rgba(0,0,0,1) 37.5%, rgba(0,0,0,0) 50%);
 }
 .gradient-blur > div:nth-of-type(2) {
   z-index: 3;
-  backdrop-filter: blur(1px);
-  -webkit-backdrop-filter: blur(1px);
-  mask-image: linear-gradient(to bottom, rgba(0,0,0,0) 25%, rgba(0,0,0,1) 37.5%, rgba(0,0,0,1) 50%, rgba(0,0,0,0) 62.5%);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+  mask: linear-gradient(to bottom, rgba(0,0,0,0) 25%, rgba(0,0,0,1) 37.5%, rgba(0,0,0,1) 50%, rgba(0,0,0,0) 62.5%);
   -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,0) 25%, rgba(0,0,0,1) 37.5%, rgba(0,0,0,1) 50%, rgba(0,0,0,0) 62.5%);
 }
 .gradient-blur > div:nth-of-type(3) {
   z-index: 4;
-  backdrop-filter: blur(1.5px);
-  -webkit-backdrop-filter: blur(1.5px);
-  mask-image: linear-gradient(to bottom, rgba(0,0,0,0) 37.5%, rgba(0,0,0,1) 50%, rgba(0,0,0,1) 62.5%, rgba(0,0,0,0) 75%);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+  mask: linear-gradient(to bottom, rgba(0,0,0,0) 37.5%, rgba(0,0,0,1) 50%, rgba(0,0,0,1) 62.5%, rgba(0,0,0,0) 75%);
   -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,0) 37.5%, rgba(0,0,0,1) 50%, rgba(0,0,0,1) 62.5%, rgba(0,0,0,0) 75%);
 }
 .gradient-blur > div:nth-of-type(4) {
   z-index: 5;
-  backdrop-filter: blur(2px);
-  -webkit-backdrop-filter: blur(2px);
-  mask-image: linear-gradient(to bottom, rgba(0,0,0,0) 50%, rgba(0,0,0,1) 62.5%, rgba(0,0,0,1) 75%, rgba(0,0,0,0) 87.5%);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  mask: linear-gradient(to bottom, rgba(0,0,0,0) 50%, rgba(0,0,0,1) 62.5%, rgba(0,0,0,1) 75%, rgba(0,0,0,0) 87.5%);
   -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,0) 50%, rgba(0,0,0,1) 62.5%, rgba(0,0,0,1) 75%, rgba(0,0,0,0) 87.5%);
 }
 .gradient-blur > div:nth-of-type(5) {
   z-index: 6;
-  backdrop-filter: blur(2.5px);
-  -webkit-backdrop-filter: blur(2.5px);
-  mask-image: linear-gradient(to bottom, rgba(0,0,0,0) 62.5%, rgba(0,0,0,1) 75%, rgba(0,0,0,1) 87.5%, rgba(0,0,0,0) 100%);
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+  mask: linear-gradient(to bottom, rgba(0,0,0,0) 62.5%, rgba(0,0,0,1) 75%, rgba(0,0,0,1) 87.5%, rgba(0,0,0,0) 100%);
   -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,0) 62.5%, rgba(0,0,0,1) 75%, rgba(0,0,0,1) 87.5%, rgba(0,0,0,0) 100%);
 }
 .gradient-blur > div:nth-of-type(6) {
   z-index: 7;
-  backdrop-filter: blur(3px);
-  -webkit-backdrop-filter: blur(3px);
-  mask-image: linear-gradient(to bottom, rgba(0,0,0,0) 75%, rgba(0,0,0,1) 87.5%, rgba(0,0,0,1) 100%);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  mask: linear-gradient(to bottom, rgba(0,0,0,0) 75%, rgba(0,0,0,1) 87.5%, rgba(0,0,0,1) 100%);
   -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,0) 75%, rgba(0,0,0,1) 87.5%, rgba(0,0,0,1) 100%);
 }
 .gradient-blur::after {
   content: "";
   z-index: 8;
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
-  mask-image: linear-gradient(to bottom, rgba(0,0,0,0) 87.5%, rgba(0,0,0,1) 100%);
+  backdrop-filter: blur(7px);
+  -webkit-backdrop-filter: blur(7px);
+  mask: linear-gradient(to bottom, rgba(0,0,0,0) 87.5%, rgba(0,0,0,1) 100%);
   -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,0) 87.5%, rgba(0,0,0,1) 100%);
 }
 
@@ -153,8 +139,8 @@
   font-family: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   font-size: 0.875rem;
   font-weight: 500;
-  letter-spacing: 0.05em;
-  color: #9A9691;
+  letter-spacing: -0.02em;
+  color: #e2e2e2;
   background: none;
   border: none;
   cursor: pointer;
@@ -190,18 +176,16 @@
 .poi-item.active {
   opacity: 1;
   font-weight: 600;
+  color: #D82E11;
 }
 
 /* Keyboard focus state - subtle highlight for discoverable navigation */
 .poi-item.keyboard-focused {
   background: rgba(255, 248, 242, 0.08);
-  border-radius: 4px;
 }
 
 .poi-item:focus-visible {
   outline: 2px solid #8B1215;
-  outline-offset: 4px;
-  border-radius: 4px;
 }
 
 /* Vector path styling - Framer Motion handles animations */
@@ -237,14 +221,13 @@
   position: absolute;
   right: 0;
   bottom: 0;
-  font-family: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: 'IBM Plex Sans', sans-serif;
   font-size: 0.7rem;
   font-weight: 500;
-  letter-spacing: 0.05em;
+  letter-spacing: -0.02em;
   color: #E8E5E1;
   background: rgba(10, 10, 10, 0.7);
   border: 1px solid rgba(255, 248, 242, 0.2);
-  border-radius: 6px;
   padding: 0.35rem 0.75rem;
   cursor: pointer;
   pointer-events: none;
@@ -264,7 +247,6 @@
   color: #D82E11;
   background: rgba(10, 10, 10, 0.7);
   border: 1px solid rgba(255, 248, 242, 0.2);
-  border-radius: 6px;
   padding: 0.35rem 0.85rem;
   cursor: pointer;
   pointer-events: auto;

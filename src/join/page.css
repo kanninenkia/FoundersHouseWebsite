@@ -332,6 +332,69 @@
     pointer-events: none;
 }
 
+@media (max-width: 1180px) and (min-width: 769px) {
+    .header-content {
+        width: 92%;
+        margin-left: 4%;
+        padding: 10vh 0 6vh 0;
+        gap: 12px;
+    }
+
+    .header-h1-wrapper .header-h1 {
+        font-size: calc(13rem * 0.75);
+        line-height: calc(10rem * 0.85);
+    }
+
+    .stage1-text-overlay .stage1-text-overlay-h2 {
+        font-size: 3rem;
+        line-height: 2.9rem;
+    }
+
+    .section-2 {
+        padding: 6% 4% 4% 4%;
+    }
+
+    .section-2 .content-wrapper {
+        gap: 28px;
+    }
+
+    .section-2 .content-wrapper .join-type .first-border {
+        padding: 34px 26px 40px 26px;
+    }
+
+    .section-2 .content-wrapper .join-type .first-border h2 {
+        font-size: 2.4rem;
+        line-height: 2.3rem;
+    }
+
+    .section-2 .content-wrapper .join-type .first-border p {
+        font-size: 1.05rem;
+        line-height: 1.55rem;
+    }
+
+    .last-section-content {
+        width: 58%;
+        margin-left: 6%;
+        margin-top: 7%;
+    }
+
+    .last-section-content h3 {
+        font-size: 2.6rem;
+        line-height: 3rem;
+    }
+
+    .last-section-content p {
+        font-size: 1.05rem;
+        line-height: 1.7rem;
+    }
+
+    .application-process-content,
+    .community-content {
+        position: relative;
+        top: 4vh;
+    }
+}
+
 @media (max-width: 768px) {
     .header-wrapper {
         position: relative;
@@ -444,8 +507,10 @@
         min-height: 72vh;
     }
 
-    .application-process-content {
-        transform: translateY(-1vh);
+    .application-process-content,
+    .community-content {
+        position: relative;
+        top: -3vh;
     }
 
     .last-section-content {
@@ -512,8 +577,10 @@
         min-height: 64vh;
     }
 
-    .application-process-content {
-        transform: translateY(-1vh);
+    .application-process-content,
+    .community-content {
+        position: relative;
+        top: -3vh;
     }
 
     .last-section-content h3 {

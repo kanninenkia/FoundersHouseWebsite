@@ -1,8 +1,9 @@
-import { motion, AnimatePresence, useMotionValue, useSpring } from 'framer-motion'
+import { motion, AnimatePresence } from 'framer-motion'
 import { useNavigate, useLocation } from 'react-router-dom'
-import { useEffect } from 'react'
 import { AnimatedHamburger } from '../ui'
 import './FullScreenMenu.css'
+import ParallaxMotion from '../../effects/ParallaxMotion'
+import { useState } from 'react'
 
 interface FullScreenMenuProps {
   isOpen: boolean
@@ -12,62 +13,29 @@ interface FullScreenMenuProps {
 export const FullScreenMenu = ({ isOpen, onClose }: FullScreenMenuProps) => {
   const navigate = useNavigate()
   const location = useLocation()
-
-  // Disable custom cursor when menu is open
-  useEffect(() => {
-    if (isOpen) {
-      // Add class to disable custom cursor
-      document.body.classList.add('menu-open-no-custom-cursor')
-      document.documentElement.classList.add('menu-open-no-custom-cursor')
-    } else {
-      // Remove class to re-enable custom cursor
-      document.body.classList.remove('menu-open-no-custom-cursor')
-      document.documentElement.classList.remove('menu-open-no-custom-cursor')
-    }
-
-    // Cleanup on unmount
-    return () => {
-      document.body.classList.remove('menu-open-no-custom-cursor')
-      document.documentElement.classList.remove('menu-open-no-custom-cursor')
-    }
-  }, [isOpen])
-
-  // Parallax effect for map and radar
-  const mouseX = useMotionValue(0)
-  const mouseY = useMotionValue(0)
-
-  const springConfig = { damping: 30, stiffness: 150, mass: 0.5 }
-  const mapX = useSpring(mouseX, springConfig)
-  const mapY = useSpring(mouseY, springConfig)
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 })
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    const { clientX, clientY, currentTarget } = e
-    const { width, height } = currentTarget.getBoundingClientRect()
-
-    // Calculate normalized position (-1 to 1)
-    const xNorm = (clientX / width) * 2 - 1
-    const yNorm = (clientY / height) * 2 - 1
-
-    // Apply parallax offset (max 20px movement)
-    mouseX.set(xNorm * 20)
-    mouseY.set(yNorm * 20)
-  }
-
-  const handleMouseLeave = () => {
-    mouseX.set(0)
-    mouseY.set(0)
+    const { clientX, clientY } = e
+    const { innerWidth, innerHeight } = window
+    
+    // Normalize to -1 to 1
+    const x = (clientX / innerWidth) * 2 - 1
+    const y = (clientY / innerHeight) * 2 - 1
+    
+    setMousePos({ x, y })
   }
 
   const handleNavigation = (path: string) => {
     if (path === '/') {
       sessionStorage.setItem('hasVisitedMap', 'true')
     }
-    // Close menu immediately to prevent interference with pixel transition
-    onClose()
-    // Navigate after a brief delay to allow menu close animation to start
+    // Navigate first (start pixel transition), then close menu after pixels cover
+    navigate(path)
+    // Close menu after pixel transition starts (let pixels cover the menu too)
     setTimeout(() => {
-      navigate(path)
-    }, 50)
+      onClose()
+    }, 100)
   }
 
   return (
@@ -81,12 +49,13 @@ export const FullScreenMenu = ({ isOpen, onClose }: FullScreenMenuProps) => {
           exit={{ opacity: 0 }}
           transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
           onMouseMove={handleMouseMove}
-          onMouseLeave={handleMouseLeave}
         >
+          {/*}
           <div className="menu-header">
             <img src="/assets/logos/logoWhite.png" alt="Founders House" className="menu-logo" />
             <AnimatedHamburger isOpen={isOpen} onClick={onClose} />
           </div>
+          </div>*/}
 
           <div className="fullscreen-menu-content">
             <div className="menu-left">
@@ -145,25 +114,51 @@ export const FullScreenMenu = ({ isOpen, onClose }: FullScreenMenuProps) => {
             </div>
 
             <div className="menu-right">
-              <div className="menu-map-container">
-                <motion.img
-                  src="/assets/models/birdseyemaps.webp"
-                  alt="Birds Eye View"
-                  className="menu-map"
-                  style={{ x: mapX, y: mapY }}
-                />
-                <motion.img
-                  src="/assets/models/radar.webp"
-                  alt="Radar"
-                  className="menu-radar"
-                  style={{ x: mapX, y: mapY }}
-                />
+              <div className="content-img-container">
+                <div className="img-container-fade">
+                    <div className="img-gradient-left" />
+                    <div className="img-gradient-right" />
+                    <div className="img-gradient-top" />
+                    <div className="img-gradient-bottom" />
+                </div>
+                <div 
+                  className="section-5-map-img-container" 
+                  style={{ 
+                    mixBlendMode: "multiply", 
+                    isolation: "isolate", 
+                    height: "100%", 
+                    zIndex: 1,
+                    transform: `translate(${mousePos.x * 20}px, ${mousePos.y * 20}px)`,
+                    transition: 'transform 2s cubic-bezier(0.17, 0.67, 0.3, 0.99)'
+                  }}
+                >
+                  <motion.img
+                    className="section-5-map-img"
+                    src="/assets/models/birdseyemaps.webp"
+                    alt="2D Map"
+                  />
+                </div>
+                <div 
+                  className="section-5-map-img-container" 
+                  style={{ 
+                    height: "100%", 
+                    zIndex: 2,
+                    transform: `translate(${mousePos.x * 20}px, ${mousePos.y * 20}px)`,
+                    transition: 'transform 2.3s cubic-bezier(0.17, 0.67, 0.3, 0.99)'
+                  }}
+                >
+                  <motion.img
+                    className="section-5-map-img"
+                    src="/assets/models/radar.webp"
+                    alt="2D Map Pin"
+                  />
+                </div>
               </div>
             </div>
           </div>
 
           <div className="menu-social-bottom">
-            <a href="https://www.linkedin.com/company/founders-house-helsinki/about/" target="_blank" rel="noopener noreferrer" className="menu-social-link">
+            <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" className="menu-social-link">
               {'LINKEDIN'.split('').map((letter, i) => (
                 <span key={i} className="char-small" style={{ transitionDelay: `${i * 0.02}s` }}>
                   <span className="char-original-small">{letter}</span>
@@ -171,7 +166,7 @@ export const FullScreenMenu = ({ isOpen, onClose }: FullScreenMenuProps) => {
                 </span>
               ))}
             </a>
-            <a href="https://www.instagram.com/foundershousehelsinki/" target="_blank" rel="noopener noreferrer" className="menu-social-link">
+            <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="menu-social-link">
               {'INSTAGRAM'.split('').map((letter, i) => (
                 <span key={i} className="char-small" style={{ transitionDelay: `${i * 0.02}s` }}>
                   <span className="char-original-small">{letter}</span>
