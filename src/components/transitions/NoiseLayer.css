@@ -10,4 +10,10 @@
   background-size: 100px 100px;
   background-repeat: repeat;
   pointer-events: none;
+  transition: opacity 200ms ease;
+}
+
+html.transition-noise-off .noise-layer,
+body.transition-noise-off .noise-layer {
+  opacity: 0;
 }

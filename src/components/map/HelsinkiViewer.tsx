@@ -77,7 +77,9 @@ export const HelsinkiViewer = ({
     setIsTransitionActive(true)
 
     if (globalSetTransitionActive) {
-      globalSetTransitionActive(true)
+      window.setTimeout(() => {
+        globalSetTransitionActive(true)
+      }, 500)
     }
 
     if (sceneRef.current) {
@@ -494,7 +496,7 @@ export const HelsinkiViewer = ({
         </div>
       )}
 
-      {scrollProgress >= 1 && !isHoveringInteractive && (
+      {scrollProgress >= 1 && !isHoveringInteractive && !isMenuOpen && (
         <div
           className="drag-cursor-indicator"
           style={{

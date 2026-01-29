@@ -74,6 +74,8 @@ export class HelsinkiCameraController {
   private _tempVector3_3: THREE.Vector3 = new THREE.Vector3();
   private lookAtTargetBlend: number = 0; // 0 = free camera, 1 = locked to target
   private lookAtTargetBlendSpeed: number = 0.05; // How fast to blend in/out (slower = smoother)
+  private lookAtTargetBlendTimeout: number = 0; // Time when lookAt should start fading (milliseconds)
+  private lookAtTargetHoldDuration: number = 800; // How long to hold lookAt after POI animation (ms)
 
   constructor(camera: THREE.PerspectiveCamera, domElement: HTMLElement, mouseMoveOnly: boolean = false) {
     this.camera = camera
@@ -643,11 +645,21 @@ export class HelsinkiCameraController {
       this.baseCameraPosition.y = MAX_CAMERA_HEIGHT
     }
 
-    // SMOOTH BLEND: Gradually fade out lookAt behavior when user interacts
-    // If user is interacting (dragging/zooming), fade out the blend
+    // SMOOTH BLEND: Gradually fade out lookAt behavior when user interacts OR after timeout
+    // If user is interacting (dragging/zooming), fade out the blend immediately
     if (this.isDragging || this.velocity.length() > this.velocityThreshold || Math.abs(this.rotationVelocity) > this.rotationThreshold) {
       // Fade out - smoothly reduce blend toward 0
       this.lookAtTargetBlend = Math.max(0, this.lookAtTargetBlend - this.lookAtTargetBlendSpeed)
+      // Reset timeout so it doesn't interfere
+      this.lookAtTargetBlendTimeout = 0
+    } else if (this.lookAtTargetBlendTimeout > 0 && performance.now() >= this.lookAtTargetBlendTimeout) {
+      // Auto fade-out after timeout (no user interaction needed)
+      this.lookAtTargetBlend = Math.max(0, this.lookAtTargetBlend - this.lookAtTargetBlendSpeed * 0.5)
+
+      // Once fully faded, reset timeout
+      if (this.lookAtTargetBlend <= 0.001) {
+        this.lookAtTargetBlendTimeout = 0
+      }
     }
 
     // CRITICAL FIX: Smoothly blend between lookAt (POI mode) and free camera (user control)
@@ -749,6 +761,9 @@ export class HelsinkiCameraController {
 
     // Enable lookAt behavior after POI handoff - set to full blend
     this.lookAtTargetBlend = 1.0
+
+    // Set timeout for automatic fade-out to prevent continuous camera drift
+    this.lookAtTargetBlendTimeout = performance.now() + this.lookAtTargetHoldDuration
 
     // Sync orbit controls target
     if (this.orbit && this.orbit.target) {

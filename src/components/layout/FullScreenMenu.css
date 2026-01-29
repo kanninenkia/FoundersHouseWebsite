@@ -1,5 +1,41 @@
 /* Font loaded in index.html */
 
+/* CRITICAL: Override custom cursors when menu is open */
+/* This ensures a clean cursor experience when switching between pages */
+/* When menu is open, show default cursor and hide custom cursor elements */
+html.menu-open-no-custom-cursor .drag-cursor-indicator,
+body.menu-open-no-custom-cursor .drag-cursor-indicator,
+html.menu-open-no-custom-cursor .custom-cursor,
+body.menu-open-no-custom-cursor .custom-cursor {
+  display: none !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+/* Override cursor: none styles to show default cursor */
+html.menu-open-no-custom-cursor .helsinki-container,
+body.menu-open-no-custom-cursor .helsinki-container,
+html.menu-open-no-custom-cursor.events-cursor,
+body.menu-open-no-custom-cursor.events-cursor,
+html.menu-open-no-custom-cursor.events-cursor *,
+body.menu-open-no-custom-cursor.events-cursor *,
+html.menu-open-no-custom-cursor .events-scroll-container,
+body.menu-open-no-custom-cursor .events-scroll-container {
+  cursor: auto !important;
+}
+
+/* Keep pointer cursor for interactive elements */
+html.menu-open-no-custom-cursor a,
+body.menu-open-no-custom-cursor a,
+html.menu-open-no-custom-cursor button,
+body.menu-open-no-custom-cursor button,
+html.menu-open-no-custom-cursor [role="button"],
+body.menu-open-no-custom-cursor [role="button"],
+html.menu-open-no-custom-cursor .clickable,
+body.menu-open-no-custom-cursor .clickable {
+  cursor: pointer !important;
+}
+
 :root {
   /* Fluid scaling */
   --menu-min-width: 1280px;
@@ -62,9 +98,9 @@
 .fullscreen-menu-content {
   flex: 1;
   display: flex;
-  padding: 8rem 4rem 4rem 4rem;
+  padding: clamp(4rem, 6vh, 6rem) clamp(2rem, 4vw, 4rem) clamp(3rem, 5vh, 4rem) clamp(2rem, 4vw, 4rem);
   align-items: flex-start;
-  padding-top: 12rem;
+  padding-top: clamp(8rem, 12vh, 12rem);
 }
 
 .menu-left {

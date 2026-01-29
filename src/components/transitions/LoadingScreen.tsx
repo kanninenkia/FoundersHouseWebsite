@@ -41,6 +41,7 @@ export const LoadingScreen = ({ onComplete, duration, scrollProgress, isReturnVi
   const [mapLoadingState, setMapLoadingState] = useState<MapLoadingState>({ isLoaded: false, progress: 0 })
   const [canProceedToBlur, setCanProceedToBlur] = useState(false)
   const loadingBarRef = useRef<HTMLDivElement>(null)
+  const hasCompletedRef = useRef(false)
   const returnLoadingDuration = 2000
 
   const [loadingImage] = useState(() => {
@@ -223,7 +224,7 @@ export const LoadingScreen = ({ onComplete, duration, scrollProgress, isReturnVi
     return () => {
       clearInterval(checkInterval)
     }
-  }, [canProceedToBlur, scrollProgress, hasSkipped, shouldSkipIntro])
+  }, [canProceedToBlur, scrollProgress, hasSkipped, shouldSkipIntro, isReturnVisit])
 
   const showLogo = isReturnVisit
     ? (stage === 'logo-loading' || stage === 'map-slide-in' || stage === 'map-expand')
@@ -253,6 +254,12 @@ export const LoadingScreen = ({ onComplete, duration, scrollProgress, isReturnVi
       if (fadeOutTimeout) clearTimeout(fadeOutTimeout)
     }
   }, [stage])
+
+  useEffect(() => {
+    if (stage !== 'complete' || hasCompletedRef.current) return
+    hasCompletedRef.current = true
+    onComplete()
+  }, [stage, onComplete])
 
   return (
     <motion.div

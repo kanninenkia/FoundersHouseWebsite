@@ -1,5 +1,6 @@
 import { motion, AnimatePresence, useMotionValue, useSpring } from 'framer-motion'
 import { useNavigate, useLocation } from 'react-router-dom'
+import { useEffect } from 'react'
 import { AnimatedHamburger } from '../ui'
 import './FullScreenMenu.css'
 
@@ -11,6 +12,25 @@ interface FullScreenMenuProps {
 export const FullScreenMenu = ({ isOpen, onClose }: FullScreenMenuProps) => {
   const navigate = useNavigate()
   const location = useLocation()
+
+  // Disable custom cursor when menu is open
+  useEffect(() => {
+    if (isOpen) {
+      // Add class to disable custom cursor
+      document.body.classList.add('menu-open-no-custom-cursor')
+      document.documentElement.classList.add('menu-open-no-custom-cursor')
+    } else {
+      // Remove class to re-enable custom cursor
+      document.body.classList.remove('menu-open-no-custom-cursor')
+      document.documentElement.classList.remove('menu-open-no-custom-cursor')
+    }
+
+    // Cleanup on unmount
+    return () => {
+      document.body.classList.remove('menu-open-no-custom-cursor')
+      document.documentElement.classList.remove('menu-open-no-custom-cursor')
+    }
+  }, [isOpen])
 
   // Parallax effect for map and radar
   const mouseX = useMotionValue(0)
@@ -42,12 +62,12 @@ export const FullScreenMenu = ({ isOpen, onClose }: FullScreenMenuProps) => {
     if (path === '/') {
       sessionStorage.setItem('hasVisitedMap', 'true')
     }
-    // Navigate first (start pixel transition), then close menu after pixels cover
-    navigate(path)
-    // Close menu after pixel transition starts (let pixels cover the menu too)
+    // Close menu immediately to prevent interference with pixel transition
+    onClose()
+    // Navigate after a brief delay to allow menu close animation to start
     setTimeout(() => {
-      onClose()
-    }, 100)
+      navigate(path)
+    }, 50)
   }
 
   return (
@@ -143,7 +163,7 @@ export const FullScreenMenu = ({ isOpen, onClose }: FullScreenMenuProps) => {
           </div>
 
           <div className="menu-social-bottom">
-            <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" className="menu-social-link">
+            <a href="https://www.linkedin.com/company/founders-house-helsinki/about/" target="_blank" rel="noopener noreferrer" className="menu-social-link">
               {'LINKEDIN'.split('').map((letter, i) => (
                 <span key={i} className="char-small" style={{ transitionDelay: `${i * 0.02}s` }}>
                   <span className="char-original-small">{letter}</span>
@@ -151,7 +171,7 @@ export const FullScreenMenu = ({ isOpen, onClose }: FullScreenMenuProps) => {
                 </span>
               ))}
             </a>
-            <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="menu-social-link">
+            <a href="https://www.instagram.com/foundershousehelsinki/" target="_blank" rel="noopener noreferrer" className="menu-social-link">
               {'INSTAGRAM'.split('').map((letter, i) => (
                 <span key={i} className="char-small" style={{ transitionDelay: `${i * 0.02}s` }}>
                   <span className="char-original-small">{letter}</span>

@@ -3,6 +3,8 @@
  * Three.js scene setup with Helsinki GLB model (baked textures) and post-processing effects
  */
 import * as THREE from 'three'
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js'
+import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js'
 import HelsinkiCameraController from './HelsinkiCameraController'
 import { loadDualModels } from '../loaders'
 import { setupPostProcessing, setupComposer, setupSceneLighting } from '../rendering'
@@ -57,6 +59,8 @@ export class HelsinkiScene {
   private autoTourManager: AutoTourManager
   private poiHighlightManager: POIHighlightManager
   private foundersHouseMarker: FoundersHouseMarker
+  private foundersHouseOverlay: THREE.Group | null = null
+  private foundersHouseOverlayMaterial: THREE.MeshStandardMaterial | null = null
   private _cleanupClickHandler: (() => void) | null = null
   private enableAutoCentering: boolean = false
   private onHeroTextOpacityChange?: (opacity: number) => void
@@ -76,6 +80,10 @@ export class HelsinkiScene {
     endHeight: number
   } | null = null
 
+  // Separate renderer and scene for sähkötalo (renders without greyscale)
+  private sahkotaloRenderer: THREE.WebGLRenderer | null = null
+  private sahkotaloScene: THREE.Scene | null = null
+
   public revealProgress: number = 0
 
   constructor(config: SceneConfig) {
@@ -92,6 +100,25 @@ export class HelsinkiScene {
 
     this.camera = createCamera()
     this.renderer = createRenderer(config.container)
+
+    // Create second renderer for sähkötalo (full color, no greyscale)
+    this.sahkotaloRenderer = new THREE.WebGLRenderer({
+      alpha: true,
+      antialias: true,
+      powerPreference: 'high-performance'
+    })
+    this.sahkotaloRenderer.setSize(config.container.clientWidth, config.container.clientHeight)
+    this.sahkotaloRenderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
+    this.sahkotaloRenderer.domElement.classList.add('sahkotalo-canvas')
+    this.sahkotaloRenderer.domElement.style.position = 'absolute'
+    this.sahkotaloRenderer.domElement.style.pointerEvents = 'none'
+    config.container.appendChild(this.sahkotaloRenderer.domElement)
+
+    // Create separate scene for sähkötalo (transparent background)
+    this.sahkotaloScene = new THREE.Scene()
+    // Add same lighting to sähkötalo scene
+    setupSceneLighting(this.sahkotaloScene)
+
     this.controls = new HelsinkiCameraController(this.camera, this.renderer.domElement, config.staticMode)
     if (!config.staticMode) {
       configureCameraControls(this.controls)
@@ -132,6 +159,7 @@ export class HelsinkiScene {
       renderer: this.renderer,
     }).then((result) => {
       this.helsinkiModel = result.mainMap
+      this.loadFoundersHouseOverlay()
     }).catch(() => {
     })
 
@@ -180,6 +208,14 @@ export class HelsinkiScene {
       this.postProcessMaterial,
       this.composer
     )
+
+    // Also resize sähkötalo renderer
+    if (this.sahkotaloRenderer && this.container) {
+      const width = this.container.clientWidth
+      const height = this.container.clientHeight
+      this.sahkotaloRenderer.setSize(width, height)
+      this.sahkotaloRenderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
+    }
   }
 
   private _handlePointerDown = (ev: PointerEvent) => {
@@ -430,6 +466,11 @@ export class HelsinkiScene {
       this.renderer.setRenderTarget(null)
       this.renderer.render(this.scene, this.camera)
     }
+
+    // Render sähkötalo on separate canvas (no greyscale)
+    if (this.sahkotaloRenderer && this.sahkotaloScene) {
+      this.sahkotaloRenderer.render(this.sahkotaloScene, this.camera)
+    }
   }
 
   /**
@@ -437,7 +478,7 @@ export class HelsinkiScene {
    * This creates a subtle auto-correction effect when the user is idle
    */
   private updateAutoCentering(): void {
-    if (!this.helsinkiModel || this.suppressAutoCentering) return // Don't run until model is loaded
+    if (!this.helsinkiModel) return // Don't run until model is loaded
 
     const screenPos = FOUNDERS_HOUSE_SCREEN_POS.clone()
     screenPos.project(this.camera)
@@ -453,20 +494,33 @@ export class HelsinkiScene {
     const threshold = 13
     const isInCenter = distanceFromCenterX <= threshold && distanceFromCenterY <= threshold
 
-    const opacity = isInCenter ? 1 : 0
-    // Only call callback if opacity changed to avoid triggering React re-renders every frame
-    if (this.onHeroTextOpacityChange && opacity !== this.lastHeroTextOpacity) {
-      this.lastHeroTextOpacity = opacity
-      this.onHeroTextOpacityChange(opacity)
-    }
-
     const now = Date.now()
     const timeSinceLastInteraction = now - this.lastInteractionTime
     const timeSinceLoad = now - this.initialLoadTime
     const idleThreshold = 3000
     const initialLoadDelay = 15000
 
-    if (isInCenter && timeSinceLastInteraction >= idleThreshold && timeSinceLoad >= initialLoadDelay) {
+    // CRITICAL: Allow immediate auto-centering if lastInteractionTime was reset (e.g., FH POI focus)
+    const allowImmediateCenter = this.lastInteractionTime === 0
+
+    // CRITICAL: Keep hero text visible during immediate centering to prevent flicker
+    // Use a more generous threshold during auto-centering to keep text stable
+    const effectiveThreshold = allowImmediateCenter ? 30 : threshold
+    const isEffectivelyInCenter = distanceFromCenterX <= effectiveThreshold && distanceFromCenterY <= effectiveThreshold
+
+    const opacity = isEffectivelyInCenter ? 1 : 0
+    // Only call callback if opacity changed to avoid triggering React re-renders every frame
+    if (this.onHeroTextOpacityChange && opacity !== this.lastHeroTextOpacity) {
+      this.lastHeroTextOpacity = opacity
+      this.onHeroTextOpacityChange(opacity)
+    }
+
+    if (this.suppressAutoCentering) return
+
+    // When immediate centering is allowed, don't require isInCenter check
+    const shouldAutoCenter = allowImmediateCenter || (isInCenter && timeSinceLastInteraction >= idleThreshold && timeSinceLoad >= initialLoadDelay)
+
+    if (shouldAutoCenter) {
       const offsetX = viewportX - centerX
       const offsetY = viewportY - centerY
 
@@ -488,9 +542,17 @@ export class HelsinkiScene {
           const worldAdjustment = new THREE.Vector3()
           worldAdjustment.addScaledVector(right, -offsetX * driftSpeed)
           worldAdjustment.addScaledVector(cameraUp, offsetY * driftSpeed)
+          // Prevent vertical drift that can tilt the camera down over time
+          worldAdjustment.y = 0
 
           const newTarget = currentTarget.add(worldAdjustment)
           this.controls.setTarget(newTarget.x, newTarget.y, newTarget.z)
+
+          // If we're in immediate center mode (lastInteractionTime === 0), reset it after first adjustment
+          // This prevents infinite centering and allows normal idle threshold to apply
+          if (allowImmediateCenter) {
+            this.lastInteractionTime = now
+          }
         }
       }
     }
@@ -527,6 +589,17 @@ export class HelsinkiScene {
     if (this.helsinkiModel) {
       this.scene.remove(this.helsinkiModel)
     }
+    this.disposeFoundersHouseOverlay()
+
+    // Dispose sähkötalo renderer
+    if (this.sahkotaloRenderer) {
+      this.sahkotaloRenderer.dispose()
+      if (this.sahkotaloRenderer.domElement.parentNode) {
+        this.sahkotaloRenderer.domElement.parentNode.removeChild(this.sahkotaloRenderer.domElement)
+      }
+      this.sahkotaloRenderer = null
+    }
+    this.sahkotaloScene = null
 
     this.container.removeChild(this.renderer.domElement)
   }
@@ -541,6 +614,89 @@ export class HelsinkiScene {
 
   public getModel(): THREE.Group | null {
     return this.helsinkiModel
+  }
+
+  private loadFoundersHouseOverlay(): void {
+    if (!this.helsinkiModel) return
+
+    const loader = new GLTFLoader()
+    const dracoLoader = new DRACOLoader()
+    dracoLoader.setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.5.6/')
+    dracoLoader.setDecoderConfig({ type: 'js' })
+    loader.setDRACOLoader(dracoLoader)
+
+    const modelPath = '/assets/models/sähötalo.glb'
+    loader.load(
+      encodeURI(modelPath),
+      (gltf) => {
+        if (!this.helsinkiModel) return
+
+        const overlay = gltf.scene
+
+        overlay.rotation.copy(this.helsinkiModel.rotation)
+        overlay.position.copy(this.helsinkiModel.position)
+        overlay.scale.copy(this.helsinkiModel.scale)
+        overlay.position.y += 0.2
+        overlay.updateMatrixWorld(true)
+
+        const redMaterial = new THREE.MeshStandardMaterial({
+          color: 0x9E1B1E,
+          emissive: 0x9E1B1E,
+          emissiveIntensity: 0.6,
+          metalness: 0.25,
+          roughness: 0.65,
+          transparent: true,
+          opacity: 0.96,
+          polygonOffset: true,
+          polygonOffsetFactor: -2,
+          polygonOffsetUnits: -2,
+          depthWrite: true,
+          fog: true,
+        })
+
+        overlay.traverse((child) => {
+          if (child instanceof THREE.Mesh) {
+            const originalMaterial = child.material
+            child.material = redMaterial
+            if (Array.isArray(originalMaterial)) {
+              originalMaterial.forEach((mat) => mat.dispose())
+            } else {
+              originalMaterial?.dispose()
+            }
+            child.renderOrder = 2
+          }
+        })
+
+        this.foundersHouseOverlay = overlay
+        this.foundersHouseOverlayMaterial = redMaterial
+        // Add to separate scene so it renders without greyscale
+        if (this.sahkotaloScene) {
+          this.sahkotaloScene.add(overlay)
+        }
+      },
+      undefined,
+      () => {
+        // Silent fail to avoid blocking scene if overlay can't load.
+      }
+    )
+  }
+
+  private disposeFoundersHouseOverlay(): void {
+    if (this.foundersHouseOverlay) {
+      if (this.sahkotaloScene) {
+        this.sahkotaloScene.remove(this.foundersHouseOverlay)
+      }
+      this.foundersHouseOverlay.traverse((child) => {
+        if (child instanceof THREE.Mesh) {
+          child.geometry?.dispose()
+        }
+      })
+      this.foundersHouseOverlay = null
+    }
+    if (this.foundersHouseOverlayMaterial) {
+      this.foundersHouseOverlayMaterial.dispose()
+      this.foundersHouseOverlayMaterial = null
+    }
   }
 
   public getControls(): any {
@@ -594,7 +750,14 @@ export class HelsinkiScene {
     if (!poi) return
 
     // Suppress auto-centering when focusing nearby POIs to avoid recentering FH.
-    this.suppressAutoCentering = poiName === 'SILO' || poiName === 'LINEAR'
+    // CRITICAL: Enable auto-centering immediately when focusing on FOUNDERS_HOUSE
+    if (poiName === 'FOUNDERS_HOUSE') {
+      this.suppressAutoCentering = false
+      // Reset interaction time so auto-centering can start immediately
+      this.lastInteractionTime = 0
+    } else {
+      this.suppressAutoCentering = poiName === 'SILO' || poiName === 'LINEAR'
+    }
 
     // CRITICAL: Stop all camera momentum before starting POI animation
     // This prevents teleportation when clicking "Learn More" while camera is moving

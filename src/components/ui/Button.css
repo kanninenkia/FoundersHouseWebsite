@@ -35,6 +35,12 @@
 .custom-btn:hover .char-clone {
   transform: translateY(0);
 }
+.custom-btn[data-disable-overlay="true"] .char-clone {
+  display: none;
+}
+.custom-btn[data-disable-overlay="true"] .custom-btn-content {
+  overflow: visible;
+}
 .custom-btn-third {
   position: absolute;
   top: -8px;

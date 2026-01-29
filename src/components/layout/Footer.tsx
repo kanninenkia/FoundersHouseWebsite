@@ -100,12 +100,22 @@ const Footer: React.FC = () => {
           </MagneticElement>
           <MagneticElement strength={0.3} range={80}>
             <a
-              href="https://linkedin.com"
+              href="https://www.linkedin.com/company/founders-house-helsinki/about/"
               target="_blank"
               rel="noopener noreferrer"
               className="footer-link"
             >
               LINKEDIN
+            </a>
+          </MagneticElement>
+          <MagneticElement strength={0.3} range={80}>
+            <a
+              href="https://www.instagram.com/foundershousehelsinki/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="footer-link"
+            >
+              INSTAGRAM
             </a>
           </MagneticElement>
           <p className="footer-address">SÄHKÖTALO, 00100 HELSINKI</p>

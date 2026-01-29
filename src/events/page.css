@@ -155,6 +155,18 @@ body.events-cursor.events-cursor-interactive .custom-cursor {
     gap: 4vh;
 }
 
+@media (max-width: 1366px) {
+    .events-page .header-content {
+        margin-top: 8%;
+        gap: 32vh;
+    }
+
+    .events-page .header-h3-wrapper,
+    .events-page .header-h3-parallax {
+        gap: 2.5vh;
+    }
+}
+
 .events-page .calendar-button {
     display: inline-block;
     transition: transform 0.3s ease;
@@ -274,7 +286,7 @@ body.events-cursor.events-cursor-interactive .custom-cursor {
     height: 21vw;
     flex-shrink: 0;
     margin-left: -14vw;
-    padding: 20px 0;
+    padding: 0;
 }
 
 .events-page .event-card-inner {

@@ -34,12 +34,23 @@ const PageTransition: React.FC<PageTransitionProps> = ({ children, skipEnter = f
       exitRafRef.current = null;
     }
   };
+  const setNoiseHidden = (hidden: boolean) => {
+    if (typeof document === "undefined") return;
+    if (hidden) {
+      document.documentElement.classList.add("transition-noise-off");
+      document.body.classList.add("transition-noise-off");
+    } else {
+      document.documentElement.classList.remove("transition-noise-off");
+      document.body.classList.remove("transition-noise-off");
+    }
+  };
 
   // Handle exit: show pixel cover, then unmount
   useEffect(() => {
     if (isPresent) return;
     clearTimers();
     clearExitRaf();
+    setNoiseHidden(true);
     setShowPixelCover(true);
     setShowPixelReveal(false);
     const timer = window.setTimeout(() => safeToRemove(), totalDurationMs);
@@ -62,6 +73,7 @@ const PageTransition: React.FC<PageTransitionProps> = ({ children, skipEnter = f
     if (skipEnter) {
       clearTimers();
       clearExitRaf();
+      setNoiseHidden(false);
       setShowContent(true);
       setShowPixelCover(false);
       setShowPixelReveal(false);
@@ -69,6 +81,7 @@ const PageTransition: React.FC<PageTransitionProps> = ({ children, skipEnter = f
     }
     clearTimers();
     clearExitRaf();
+    setNoiseHidden(true);
     setShowPixelCover(false);
     setShowPixelReveal(false);
     setShowContent(false);
@@ -107,11 +120,17 @@ const PageTransition: React.FC<PageTransitionProps> = ({ children, skipEnter = f
         });
       }, maxTransitionMs);
       timersRef.current.push(watchdogTimer);
+
+      const noiseReleaseTimer = window.setTimeout(() => {
+        setNoiseHidden(false);
+      }, totalDurationMs + newPageDelayMs + pixelRevealDelayMs + maxDelayMs + TRANSITION_TIMING.overlayFadeMs);
+      timersRef.current.push(noiseReleaseTimer);
     });
 
     return () => {
       clearTimers();
       clearExitRaf();
+      setNoiseHidden(false);
     };
   }, [isPresent, totalDurationMs, newPageDelayMs, maxDelayMs, pixelRevealDelayMs, skipEnter]);
   return (

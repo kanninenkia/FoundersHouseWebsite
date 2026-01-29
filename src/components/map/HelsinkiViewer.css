@@ -41,14 +41,20 @@
   z-index: 1;
 }
 
-/* Apply grayscale filter - NOTE: This gets overridden by inline style in HelsinkiViewer.tsx */
-/* BRIGHTNESS: Moderate values - grayscale 75%, brightness 1.50, contrast 0.88 */
+/* Apply grayscale filter to main canvas */
+/* BRIGHTNESS: Moderate values - grayscale 95%, brightness 1.50, contrast 0.88 */
 .helsinki-container canvas {
   filter: grayscale(95%) brightness(1.50) contrast(0.88);
   transition: filter 0.3s cubic-bezier(0.22, 1, 0.36, 1);
   will-change: filter;
   backface-visibility: hidden;
   pointer-events: auto; /* CRITICAL: Canvas must receive all mouse/touch events */
+}
+
+/* Second canvas for sähkötalo - no filter, renders on top */
+.helsinki-container canvas.sahkotalo-canvas {
+  filter: none !important;
+  z-index: 2;
 }
 
 /* Bottom viewport blur - subtle focus effect like mockup */

@@ -11,13 +11,16 @@ const Home = lazy(() => import('./home').then(module => ({ default: module.Home 
 const AboutPage = lazy(() => import('./about/page'))
 const JoinPage = lazy(() => import('./join/page'))
 const EventsPage = lazy(() => import('./events/page'))
+const NotFoundPage = lazy(() => import('./not-found/page'))
 
 function AppContent() {
   const navigate = useNavigate()
   const location = useLocation()
   const isInitialMount = useRef(true)
   const [isTransitionActive, setIsTransitionActive] = useState(false)
-  const [isReturnVisit, setIsReturnVisit] = useState(false)
+  const [isReturnVisit, setIsReturnVisit] = useState(() => {
+    return sessionStorage.getItem('hasVisitedMap') === 'true'
+  })
   const [hasMounted, setHasMounted] = useState(false)
 
   const [scrollProgress, setScrollProgress] = useState(() => {
@@ -93,11 +96,10 @@ function AppContent() {
 
   return (
     <div className="App">
-      <NoiseLayer />
       <AnimatePresence mode="wait">
         <Routes location={location} key={location.pathname}>
         <Route path="/" element={
-          <PageTransition skipEnter={!hasMounted}>
+          <PageTransition skipEnter>
             <LoadingScreen
               onComplete={() => {
                 sessionStorage.setItem('hasVisitedMap', 'true')
@@ -113,10 +115,12 @@ function AppContent() {
           <Route path="/about" element={<PageTransition><AboutPage /></PageTransition>} />
           <Route path="/join" element={<PageTransition><JoinPage /></PageTransition>} />
           <Route path="/events" element={<PageTransition><EventsPage /></PageTransition>} />
+          <Route path="*" element={<PageTransition><NotFoundPage /></PageTransition>} />
         </Routes>
       </AnimatePresence>
 
       <TransitionOverlay isActive={isTransitionActive} />
+      <NoiseLayer />
     </div>
   )
 }

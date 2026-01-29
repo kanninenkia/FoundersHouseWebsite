@@ -8,6 +8,7 @@ interface ParallaxMotionProps {
   easing?: number[];
   delay?: number; // in ms
   background?: string;
+  scale?: number;
   [key: string]: any;
 }
 
@@ -18,6 +19,7 @@ const ParallaxMotion = ({
   easing = [0.12, 0.26, 0, 1],
   delay = 0,
   background,
+  scale = 1,
   ...rest
 }: ParallaxMotionProps) => {
   const mouseX = useMotionValue(0);
@@ -81,6 +83,7 @@ const ParallaxMotion = ({
         position: "relative",
         x: parallaxX,
         y: parallaxY,
+        scale,
         width: "100%",
         height: "100%",
       }}

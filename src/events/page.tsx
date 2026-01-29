@@ -107,6 +107,7 @@ export default function EventsPage() {
   const descriptionCleanupRef = useRef<(() => void) | null>(null);
   const fitTitleTimeoutRef = useRef<number | null>(null);
   const isTouchingRef = useRef(false);
+  const animationFrameRef = useRef<number | null>(null);
 
   //--------------------------------------//
   // Parallax on Elements Settings //
@@ -254,6 +255,7 @@ export default function EventsPage() {
         velocity *= 0.95;
 
         animationFrame = requestAnimationFrame(applyMomentum);
+        animationFrameRef.current = animationFrame;
       }
     };
 
@@ -352,8 +354,6 @@ export default function EventsPage() {
 
   // Custom cursor tracking - entire page with hover detection
   useEffect(() => {
-    if (stage !== 2) return;
-
     const handleMouseMove = (e: MouseEvent) => {
       cursorX.set(e.clientX);
       cursorY.set(e.clientY);
@@ -361,10 +361,12 @@ export default function EventsPage() {
       const isInteractive = !!target?.closest(
         'a, button, .hamburger-button, .calendar-button, .events-calendar-button, .events-header, .event-card, .event-card-image'
       );
-      setShowCustomCursor(!isInteractive);
+      // Hide custom cursor when hovering over interactive elements OR when menu is open
+      setShowCustomCursor(!isInteractive && !isMenuOpen);
       document.body.classList.toggle('events-cursor-interactive', isInteractive);
     };
-    setShowCustomCursor(true);
+    // Only show custom cursor initially if menu is closed
+    setShowCustomCursor(!isMenuOpen);
     window.addEventListener('mousemove', handleMouseMove);
 
     return () => {
@@ -372,7 +374,7 @@ export default function EventsPage() {
       setShowCustomCursor(false);
       document.body.classList.remove('events-cursor-interactive');
     };
-  }, [stage]);
+  }, [stage, isMenuOpen]);
 
   useEffect(() => {
     document.body.classList.add('events-cursor');
@@ -382,6 +384,34 @@ export default function EventsPage() {
       document.body.classList.remove('events-cursor-interactive');
       document.documentElement.classList.remove('events-cursor');
       document.documentElement.classList.remove('events-cursor-interactive');
+    };
+  }, []);
+
+  // Comprehensive cleanup on unmount to prevent stuck transitions
+  useEffect(() => {
+    return () => {
+      // Cancel any running animation frames
+      if (animationFrameRef.current !== null) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
+
+      // Clear any pending text shuffle timeouts
+      if (titleCleanupRef.current) {
+        titleCleanupRef.current();
+      }
+      if (descriptionCleanupRef.current) {
+        descriptionCleanupRef.current();
+      }
+      if (fitTitleTimeoutRef.current !== null) {
+        clearTimeout(fitTitleTimeoutRef.current);
+      }
+
+      // Ensure custom cursor is hidden
+      setShowCustomCursor(false);
+
+      // Clean up all cursor-related classes
+      document.body.classList.remove('events-cursor', 'events-cursor-interactive');
+      document.documentElement.classList.remove('events-cursor', 'events-cursor-interactive');
     };
   }, []);
 
@@ -825,6 +855,7 @@ export default function EventsPage() {
                         speedX={speed.speedX}
                         speedY={speed.speedY}
                         easing={[0.17, 0.67, 0.3, 0.99]}
+                        scale={1.09}
                       >
                         <img
                           src={event.image}
