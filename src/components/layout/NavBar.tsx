@@ -15,6 +15,7 @@ interface NavBarProps {
   className?: string
   style?: React.CSSProperties
   opacity?: number // Control visibility with smooth transition
+  onMenuChange?: (isOpen: boolean) => void // Callback when menu state changes
 }
 
 export const NavBar = ({ 
@@ -22,9 +23,16 @@ export const NavBar = ({
   hamburgerColor = '#D82E11',
   className = '',
   style = {},
-  opacity = 1
+  opacity = 1,
+  onMenuChange
 }: NavBarProps) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+
+  const handleMenuToggle = () => {
+    const newState = !isMenuOpen
+    setIsMenuOpen(newState)
+    onMenuChange?.(newState)
+  }
 
   const logoSrc = logoColor === 'light' 
     ? '/assets/logos/FH_Helsinki_Logo.webp' 
@@ -56,13 +64,16 @@ export const NavBar = ({
         >
           <AnimatedHamburger
             isOpen={isMenuOpen}
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
+            onClick={handleMenuToggle}
             color={hamburgerColor}
           />
         </div>
       </nav>
 
-      <FullScreenMenu isOpen={isMenuOpen} onClose={() => setIsMenuOpen(false)} />
+      <FullScreenMenu isOpen={isMenuOpen} onClose={() => {
+        setIsMenuOpen(false)
+        onMenuChange?.(false)
+      }} />
     </>
   )
 }

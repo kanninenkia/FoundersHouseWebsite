@@ -368,7 +368,7 @@
   justify-content: center;
   pointer-events: none; /* CRITICAL: Allow clicks to pass through to canvas */
   z-index: 1001;
-  padding-bottom: 20vh;
+  padding-bottom: 35vh;
   will-change: opacity;
   backface-visibility: hidden;
   transform: translateZ(0);

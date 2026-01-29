@@ -59,6 +59,7 @@ export const HelsinkiViewer = ({
   const [isCameraFlying, setIsCameraFlying] = useState(false)
   const [showNavBar, setShowNavBar] = useState(false)
   const [showCustomCursor, setShowCustomCursor] = useState(false)
+  const [isMenuOpen, setIsMenuOpen] = useState(false)
   const lastInteractionTime = useRef<number>(Date.now())
   const [cursorPosition, setCursorPosition] = useState({ x: 0, y: 0 })
   const targetCursorPosition = useRef({ x: 0, y: 0 })
@@ -436,6 +437,7 @@ export const HelsinkiViewer = ({
         logoColor="light"
         hamburgerColor="#D82E11"
         opacity={showNavBar && !isTransitionActive ? 1 : 0}
+        onMenuChange={setIsMenuOpen}
       />
       <div
         className="ui-overlay"
@@ -533,7 +535,7 @@ export const HelsinkiViewer = ({
        <motion.div
           className="drag-cursor-indicator"
           initial={{ opacity: 0 }}
-          animate={{ opacity: showCustomCursor && !isHoveringInteractive ? 1 : 0 }}
+          animate={{ opacity: showCustomCursor && !isHoveringInteractive && !isMenuOpen ? 1 : 0 }}
           transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
           style={{
             left: `${cursorPosition.x}px`,
