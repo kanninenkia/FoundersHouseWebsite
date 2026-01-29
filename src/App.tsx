@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, lazy } from 'react'
 import { BrowserRouter, Routes, Route, useNavigate, useLocation } from 'react-router-dom'
-import { LoadingScreen, TransitionOverlay, PageTransition, NoiseLayer } from './components/transitions'
+import { LoadingScreen, TransitionOverlay, PageTransition } from './components/transitions'
 import Lenis from 'lenis'
 import 'lenis/dist/lenis.css'
 import './App.css'
@@ -101,7 +101,7 @@ function AppContent() {
       orientation: 'vertical',
       smoothWheel: true,
       wheelMultiplier: 1,
-      touchMultiplier: 0.5,
+      touchMultiplier: 0.9,
       syncTouch: true,
     })
 
@@ -163,7 +163,6 @@ function AppContent() {
       </AnimatePresence>
 
       <TransitionOverlay isActive={isTransitionActive} />
-      <NoiseLayer />
     </div>
   )
 }

@@ -345,9 +345,20 @@
         line-height: calc(10rem * 0.85);
     }
 
+    .stage1-text-overlay {
+        gap: 5vh;
+        margin-top: 5vh;
+    }
+
+    .stage1-text-overlay .stage1-text-overlay-wrapper {
+        height: auto;
+    }
+
     .stage1-text-overlay .stage1-text-overlay-h2 {
-        font-size: 3rem;
-        line-height: 2.9rem;
+        flex-direction: column;
+        gap: 5vh;
+        font-size: 14vw;
+        line-height: 14vw;
     }
 
     .section-2 {
@@ -419,8 +430,7 @@
     }
 
     .header-h1-wrapper .header-h1 {
-        font-size: calc(13rem * 0.6);
-        line-height: calc(10rem * 0.85);
+        font-size: 25vw;
         margin-top: 1vh;
         white-space: nowrap;
         max-width: 100%;
@@ -431,24 +441,25 @@
     }
 
     .header-h3-wrapper .header-h3 {
-        font-size: calc(1.1rem * 1.2);
-        line-height: 1.55rem;
+        font-size: 6vw;
+        line-height: 9vw;
         margin-top: 1vh;
     }
 
     .stage1-text-overlay {
-        margin-top: 10%;
-        gap: 12px;
+        gap: 5vh;
+        margin-top: 5vh;
     }
 
     .stage1-text-overlay .stage1-text-overlay-wrapper {
         height: auto;
-        overflow: visible;
     }
 
     .stage1-text-overlay .stage1-text-overlay-h2 {
-        font-size: 2.8rem;
-        line-height: 2.6rem;
+        flex-direction: column;
+        gap: 5vh;
+        font-size: 14vw;
+        line-height: 14vw;
     }
 
     .section-2 {
@@ -494,12 +505,13 @@
     }
 
     .last-section {
-        padding: 10% 0 45% 0;
-        margin-top: -2vh;
+        padding: 10% 0 55% 0;
+        margin-top: 5vh;
     }
 
-    .last-section-bg-container {
-        height: 72vh;
+    .last-section-bg {
+        width: auto;
+        height: 100%;
     }
 
     .last-section-content:first-of-type {

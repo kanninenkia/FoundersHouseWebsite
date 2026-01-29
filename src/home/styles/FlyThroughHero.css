@@ -398,7 +398,7 @@
 .join-section .join-img {
     position: relative;
     z-index: 5;
-    cursor: none;
+    cursor: auto;
     transition: all 1.5s cubic-bezier(0.17, 0.67, 0.3, 0.99);
 }
 
@@ -425,7 +425,7 @@
 }
 
 .join-section .join-img {
-  cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='50' height='50' viewBox='0 0 50 50'%3E%3Ccircle cx='25' cy='25' r='24' fill='none' stroke='white' stroke-width='2'/%3E%3C/svg%3E") 25 25, pointer;
+  cursor: pointer;
 }
 
 .join-section .join-img-shape-container {

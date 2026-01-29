@@ -114,11 +114,13 @@ export const HelsinkiViewer = ({
         hoveringInteractiveRef.current = isInteractive
         setIsHoveringInteractive(isInteractive)
       }
-      // Update mousePos for parallax
-      const { innerWidth, innerHeight } = window
-      const x = (e.clientX / innerWidth) * 2 - 1
-      const y = (e.clientY / innerHeight) * 2 - 1
-      setMousePos({ x, y })
+      // Update mousePos for parallax (only on desktop)
+      if (window.innerWidth > 1024) {
+        const { innerWidth, innerHeight } = window
+        const x = (e.clientX / innerWidth) * 2 - 1
+        const y = (e.clientY / innerHeight) * 2 - 1
+        setMousePos({ x, y })
+      }
     }
 
     window.addEventListener('mousemove', handleMouseMove)
@@ -167,9 +169,12 @@ export const HelsinkiViewer = ({
       setTimeout(() => {
         setShowNavBar(true)
       }, 2500)
-      // Delay custom cursor fade-in by 3.5 seconds
+      // Delay custom cursor fade-in by 3.5 seconds (only on desktop)
       setTimeout(() => {
-        setShowCustomCursor(true)
+        // Only show custom cursor on desktop (width > 1024px)
+        if (window.innerWidth > 1024) {
+          setShowCustomCursor(true)
+        }
       }, 3500)
     } else {
       setShowHeroText(false)
@@ -496,7 +501,7 @@ export const HelsinkiViewer = ({
               opacity: showHeroText ? heroTextOpacity : 0,
               pointerEvents: showHeroText && heroTextOpacity > 0.5 ? 'auto' : 'none',
               transition: 'opacity 0.3s cubic-bezier(0.22, 1, 0.36, 1), transform 2s cubic-bezier(0.17, 0.67, 0.3, 0.99)',
-              transform: `translate(${mousePos.x * 24}px, ${mousePos.y * 24}px)`            }}
+              transform: `translate(${mousePos.x * 24}px, ${mousePos.y * 24}px)` }}
           >
             <Button 
               className="hero-learn-more-btn" 

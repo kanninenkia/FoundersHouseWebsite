@@ -63,17 +63,14 @@
     font-size: 1rem;
   }
 
-  .custom-btn.hero-learn-more-btn .custom-btn-content {
-    font-size: 0.78rem;
-    padding: 0.35em 1.8em;
-    text-align: center;
-    justify-content: center;
-    transform: translateY(9%);
-  }
-
   .custom-btn.hero-learn-more-btn::before {
     top: 6px;
     left: 6px;
+  }
+
+  .hero-learn-more-btn {
+    transform: scale(0.8);
+    transform-origin: left;
   }
 
   .hero-learn-more-btn .char-clone {

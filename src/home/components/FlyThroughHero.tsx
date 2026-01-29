@@ -954,7 +954,7 @@ return (
               </div>
             </ParallaxMotion>
           </div>
-
+          
           <div className="join-img-shape-container">
             <ParallaxMotion speedX={5} speedY={5} delay={10} easing={[0.17, 0.67, 0.3, 0.99]}>
               <div className="join-img-shape"></div>

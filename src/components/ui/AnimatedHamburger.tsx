@@ -48,7 +48,7 @@ export const AnimatedHamburger = ({ isOpen, onClick, color = '#FFF8F2' }: Animat
           </clipPath>
         </defs>
 
-        <g clipPath="url(#topLineClip)">
+        <g clipPath={isOpen ? undefined : "url(#topLineClip)"}>
           {/* Top line */}
           <motion.line
             x1="0"
@@ -88,7 +88,7 @@ export const AnimatedHamburger = ({ isOpen, onClick, color = '#FFF8F2' }: Animat
           )}
         </g>
 
-        <g clipPath="url(#middleLineClip)">
+        <g clipPath={isOpen ? undefined : "url(#middleLineClip)"}>
           {/* Middle line */}
           <motion.line
             x1="0"
@@ -129,7 +129,7 @@ export const AnimatedHamburger = ({ isOpen, onClick, color = '#FFF8F2' }: Animat
           )}
         </g>
 
-        <g clipPath="url(#bottomLineClip)">
+        <g clipPath={isOpen ? undefined : "url(#bottomLineClip)"}>
           {/* Bottom line */}
           <motion.line
             x1="0"

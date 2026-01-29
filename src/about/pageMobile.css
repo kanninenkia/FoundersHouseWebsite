@@ -177,15 +177,17 @@
 
     .header-h1-wrapper .header-h1 {
         font-size: 25vw;
+        line-height: 25vw;
     }
 
     .header-content {
         display: flex;
         flex-direction: column;
         width: auto;
+        justify-content: space-between;
         align-items: flex-start;
-        gap: 5vh;
-        margin-top: 20%;
+        height: 80%;
+        margin-top: 15vh;
     }
 
     .header-h3-wrapper {
@@ -193,7 +195,7 @@
     }
 
     .header-h3-wrapper .header-h3 {
-        font-size: 8vw;
+        font-size: 6vw;
         line-height: 9vw;
     }
 
@@ -260,7 +262,7 @@
     }
 
     .section-4-bg {
-        filter: brightness(0.3);
+        filter: brightness(0.3) grayscale(0.9);
         transform: scale(1.2) !important;
         width: auto;
         height: 100%;

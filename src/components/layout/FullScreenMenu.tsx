@@ -158,7 +158,7 @@ export const FullScreenMenu = ({ isOpen, onClose }: FullScreenMenuProps) => {
           </div>
 
           <div className="menu-social-bottom">
-            <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" className="menu-social-link">
+            <a href="https://www.linkedin.com/company/founders-house-helsinki" target="_blank" rel="noopener noreferrer" className="menu-social-link">
               {'LINKEDIN'.split('').map((letter, i) => (
                 <span key={i} className="char-small" style={{ transitionDelay: `${i * 0.02}s` }}>
                   <span className="char-original-small">{letter}</span>
@@ -166,7 +166,7 @@ export const FullScreenMenu = ({ isOpen, onClose }: FullScreenMenuProps) => {
                 </span>
               ))}
             </a>
-            <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="menu-social-link">
+            <a href="https://www.instagram.com/foundershousehelsinki/" target="_blank" rel="noopener noreferrer" className="menu-social-link">
               {'INSTAGRAM'.split('').map((letter, i) => (
                 <span key={i} className="char-small" style={{ transitionDelay: `${i * 0.02}s` }}>
                   <span className="char-original-small">{letter}</span>

@@ -2,7 +2,7 @@
   pointer-events: none;
   position: fixed;
   inset: 0;
-  z-index: 9999;
+  z-index: 99999;
   width: 100vw;
   height: 100vh;
   opacity: 0.13;
@@ -10,10 +10,10 @@
   background-size: 100px 100px;
   background-repeat: repeat;
   pointer-events: none;
-  transition: opacity 200ms ease;
+  transition: opacity 100ms ease;
 }
 
 html.transition-noise-off .noise-layer,
 body.transition-noise-off .noise-layer {
-  opacity: 0;
+  opacity: 0.2;
 }

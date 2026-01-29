@@ -405,10 +405,10 @@
   }
 
   .menu-social-link {
-    font-size: calc(var(--menu-fluid-base) * 0.875);
+    font-size: calc(var(--menu-fluid-base) * 1.5);
   }
 
   .menu-footer-link {
-    font-size: calc(var(--menu-fluid-base) * 0.455);
+    font-size: calc(var(--menu-fluid-base) * 1);
   }
 }

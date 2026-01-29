@@ -876,12 +876,30 @@
   /* Smaller logo on mobile */
   .loading-logo img {
     display: block;
-    height: auto;
-    width: 80vw;
+    height: auto !important;
+    width: 80vw !important;
   }
 
   .loading-bar-container {
     width: 80%;
+  }
+
+  /* Text gets pushed by the map - v2 higher specificity */
+  .text-centered.align-left.text-pushed-by-box {
+    transform: translateY(calc(-12vh));
+    transition: transform 1.4s cubic-bezier(0.3, 0.43, 0, 1);
+    will-change: transform, opacity;
+  }
+
+  @keyframes textPushedExpand {
+    0% {
+      transform: translateY(-12vh) translateZ(0);
+      opacity: 1;
+    }
+    100% {
+      transform: translateY(-35vh) translateZ(0);
+      opacity: 1;
+    }
   }
 
   /* Map slides in lower on mobile to avoid overlapping text */
@@ -898,7 +916,7 @@
       transform: translateX(-50%) scale(0.95);
     }
     100% {
-      top: 50vh;
+      top: 65vh;
       left: 50%;
       width: 90vw;
       height: 100vh;
@@ -913,7 +931,7 @@
 
   @keyframes mapExpandToFullMobile {
     0% {
-      top: 50vh;
+      top: 65vh;
       left: 50%;
       width: 90vw;
       height: 100vh;
