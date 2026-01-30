@@ -7,6 +7,7 @@ import "./page.css";
 import { HelsinkiViewer } from "../components/map";
 import { Footer, NavBar } from "../components/layout";
 import { Button } from "../components/ui";
+import { joinContent } from './join-content';
 
 const HEADER_IMG_SRC = "/assets/images/membership/horses.webp";
 const RESIDENT_SRC = "/assets/images/membership/resident.webp";
@@ -154,7 +155,7 @@ export default function JoinPage() {
               }
               transition={{ delay: 0.8, duration: 0.8, ease: [0.42, 0.00, 1.00, 1.00] }}
               >
-                <span>join us, build with us,</span>
+                <span>{joinContent.hero.line1}</span>
             </motion.h2>
           </div>
           <div className="stage1-text-overlay-wrapper">
@@ -168,7 +169,7 @@ export default function JoinPage() {
               }
               transition={{ delay: 0.8, duration: 0.8, ease: [0.42, 0.00, 1.00, 1.00] }}
               >
-                <span>define tomorrow.</span>
+                <span>{joinContent.hero.line2}</span>
             </motion.h2>
           </div>
         </motion.div>
@@ -191,12 +192,12 @@ export default function JoinPage() {
               <motion.div
                 className="corner-element top-left"
                 initial={{ left: "20px", opacity: 1 }}>
-                  <p>FOUNDERS HOUSE</p>
+                  <p>{joinContent.hero.topLeft}</p>
               </motion.div>
               <motion.div
                 className="corner-element top-right"
                 initial={{ right: "15px", opacity: 1 }}>
-                  <p>HELSINKI, FINLAND</p>
+                  <p>{joinContent.hero.topRight}</p>
               </motion.div>
             </div>
           </motion.div>
@@ -229,7 +230,7 @@ export default function JoinPage() {
                       animate={{ y: 0 }}
                       transition={{ delay: 2.4, duration: 1.1, ease: [0.11, 0.45, 0.08, 1.00] }}
                       >
-                        JOIN
+                        {joinContent.header.title}
                     </motion.h1>
                   </div>
                 </ParallaxMotion>
@@ -241,7 +242,7 @@ export default function JoinPage() {
                       animate={{ opacity: 1 }}
                       transition={{ delay: 2.6, duration: 1, ease: [0.11, 0.45, 0.08, 1.00] }}
                       >
-                        The Founders House Helsinki’s Residents and Members are Finland’s top next-gen founders. If you think you belong in the room, keep reading.
+                        {joinContent.header.subtitle}
                     </motion.h3>  
                   </ParallaxMotion>
                 </div>
@@ -262,9 +263,9 @@ export default function JoinPage() {
                     <div className="second-border"></div>
                     <ParallaxMotion className="second-border-container" speedX={10} speedY={10} easing={[0.17, 0.67, 0.3, 0.99]}>
                       <div className="first-border">
-                        <h2>RESIDENT</h2>
-                        <p>Resident teams get a private office or desk inside Founders House. We offer 10 private rooms for teams, as well as shared spaces for solo validators or founders. Residents receive 24/7 access, priority admission to events, and benefits, such as resources and credits to speed up the building. Every resident is automatically a member.</p>
-                        <p>Residencies are mainly offered for 6 months, whereafter the FH team will have a check in with the resident team’s progress and needs.</p>
+                        <h2>{joinContent.membershipTypes.resident.title}</h2>
+                        <p>{joinContent.membershipTypes.resident.description}</p>
+                        <p>{joinContent.membershipTypes.resident.additionalInfo}</p>
                         <div className="type-img-container" style={{ position: "relative", overflow: "hidden" }}>
                           <img src={RESIDENT_SRC} alt="Founders House Resident" />
                           {/* Animated squares: top-left */}
@@ -276,7 +277,7 @@ export default function JoinPage() {
                           <div className="img-square resident-square square-br-2" />
                           <div className="img-square resident-square square-br-3" />
                         </div>
-                        <Button className="button">Become a Resident</Button>
+                        <Button className="button">{joinContent.membershipTypes.resident.buttonText}</Button>
                       </div>
                     </ParallaxMotion>
                   </ParallaxMotion>
@@ -292,9 +293,9 @@ export default function JoinPage() {
                     <div className="second-border"></div>
                     <ParallaxMotion className="second-border-container" speedX={5} speedY={5} delay={12} easing={[0.17, 0.67, 0.3, 0.99]}>
                       <div className="first-border">
-                        <h2>MEMBER</h2>
-                        <p>Our members get priority invitations to exclusive events, access to a private WhatsApp group, and selected resources.</p>
-                        <p>When you become a member of Founders House Helsinki, you keep it. After age 35 you become an Alumni member, which means some benefits shift while new ones open up.</p>
+                        <h2>{joinContent.membershipTypes.member.title}</h2>
+                        <p>{joinContent.membershipTypes.member.description}</p>
+                        <p>{joinContent.membershipTypes.member.additionalInfo}</p>
                         <div className="type-img-container" style={{ position: "relative" }}>
                           <img src={MEMBER_SRC} alt="Founders House Member" />
                           {/* Animated squares: top-right (different pattern) */}
@@ -306,7 +307,7 @@ export default function JoinPage() {
                           <div className="img-square member-square member-square-bl-2" />
                           <div className="img-square member-square member-square-bl-3" />
                         </div>
-                        <Button className="button">Become a members</Button>
+                        <Button className="button">{joinContent.membershipTypes.member.buttonText}</Button>
                       </div>
                     </ParallaxMotion>
                   </ParallaxMotion>
@@ -328,20 +329,17 @@ export default function JoinPage() {
               
               <motion.div className="last-section-content" style={{ y: section2Content }}>
                 <ParallaxMotion speedX={30} speedY={32} easing={[0.17, 0.67, 0.3, 0.99]}>
-                  <h3>Application process</h3>
+                  <h3>{joinContent.applicationProcess.heading}</h3>
                 </ParallaxMotion>
                 <ParallaxMotion speedX={30} speedY={32} easing={[0.17, 0.67, 0.3, 0.99]}>
                   <div style={{ position: 'relative', display: 'inline-block', overflow: 'hidden' }}>
-                    <motion.p
-                      style={{ position: 'relative', zIndex: 0 }}
-                      initial={{ y: 80 }}
-                      whileInView={{ y: 0 }}
-                      viewport={{ once: true, amount: 0.3 }}
-                      transition={{ duration: 1.2, ease: [0.11, 0.45, 0.08, 1.00] }}
-                    >
-                      We run two application pushes a year, in February and September, but since we know building a company doesn't look at the time, we have room for exceptional cases when timing matters.
-                      <br /><br />
-                      Selected founders are invited to interviews with the Founders House Helsinki team. After that, the council chooses which founders receive Residency or Membership.
+                    <motion.p>
+                      {joinContent.applicationProcess.description.split('\n\n').map((paragraph, i) => (
+                        <React.Fragment key={i}>
+                          {i > 0 && <><br /><br /></>}
+                          {paragraph}
+                        </React.Fragment>
+                      ))}
                     </motion.p>
                     <motion.div
                       initial={{ translateY: "0%" }}
@@ -365,18 +363,12 @@ export default function JoinPage() {
 
               <motion.div className="last-section-content community-content" style={{ y: section2Content }}>
                 <ParallaxMotion speedX={50} speedY={52} easing={[0.17, 0.67, 0.3, 0.99]}>
-                  <h3 style={{ color: "white" }}>Join our community</h3>
+                  <h3 style={{ color: "white" }}>{joinContent.community.heading}</h3>
                 </ParallaxMotion>
                 <ParallaxMotion speedX={50} speedY={52} easing={[0.17, 0.67, 0.3, 0.99]}>
                  <div style={{ position: 'relative', display: 'inline-block', overflow: 'hidden' }}>
-                    <motion.p
-                      style={{ color: "white", position: 'relative', zIndex: 0 }}
-                      initial={{ y: 80 }}
-                      whileInView={{ y: 0 }}
-                      viewport={{ once: true, amount: 0.3 }}
-                      transition={{ duration: 1.2, ease: [0.11, 0.45, 0.08, 1.00] }}
-                    >
-                      We're also hosting a few open community events during the year, so if you want to be part of our community follow us on Linkedin and keep an eye on our Luma calendar so you don't miss out.
+                    <motion.p style={{ color: "white" }}>
+                      {joinContent.community.description}
                     </motion.p>
                     <motion.div
                       initial={{ translateY: "0%" }}

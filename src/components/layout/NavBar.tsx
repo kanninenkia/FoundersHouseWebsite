@@ -50,7 +50,9 @@ export const NavBar = ({
             pointerEvents: opacity > 0 ? 'auto' : 'none'
           }}
         >
-          <img src={logoSrc} alt="Founders House Logo" className="navbar-logo" />
+          <a href="/" style={{ display: 'block', lineHeight: 0 }}>
+            <img src={logoSrc} alt="Founders House Logo" className="navbar-logo" />
+          </a>
         </div>
 
         {/* Hamburger Menu - Top Right */}

@@ -6,6 +6,7 @@ import ParallaxMotion from '../effects/ParallaxMotion.tsx';
 import "./page.css";
 import "./pageMobile.css";
 import { Footer, NavBar } from "../components/layout";
+import { aboutContent } from './about-content';
 
 const HEADER_IMG_SRC = "/assets/images/membership/join-process.webp";
 const SECTION2_IMG_SRC = "/assets/images/events/Wave x Maki Photo (2).webp";
@@ -222,7 +223,7 @@ export default function AboutPage() {
               }
               transition={{ delay: 0.8, duration: 0.8, ease: [0.42, 0.00, 1.00, 1.00] }}
               >
-                <span>NEXT</span> <span>GENERATION</span>
+                <span>{aboutContent.hero.line1}</span>
             </motion.h2>
           </div>
           <div className="stage1-text-overlay-wrapper">
@@ -236,7 +237,7 @@ export default function AboutPage() {
               }
               transition={{ delay: 0.8, duration: 0.8, ease: [0.42, 0.00, 1.00, 1.00] }}
               >
-                <span>OF</span> <span>OBSESSED</span>
+                <span>{aboutContent.hero.line2}</span>
             </motion.h2>
           </div>
           <div className="stage1-text-overlay-wrapper">
@@ -250,7 +251,7 @@ export default function AboutPage() {
               }
               transition={{ delay: 0.8, duration: 0.8, ease: [0.42, 0.00, 1.00, 1.00] }}
               >
-                <span>BUILDERS</span>
+                <span>{aboutContent.hero.line3}</span>
             </motion.h2>
           </div>
         </motion.div>
@@ -273,12 +274,12 @@ export default function AboutPage() {
               <motion.div
                 className="corner-element top-left"
                 initial={{ left: "20px", opacity: 1 }}>
-                  <p>FOUNDERS HOUSE</p>
+                  <p>{aboutContent.hero.topLeft}</p>
               </motion.div>
               <motion.div
                 className="corner-element top-right"
                 initial={{ right: "15px", opacity: 1 }}>
-                  <p>HELSINKI, FINLAND</p>
+                  <p>{aboutContent.hero.topRight}</p>
               </motion.div>
             </div>
           </motion.div>
@@ -307,7 +308,7 @@ export default function AboutPage() {
                       animate={{ y: 0 }}
                       transition={{ delay: 1.8, duration: 1.8, ease: [0.11, 0.45, 0.08, 1.00] }}
                       >
-                        ABOUT
+                        {aboutContent.header.title}
                     </motion.h1>
                   </div>
                 </ParallaxMotion>
@@ -319,7 +320,7 @@ export default function AboutPage() {
                       animate={{ opacity: 1 }}
                       transition={{ delay: 2.6, duration: 1, ease: [0.11, 0.45, 0.08, 1.00] }}
                       >
-                        We believe that the future generational companies will be built by a small group of exceptional next-gen founders.
+                        {aboutContent.header.subtitle}
                     </motion.h3>  
                   </ParallaxMotion>
                 </div>
@@ -348,7 +349,7 @@ export default function AboutPage() {
                       transition={{ duration: 1.2, ease: [0.11, 0.45, 0.08, 1.00] }}
                       style={{ position: 'relative', zIndex: 0 }}
                     >
-                      FOUNDERS HOUSE HELSINKI IS THE HOME FOR EUROPE'S TOP NEXT-GEN FOUNDERS. THE BUILDERS WHO THINK DIFFERENTLY, MOVE FASTER THAN ANYONE ELSE AND RAISE THE BAR FOR EVERYONE AROUND.
+                      {aboutContent.section2.text}
                     </motion.p>
                     <motion.div
                       initial={{ translateY: "0%" }}
@@ -389,7 +390,7 @@ export default function AboutPage() {
                   </ParallaxMotion>
                 </div>
                 <ParallaxMotion speedX={50} speedY={50} delay={5}>
-                  <motion.p style={isTabletPortrait ? {} : { y: section3text }}>WE SUPPORT THESE FOUNDERS DURING THE MOST CRITICAL EARLY STAGES OF BUILDING THROUGH A TIGHT COMMUNITY SHAPED BY COLLABORATION AND SHARED AMBITION—ALL UNDER THE SAME ROOF. BY BRINGING THESE PEOPLE TOGETHER WE CREATE THE CONDITIONS FOR AMBITIOUS COMPANIES TO BE BUILT FASTER AND AT A HIGHER LEVEL. HERE TALENT CONENTRATES AND POTENTIAL MULTIPLIES.</motion.p>
+                  <motion.p style={isTabletPortrait ? {} : { y: section3text }}>{aboutContent.section3.text}</motion.p>
                 </ParallaxMotion>
               </div>
             </motion.div>
@@ -419,7 +420,7 @@ export default function AboutPage() {
                       transition={{ duration: 1.2, ease: [0.11, 0.45, 0.08, 1.00] }}
                       style={{ position: 'relative', zIndex: 0 }}
                     >
-                      Founders House Helsinki is the hub for Finland's most promising next-gen startups. A home for builders who move faster than anyone else, think differently, and raise the bar for everyone around them.
+                      {aboutContent.section4.text}
                     </motion.p>
                     <motion.div
                       initial={{ translateY: "0%" }}
@@ -485,7 +486,7 @@ export default function AboutPage() {
                 </div>
                 <motion.div className="content-text" style={{ y: section5Content }}>
                   <ParallaxMotion speedX={40} speedY={45} easing={[0.17, 0.67, 0.3, 0.99]}>
-                    <p>Founders House Helsinki is more than a workspace. It’s a standard and the place where the next generation builds before the rest of the world realizes who they are. The next wave of Finland’s unicorns will have their roots here.</p>
+                    <p>{aboutContent.section5.text}</p>
                   </ParallaxMotion>
                 </motion.div>
               </div>
@@ -521,13 +522,9 @@ export default function AboutPage() {
                 <ParallaxMotion speedX={25} speedY={25} delay={10} easing={[0.17, 0.67, 0.3, 0.99]}>
                   <div style={{ position: 'relative', display: 'inline-block', overflow: 'hidden' }}>
                     <motion.h3
-                      initial={{ y: 80 }}
-                      whileInView={{ y: 0 }}
-                      viewport={{ once: true, amount: 0.3 }}
-                      transition={{ duration: 1.2, ease: [0.11, 0.45, 0.08, 1.00] }}
-                      style={{ position: 'relative', zIndex: 0 }}
+                      className="text-wrapper-h3"
                     >
-                      THE TEAM
+                      {aboutContent.team.heading}
                     </motion.h3>
                     <motion.div
                       initial={{ translateY: "0%" }}
@@ -552,116 +549,37 @@ export default function AboutPage() {
             <div className="team-individuals-wrapper" ref={teamRef}>
               <ParallaxMotion speedX={25} speedY={25} delay={10} easing={[0.17, 0.67, 0.3, 0.99]}>
                 <div className="individuals">
-                  <div
-                    className={`individual-name${hoveredMember === "camilla" ? " active" : ""}`}
-                    onMouseEnter={() => setHoveredMember("camilla")}
-                  >
-                    <h4>Camilla Komulainen</h4>
-                  </div>
-                  <div
-                    className={`individual-name${hoveredMember === "kia" ? " active" : ""}`}
-                    onMouseEnter={() => setHoveredMember("kia")}
-                  >
-                    <h4>Kia Kanninen</h4>
-                  </div>
-                  <div
-                    className={`individual-name${hoveredMember === "niklas" ? " active" : ""}`}
-                    onMouseEnter={() => setHoveredMember("niklas")}
-                  >
-                    <h4>Niklas Kervinen</h4>
-                  </div>
-                  <div
-                    className={`individual-name${hoveredMember === "johannes" ? " active" : ""}`}
-                    onMouseEnter={() => setHoveredMember("johannes")}
-                  >
-                    <h4>Johannes Korpela</h4>
-                  </div>
-                  <div
-                    className={`individual-name${hoveredMember === "robin" ? " active" : ""}`}
-                    onMouseEnter={() => setHoveredMember("robin")}
-                  >
-                    <h4>Robin Hansson</h4>
-                  </div>
+                  {aboutContent.team.members.map((member) => (
+                    <div
+                      key={member.id}
+                      className={`individual-name${hoveredMember === member.id ? " active" : ""}`}
+                      onMouseEnter={() => setHoveredMember(member.id)}
+                    >
+                      <h4>{member.name}</h4>
+                    </div>
+                  ))}
                 </div>
               </ParallaxMotion>
               <ParallaxMotion speedX={10} speedY={10} delay={10} easing={[0.17, 0.67, 0.3, 0.99]}>
                 <div className="individuals-profiles">
                   <AnimatePresence mode="wait">
-                    {hoveredMember === "camilla" && (
-                      <motion.div
-                        key="camilla"
-                        className="profiles-card card-camilla"
-                        initial={{ opacity: 0, y: 5 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: 5 }}
-                        transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
-                      >
-                        <img src="assets/images/team/camilla.webp" alt="Camilla Komulainen" />
-                        <h5>started to like horses</h5>
-                        <a className="card-email" href="mailto:camilla@wave.ventures">camilla@wave.ventures</a>
-                        <a className="card-linkedin" href="https://www.linkedin.com/in/camillakomulainen/">linkedin</a>
-                      </motion.div>
-                    )}
-                    {hoveredMember === "kia" && (
-                      <motion.div
-                        key="kia"
-                        className="profiles-card card-kia"
-                        initial={{ opacity: 0, y: 5 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: 5 }}
-                        transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
-                      >
-                        <img src="assets/images/team/kia.webp" alt="Kia Kanninen" />
-                        <h5>Likes horses</h5>
-                        <a className="card-email" href="mailto:kia@wave.ventures">kia@wave.ventures</a>
-                        <a className="card-linkedin" href="https://www.linkedin.com/in/kiakanninen/">linkedin</a>
-                      </motion.div>
-                    )}
-                    {hoveredMember === "niklas" && (
-                      <motion.div
-                        key="niklas"
-                        className="profiles-card card-niklas"
-                        initial={{ opacity: 0, y: 5 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: 5 }}
-                        transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
-                      >
-                        <img src="assets/images/team/niklas.webp" alt="Niklas Kervinen" />
-                        <h5>Likes horses</h5>
-                        <a className="card-email" href="mailto:niklas@wave.ventures">niklas@wave.ventures</a>
-                        <a className="card-linkedin" href="https://www.linkedin.com/in/niklas-kervinen/">linkedin</a>
-                      </motion.div>
-                    )}
-                    {hoveredMember === "johannes" && (
-                      <motion.div
-                        key="johannes"
-                        className="profiles-card card-johannes"
-                        initial={{ opacity: 0, y: 5 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: 5 }}
-                        transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
-                      >
-                        <img src="assets/images/team/johannes.webp" alt="Johannes Korpela" />
-                        <h5>Likes horses</h5>
-                        <a className="card-email" href="mailto:johannes@wave.ventures">johannes@wave.ventures</a>
-                        <a className="card-linkedin" href="https://www.linkedin.com/in/korpelajohannes/">linkedin</a>
-                      </motion.div>
-                    )}
-                    {hoveredMember === "robin" && (
-                      <motion.div
-                        key="robin"
-                        className="profiles-card card-robin"
-                        initial={{ opacity: 0, y: 5 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: 5 }}
-                        transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
-                      >
-                        <img src="assets/images/team/robin.webp" alt="Robin Hansson" />
-                        <h5>Likes horses</h5>
-                        <a className="card-email" href="mailto:robin@wave.ventures">robin@wave.ventures</a>
-                        <a className="card-linkedin" href="https://www.linkedin.com/in/robin-hansson-/">linkedin</a>
-                      </motion.div>
-                    )}
+                    {aboutContent.team.members.map((member) => (
+                      hoveredMember === member.id && (
+                        <motion.div
+                          key={member.id}
+                          className={`profiles-card card-${member.id}`}
+                          initial={{ opacity: 0, y: 5 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: 5 }}
+                          transition={{ duration: 0.2, ease: [0.4, 0, 0.2, 1] }}
+                        >
+                          <img src={member.image} alt={member.name} />
+                          <h5>{member.tagline}</h5>
+                          <a className="card-email" href={`mailto:${member.email}`}>{member.email}</a>
+                          <a className="card-linkedin" href={member.linkedin}>linkedin</a>
+                        </motion.div>
+                      )
+                    ))}
                   </AnimatePresence>
                 </div>
               </ParallaxMotion>

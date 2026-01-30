@@ -425,14 +425,14 @@
 .last-section .team-text-wrapper {
     position: absolute;
     z-index: 15;
-    top: 10%;
+    top: 5%;
 }
 
-.last-section .team-text-wrapper h3 {
+.last-section .team-text-wrapper .text-wrapper-h3 {
     font-family: 'IBM Plex Sans', sans-serif;
     font-size: 7rem;
     letter-spacing: -0.04rem;
-    line-height: 1rem;
+    line-height: 7rem;
     font-weight: 800;
     color: #D82E11;
     text-wrap: balance;
