@@ -182,12 +182,18 @@
   }
 
   .footer-logo {
-    width: 80vw;
+    width: 50vw;
   }
 
   .footer-links {
     flex-direction: column;
     gap: 2rem;
+  }
+
+  .footer-link,
+  .footer-heading,
+  .footer-address {
+    font-size: 4vw;
   }
 
   .footer-column {

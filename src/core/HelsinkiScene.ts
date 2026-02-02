@@ -149,7 +149,7 @@ export class HelsinkiScene {
     this.createBoundaryWireframe()
 
     loadDualModels({
-      mainMapPath: '/models/map.glb',
+      mainMapPath: '/models/fh.glb',
       scene: this.scene,
       camera: this.camera,
       controls: this.controls,
@@ -625,7 +625,7 @@ export class HelsinkiScene {
     dracoLoader.setDecoderConfig({ type: 'js' })
     loader.setDRACOLoader(dracoLoader)
 
-    const modelPath = '/assets/models/sähötalo.glb'
+    const modelPath = '/models/sahkotalo.glb'
     loader.load(
       encodeURI(modelPath),
       (gltf) => {

@@ -6,6 +6,7 @@ This guide explains how to edit text content on the Founders House website witho
 
 All editable text content is now organized in dedicated content files:
 
+- **Home Page**: `src/home/home-content.ts`
 - **About Page**: `src/about/about-content.ts`
 - **Join Page**: `src/join/join-content.ts`
 - **Events Page**: `src/events/hooks/events-data.ts`
@@ -88,6 +89,14 @@ If something breaks:
 4. Ask a developer to review your changes
 
 ## Content File Structure
+
+### Home Page (`src/home/home-content.ts`)
+- Hero section: 4-line animated text
+- Quote cards: 6 testimonial quotes from supporters
+  - Each has: name, quote text, image URL, and color theme
+- Values sections: 4 sections (Obsessive, Ambitious, NextGen, Builders)
+  - Each has a title and description
+- Join section: Description, heading, and button text
 
 ### About Page (`src/about/about-content.ts`)
 - Hero animation text (initial 3-second animation)

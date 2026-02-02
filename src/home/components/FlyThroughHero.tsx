@@ -7,10 +7,10 @@ import ParallaxMotion from '../../effects/ParallaxMotion.tsx';
 import '../styles/FlyThroughHero.css';
 import '../styles/FlyThroughHeroMobile.css';
 import { QuoteCard } from '../sections/quotes/QuoteCard.tsx';
-import { quoteCardsData } from '../sections/quotes/quoteCardsData';
 import { Button } from '../../components/ui';
 import { NavBar } from '../../components/layout';
 import GridDistortion from '../../effects/GridDistortion.tsx';
+import { homeContent } from '../home-content';
 
 // =============================================================================
 // CONFIGURATION
@@ -24,12 +24,12 @@ const CONFIG = {
   // Scroll distance (multiplier of viewport height)
   scrollDistance: 3,
   
-  // Text content
+  // Text content - now pulled from homeContent
   heroText: [
-    'WE BRING EXCEPTIONAL YOUNG',
-    'TALENT UNDER ONE ROOF,',
-    'WHERE AMBITION CONCENTRATES',
-    'AND POTENTIAL MULTIPLIES.',
+    homeContent.hero.line1,
+    homeContent.hero.line2,
+    homeContent.hero.line3,
+    homeContent.hero.line4,
   ],
 };
 
@@ -509,17 +509,17 @@ return (
             <div className="content-wrapper">
               <div className="quotes-grid">
                 <motion.div className="column column-left" style={{ y: leftY }}>
-                  {quoteCardsData.filter((_, i) => i % 3 === 0).map((card, idx) => (
+                  {homeContent.quotes.filter((_, i) => i % 3 === 0).map((card, idx) => (
                     <QuoteCard key={card.name + idx} {...card} />
                   ))}
                 </motion.div>
                 <motion.div className="column column-center" style={{ y: centerY }}>
-                  {quoteCardsData.filter((_, i) => i % 3 === 1).map((card, idx) => (
+                  {homeContent.quotes.filter((_, i) => i % 3 === 1).map((card, idx) => (
                     <QuoteCard key={card.name + idx} {...card} />
                   ))}
                 </motion.div>
                 <motion.div className="column column-right" style={{ y: rightY }}>
-                  {quoteCardsData.filter((_, i) => i % 3 === 2).map((card, idx) => (
+                  {homeContent.quotes.filter((_, i) => i % 3 === 2).map((card, idx) => (
                     <QuoteCard key={card.name + idx} {...card} />
                   ))}
                 </motion.div>
@@ -655,7 +655,7 @@ return (
                   </div>
                   <motion.div className="part-img-title" style={{ y: obsessedText }}>
                     <ParallaxMotion speedX={24} speedY={24} delay={12} easing={[0.17, 0.67, 0.3, 0.99]}>
-                        <h3>OBSESSIVE</h3>
+                        <h3>{homeContent.values.obsessive.title}</h3>
                     </ParallaxMotion>
                   </motion.div>
                 </div>
@@ -684,7 +684,7 @@ return (
                         <ParallaxMotion speedX={isMobileView ? 0 : 10} speedY={isMobileView ? 0 : 10} delay={0} easing={[0.17, 0.67, 0.3, 0.99]}>
                             <div style={{ position: 'relative', display: 'inline-block', overflow: 'hidden' }}>
                               <p style={{ position: 'relative', zIndex: 0 }}>
-                                A space built for the rare few who operate at the 0.1% level.
+                                {homeContent.values.ambitious.description}
                               </p>
                               <motion.div
                                 initial={{ translateY: "0%" }}
@@ -717,7 +717,7 @@ return (
 
                   <motion.div className="part-img-title" style={{ y: ambitiousText }}>
                     <ParallaxMotion speedX={24} speedY={24} delay={12} easing={[0.17, 0.67, 0.3, 0.99]}>
-                        <h3>AMBITIOUS</h3>
+                        <h3>{homeContent.values.ambitious.title}</h3>
                     </ParallaxMotion>
                   </motion.div>
                   
@@ -783,7 +783,7 @@ return (
                         <ParallaxMotion speedX={isMobileView ? 0 : 10} speedY={isMobileView ? 0 : 10} delay={0} easing={[0.17, 0.67, 0.3, 0.99]}>
                             <div style={{ position: 'relative', display: 'inline-block', overflow: 'hidden' }}>
                               <p style={{ position: 'relative', zIndex: 0 }}>
-                                For the ones moving faster than everyone else.
+                                {homeContent.values.nextgen.description}
                               </p>
                               <motion.div
                                 initial={{ translateY: "0%" }}
@@ -816,7 +816,7 @@ return (
 
                   <motion.div className="part-img-title" style={{ y: nextgenText }}>
                     <ParallaxMotion speedX={24} speedY={24} delay={12} easing={[0.17, 0.67, 0.3, 0.99]}>
-                        <h3>NEXTGEN</h3>
+                        <h3>{homeContent.values.nextgen.title}</h3>
                     </ParallaxMotion>
                   </motion.div>
                 </div>
@@ -844,7 +844,7 @@ return (
                         <ParallaxMotion speedX={isMobileView ? 0 : 10} speedY={isMobileView ? 0 : 10} delay={0} easing={[0.17, 0.67, 0.3, 0.99]}>
                             <div style={{ position: 'relative', display: 'inline-block', overflow: 'hidden' }}>
                               <p style={{ position: 'relative', zIndex: 0 }}>
-                                For those who outpace their own ambition.
+                                {homeContent.values.builders.description}
                               </p>
                               <motion.div
                                 initial={{ translateY: "0%" }}
@@ -876,7 +876,7 @@ return (
                   </div>
                   <motion.div className="part-img-title" style={{ y: buildersText }}>
                     <ParallaxMotion speedX={24} speedY={24} delay={12} easing={[0.17, 0.67, 0.3, 0.99]}>
-                        <h3>BUILDERS</h3>
+                        <h3>{homeContent.values.builders.title}</h3>
                     </ParallaxMotion>
                   </motion.div>
                 </div>
@@ -896,7 +896,7 @@ return (
         >
           <div className="join-title">
             <ParallaxMotion speedX={15} speedY={15} delay={5} easing={[0.17, 0.67, 0.3, 0.99]}>
-              <p>Only a handful move fast enough to be here, and they build alongside the people who will define what comes next.</p>
+              <p>{homeContent.join.description}</p>
             </ParallaxMotion>
           </div>
           
@@ -912,7 +912,7 @@ return (
                 </ParallaxMotion>
                 <div className="join-img-content">
                   <div style={{ position: 'relative', display: 'inline-block', overflow: 'hidden' }}>
-                    <h4 style={{ position: 'relative', zIndex: 0 }}>BUILD WITH US, MOVE FASTER, DEFINE TOMORROW.</h4>
+                    <h4 style={{ position: 'relative', zIndex: 0 }}>{homeContent.join.heading}</h4>
                     <motion.div
                       initial={{ translateY: "0%" }}
                       whileInView={{ translateY: "101%" }}
@@ -929,7 +929,7 @@ return (
                       }}
                     />
                   </div>
-                  <Button className="cta-button" onClick={() => navigate('/join')} style={{ width: 'fit-content' }}>JOIN</Button>
+                  <Button className="cta-button" onClick={() => navigate('/join')} style={{ width: 'fit-content' }}>{homeContent.join.buttonText}</Button>
                 </div>
                 {/* Animated squares */}
                 <div className="join-img-square join-square-tl-1" />
