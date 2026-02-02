@@ -30,11 +30,6 @@ pnpm-debug.log*
 .DS_Store
 Thumbs.db
 
-# Large files
-*.glb
-*.gltf
-*.bin
-
 # Temporary
 *.tmp
 *.temp
