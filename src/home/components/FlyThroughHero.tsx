@@ -384,7 +384,7 @@ export function FlyThroughHero() {
     
 return (
     <>
-        <NavBar logoColor="dark" hamburgerColor="#FFF8F2" opacity={showNavBar ? 1 : 0} />
+        <NavBar logoColor="dark" hamburgerColor="#FFF8F2" streakColor="rgba(216, 46, 17, 1)" opacity={showNavBar ? 1 : 0} />
         
         {/* Fixed hero viewport, fades out at end, fades back in if user scrolls up */}
         <motion.div

@@ -172,7 +172,7 @@ export default function AboutPage() {
 
   return (
     <div style={{ position: "relative", maxWidth: "100%", minHeight: "100vh", background: "#2B0906" }}>
-      <NavBar logoColor="dark" hamburgerColor="#FFF8F2" opacity={showNavBar ? 1 : 0} />
+      <NavBar logoColor="dark" hamburgerColor="#FFF8F2" streakColor="rgba(216, 46, 17, 1)" opacity={showNavBar ? 1 : 0} />
       
       {/*---------------------------------------------------------------------*/}
       {/* Persistent animated image container */}

@@ -12,6 +12,7 @@ import './NavBar.css'
 interface NavBarProps {
   logoColor?: 'light' | 'dark' // 'light' = logo.svg (red), 'dark' = logoWhite.png
   hamburgerColor?: string
+  streakColor?: string // Color of the hover streak animation
   className?: string
   style?: React.CSSProperties
   opacity?: number // Control visibility with smooth transition
@@ -21,6 +22,7 @@ interface NavBarProps {
 export const NavBar = ({ 
   logoColor = 'light', 
   hamburgerColor = '#D82E11',
+  streakColor = 'rgba(255, 255, 255, 1)',
   className = '',
   style = {},
   opacity = 1,
@@ -67,6 +69,7 @@ export const NavBar = ({
           <AnimatedHamburger
             isOpen={isMenuOpen}
             onClick={handleMenuToggle}
+            streakColor={streakColor}
             color={hamburgerColor}
           />
         </div>
@@ -75,7 +78,7 @@ export const NavBar = ({
       <FullScreenMenu isOpen={isMenuOpen} onClose={() => {
         setIsMenuOpen(false)
         onMenuChange?.(false)
-      }} />
+      }} currentPage={window.location.pathname} />
     </>
   )
 }

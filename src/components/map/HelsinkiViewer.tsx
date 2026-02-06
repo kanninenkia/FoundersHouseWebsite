@@ -434,8 +434,8 @@ export const HelsinkiViewer = ({
 
 
       <NavBar 
-        logoColor="light"
-        hamburgerColor="#D82E11"
+        logoColor={isMenuOpen ? "dark" : "light"}
+        hamburgerColor={isMenuOpen ? "#FFF8F2" : "#D82E11"}
         opacity={showNavBar && !isTransitionActive ? 1 : 0}
         onMenuChange={setIsMenuOpen}
       />

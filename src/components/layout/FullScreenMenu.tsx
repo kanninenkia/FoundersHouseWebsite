@@ -8,14 +8,18 @@ import { useState } from 'react'
 interface FullScreenMenuProps {
   isOpen: boolean
   onClose: () => void
+  currentPage?: string
 }
 
-export const FullScreenMenu = ({ isOpen, onClose }: FullScreenMenuProps) => {
+export const FullScreenMenu = ({ isOpen, onClose, currentPage = '/' }: FullScreenMenuProps) => {
   const navigate = useNavigate()
   const location = useLocation()
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 })
+  const isDesktop = typeof window !== 'undefined' && window.innerWidth > 1024
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!isDesktop) return
+    
     const { clientX, clientY } = e
     const { innerWidth, innerHeight } = window
     
@@ -42,7 +46,7 @@ export const FullScreenMenu = ({ isOpen, onClose }: FullScreenMenuProps) => {
     <AnimatePresence>
       {isOpen && (
         <motion.div
-          className="fullscreen-menu"
+          className={`fullscreen-menu ${currentPage !== '/' ? 'menu-red-hover' : ''}`}
           data-menu-open={isOpen}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -59,7 +63,13 @@ export const FullScreenMenu = ({ isOpen, onClose }: FullScreenMenuProps) => {
 
           <div className="fullscreen-menu-content">
             <div className="menu-left">
-              <nav className="menu-nav">
+              <nav 
+                className="menu-nav"
+                style={isDesktop ? {
+                  transform: `translate(${mousePos.x * 5}px, ${mousePos.y * 5}px)`,
+                  transition: 'transform 1.2s cubic-bezier(0.17, 0.67, 0.3, 0.99)'
+                } : {}}
+              >
                 <button onClick={() => handleNavigation('/')} className={`menu-nav-item ${location.pathname === '/' ? 'active' : ''}`}>
                   <span className="menu-nav-item-text">
                     {'MAP'.split('').map((letter, i) => (
@@ -115,6 +125,26 @@ export const FullScreenMenu = ({ isOpen, onClose }: FullScreenMenuProps) => {
 
             <div className="menu-right">
               <div className="content-img-container">
+                <div 
+                  className="img-container-stockholm"
+                  style={isDesktop ? {
+                    transform: `translate(${mousePos.x * 10}px, ${mousePos.y * 10}px)`,
+                    transition: 'transform 1s cubic-bezier(0.17, 0.67, 0.3, 0.99)'
+                  } : {}}
+                >
+                  <a 
+                    href="https://founders-house.com" 
+                    target="_blank" 
+                    rel="noopener noreferrer" 
+                    className="stockholm-link"
+                  >
+                    <span className="stockholm-link-text">VISIT US IN STOCKHOLM</span>
+                    <div className="stockholm-link-arrow">
+                      <div className="arrow-head"></div>
+                      <div className="arrow-line"></div>
+                    </div>
+                  </a>
+                </div>
                 <div className="img-container-fade">
                     <div className="img-gradient-left" />
                     <div className="img-gradient-right" />
@@ -128,8 +158,10 @@ export const FullScreenMenu = ({ isOpen, onClose }: FullScreenMenuProps) => {
                     isolation: "isolate", 
                     height: "100%", 
                     zIndex: 1,
-                    transform: `translate(${mousePos.x * 20}px, ${mousePos.y * 20}px)`,
-                    transition: 'transform 2s cubic-bezier(0.17, 0.67, 0.3, 0.99)'
+                    ...(isDesktop ? {
+                      transform: `translate(${mousePos.x * 20}px, ${mousePos.y * 20}px)`,
+                      transition: 'transform 2s cubic-bezier(0.17, 0.67, 0.3, 0.99)'
+                    } : {})
                   }}
                 >
                   <motion.img
@@ -143,8 +175,10 @@ export const FullScreenMenu = ({ isOpen, onClose }: FullScreenMenuProps) => {
                   style={{ 
                     height: "100%", 
                     zIndex: 2,
-                    transform: `translate(${mousePos.x * 20}px, ${mousePos.y * 20}px)`,
-                    transition: 'transform 2.3s cubic-bezier(0.17, 0.67, 0.3, 0.99)'
+                    ...(isDesktop ? {
+                      transform: `translate(${mousePos.x * 20}px, ${mousePos.y * 20}px)`,
+                      transition: 'transform 2.3s cubic-bezier(0.17, 0.67, 0.3, 0.99)'
+                    } : {})
                   }}
                 >
                   <motion.img
@@ -159,39 +193,19 @@ export const FullScreenMenu = ({ isOpen, onClose }: FullScreenMenuProps) => {
 
           <div className="menu-social-bottom">
             <a href="https://www.linkedin.com/company/founders-house-helsinki" target="_blank" rel="noopener noreferrer" className="menu-social-link">
-              {'LINKEDIN'.split('').map((letter, i) => (
-                <span key={i} className="char-small" style={{ transitionDelay: `${i * 0.02}s` }}>
-                  <span className="char-original-small">{letter}</span>
-                  <span className="char-clone-small">{letter}</span>
-                </span>
-              ))}
+              LINKEDIN
             </a>
             <a href="https://www.instagram.com/foundershousehelsinki/" target="_blank" rel="noopener noreferrer" className="menu-social-link">
-              {'INSTAGRAM'.split('').map((letter, i) => (
-                <span key={i} className="char-small" style={{ transitionDelay: `${i * 0.02}s` }}>
-                  <span className="char-original-small">{letter}</span>
-                  <span className="char-clone-small">{letter}</span>
-                </span>
-              ))}
+              INSTAGRAM
             </a>
           </div>
 
           <div className="menu-footer">
             <button className="menu-footer-link">
-              {'PRIVACY POLICY'.split('').map((letter, i) => (
-                <span key={i} className="char-small" style={{ transitionDelay: `${i * 0.02}s` }}>
-                  <span className="char-original-small">{letter === ' ' ? '\u00A0' : letter}</span>
-                  <span className="char-clone-small">{letter === ' ' ? '\u00A0' : letter}</span>
-                </span>
-              ))}
+              PRIVACY POLICY
             </button>
             <button className="menu-footer-link">
-              {'COOKIES SETTINGS'.split('').map((letter, i) => (
-                <span key={i} className="char-small" style={{ transitionDelay: `${i * 0.02}s` }}>
-                  <span className="char-original-small">{letter === ' ' ? '\u00A0' : letter}</span>
-                  <span className="char-clone-small">{letter === ' ' ? '\u00A0' : letter}</span>
-                </span>
-              ))}
+              COOKIES SETTINGS
             </button>
           </div>
         </motion.div>

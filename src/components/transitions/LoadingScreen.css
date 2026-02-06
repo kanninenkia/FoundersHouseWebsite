@@ -304,6 +304,18 @@
   opacity: 0;
 }
 
+/* Return visit - fade out logo and background during pixel-out */
+.loading-logo.return-fade-out,
+.loading-background-image.return-fade-out {
+  animation: returnFadeOut 0.4s ease forwards;
+}
+
+@keyframes returnFadeOut {
+  to {
+    opacity: 0;
+  }
+}
+
 .loading-logo img {
   display: block;
   height: 76px;
@@ -357,13 +369,29 @@
   box-sizing: border-box;
 }
 
+/* Blue variant for pixel-out */
+.block.blue-block {
+  background: #0D2D59; /* Dark blue */
+}
+
 .block.pixel-reveal {
   animation: blockReveal 0s forwards;
+}
+
+.block.pixel-out {
+  opacity: 1; /* Start visible */
+  animation: blockDissolve 0s forwards;
 }
 
 @keyframes blockReveal {
   to {
     opacity: 1;
+  }
+}
+
+@keyframes blockDissolve {
+  to {
+    opacity: 0;
   }
 }
 
@@ -443,6 +471,12 @@
   transform: none;
   backface-visibility: hidden;
   -webkit-font-smoothing: antialiased;
+}
+
+/* Return visit - map visible during pixel-out and complete */
+.map-container.return-pixel-out,
+.map-container.complete {
+  opacity: 1;
 }
 
 /* Text gets pushed by the map - v2 higher specificity */

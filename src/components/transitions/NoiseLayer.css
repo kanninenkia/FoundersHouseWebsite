@@ -12,8 +12,3 @@
   pointer-events: none;
   transition: opacity 100ms ease;
 }
-
-html.transition-noise-off .noise-layer,
-body.transition-noise-off .noise-layer {
-  opacity: 0.2;
-}

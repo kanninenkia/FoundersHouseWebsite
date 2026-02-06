@@ -5,9 +5,10 @@ interface AnimatedHamburgerProps {
   isOpen: boolean
   onClick: () => void
   color?: string
+  streakColor?: string
 }
 
-export const AnimatedHamburger = ({ isOpen, onClick, color = '#FFF8F2' }: AnimatedHamburgerProps) => {
+export const AnimatedHamburger = ({ isOpen, onClick, color = '#FFF8F2', streakColor = 'rgba(255, 255, 255, 1)' }: AnimatedHamburgerProps) => {
   const [isHovered, setIsHovered] = useState(false)
 
   return (
@@ -77,7 +78,7 @@ export const AnimatedHamburger = ({ isOpen, onClick, color = '#FFF8F2' }: Animat
               y="0.75"
               width="32"
               height="2.5"
-              fill="rgba(255, 255, 255, 1)"
+              fill={streakColor}
               initial={{ x: -32 }}
               animate={{ x: isHovered ? 64 : -32 }}
               transition={{
@@ -117,7 +118,7 @@ export const AnimatedHamburger = ({ isOpen, onClick, color = '#FFF8F2' }: Animat
               y="10.75"
               width="32"
               height="2.5"
-              fill="rgba(255, 255, 255, 1)"
+              fill={streakColor}
               initial={{ x: -32 }}
               animate={{ x: isHovered ? 64 : -32 }}
               transition={{
@@ -158,7 +159,7 @@ export const AnimatedHamburger = ({ isOpen, onClick, color = '#FFF8F2' }: Animat
               y="20.75"
               width="32"
               height="2.5"
-              fill="rgba(255, 255, 255, 1)"
+              fill={streakColor}
               initial={{ x: -32 }}
               animate={{ x: isHovered ? 64 : -32 }}
               transition={{

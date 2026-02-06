@@ -512,7 +512,7 @@ export default function EventsPage() {
         </motion.div>
       )}
 
-      <NavBar logoColor="dark" hamburgerColor="#FFF8F2" opacity={showNavBar ? 1 : 0} />
+      <NavBar logoColor="dark" hamburgerColor="#FFF8F2" streakColor="rgba(216, 46, 17, 1)" opacity={showNavBar ? 1 : 0} />
 
 
       {/*---------------------------------------------------------------------*/}

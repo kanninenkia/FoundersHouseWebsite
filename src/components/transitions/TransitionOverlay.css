@@ -9,7 +9,7 @@
   inset: 0;
   width: 100vw;
   height: 100vh;
-  z-index: 100000;
+  z-index: 99998;
   pointer-events: none;
   overflow: hidden;
   /* Force GPU acceleration for consistent performance */
