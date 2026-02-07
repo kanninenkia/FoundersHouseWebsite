@@ -7,12 +7,6 @@ function easeOutQuart(t: number): number {
 }
 
 export class HelsinkiCameraController {
-  private parallaxFreezeActive = false;
-  private parallaxFreezeStart = 0;
-  private parallaxFreezeDuration = 0;
-  private parallaxEaseInActive = false;
-  private parallaxEaseInStart = 0;
-  private parallaxEaseInDuration = 600;
   private boundingBox: THREE.Box3 | null = null
 
   public setBoundingBox(box: THREE.Box3) {
@@ -59,7 +53,7 @@ export class HelsinkiCameraController {
   private parallaxOffsetY = 0;
   private parallaxStrength = 30;
   // CHROME FIX: Increase parallax easing for smoother interpolation
-  private parallaxEasing = 0.08;
+  private parallaxEasing = 0.2;
   private baseCameraPosition: THREE.Vector3 = new THREE.Vector3();
   private parallaxEnabled = true;
   private cameraTargetPosition: THREE.Vector3 = new THREE.Vector3();
@@ -294,6 +288,9 @@ export class HelsinkiCameraController {
       this.dragTargetPosition.add(this.velocity)
       this.orbit.target.add(this.velocity)
       this.target.copy(this.orbit.target)
+      
+      // Update base position during drag (without parallax)
+      this.baseCameraPosition.add(this.velocity)
 
       // Clamp camera position to map boundaries
       this.clampToMapBoundaries()
@@ -333,8 +330,8 @@ export class HelsinkiCameraController {
     
     // === PAN MOMENTUM ===
     if (this.velocity.length() > this.velocityThreshold) {
-      // Apply velocity to camera and target
-      this.camera.position.add(this.velocity)
+      // Apply velocity to base position and target (not camera.position directly)
+      this.baseCameraPosition.add(this.velocity)
       this.orbit.target.add(this.velocity)
       this.target.copy(this.orbit.target)
 
@@ -398,10 +395,6 @@ export class HelsinkiCameraController {
 
   private handlePointerUp = (): void => {
     this.isDragging = false
-    // Start parallax freeze
-    this.parallaxFreezeActive = true;
-    this.parallaxFreezeStart = performance.now();
-    this.parallaxEaseInActive = false;
   }
 
   // Store handler references for cleanup
@@ -576,15 +569,9 @@ export class HelsinkiCameraController {
   }
 
   private _handleParallaxMouseMove = (event: MouseEvent) => {
-    // Always update the latest mouse position, but only use it after freeze
     const rect = this.domElement.getBoundingClientRect();
-    this._latestMouseX = ((event.clientX - rect.left) / rect.width) * 2 - 1;
-    this._latestMouseY = ((event.clientY - rect.top) / rect.height) * 2 - 1;
-    // Only update the actual parallax target if not frozen
-    if (!this.parallaxFreezeActive && !this.parallaxEaseInActive) {
-      this.mouseNormalizedX = this._latestMouseX;
-      this.mouseNormalizedY = this._latestMouseY;
-    }
+    this.mouseNormalizedX = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+    this.mouseNormalizedY = ((event.clientY - rect.top) / rect.height) * 2 - 1;
   };
 
   private _handleParallaxMouseLeave = () => {
@@ -611,10 +598,9 @@ export class HelsinkiCameraController {
       } catch (err) {}
     }
     this._applyMouseParallax();
-    // Determine base position
-    if (this.isDragging || this.velocity.length() > this.velocityThreshold || Math.abs(this.rotationVelocity) > this.rotationThreshold) {
-      this.baseCameraPosition.copy(this.camera.position);
-    }
+    // Note: baseCameraPosition is now updated directly by momentum/drag logic
+    // We no longer copy from camera.position to avoid parallax feedback loop
+    
     // Calculate intended camera position in local camera space
     const right = new THREE.Vector3();
     const up = new THREE.Vector3(0, 1, 0);
@@ -682,49 +668,22 @@ export class HelsinkiCameraController {
   }
 
   // Unified _applyMouseParallax method
-  private _latestMouseX = 0;
-  private _latestMouseY = 0;
   private _applyMouseParallax() {
-    const now = performance.now();
-    // Handle freeze after drag release
-    if (this.parallaxFreezeActive) {
-      if (now - this.parallaxFreezeStart < this.parallaxFreezeDuration) {
-        // During freeze, do not update mouseNormalizedX/Y (parallax is frozen)
-        return;
-      } else {
-        // Start ease-in
-        this.parallaxFreezeActive = false;
-        this.parallaxEaseInActive = true;
-        this.parallaxEaseInStart = now;
-      }
-    }
-    // Handle ease-in after freeze
-    if (this.parallaxEaseInActive) {
-      const t = Math.min(1, (now - this.parallaxEaseInStart) / this.parallaxEaseInDuration);
-      // Interpolate mouseNormalizedX/Y from current to latest
-      this.mouseNormalizedX += (this._latestMouseX - this.mouseNormalizedX) * t;
-      this.mouseNormalizedY += (this._latestMouseY - this.mouseNormalizedY) * t;
-      if (t >= 1) {
-        this.mouseNormalizedX = this._latestMouseX;
-        this.mouseNormalizedY = this._latestMouseY;
-        this.parallaxEaseInActive = false;
-      }
-    } else {
-      // Normal operation: always follow latest
-      this.mouseNormalizedX = this._latestMouseX;
-      this.mouseNormalizedY = this._latestMouseY;
-    }
-    // Always ease offset toward target (only if parallax enabled)
-    if (this.parallaxEnabled) {
-      const targetX = this.mouseNormalizedX * this.parallaxStrength;
-      const targetY = this.mouseNormalizedY * this.parallaxStrength * 0.6;
-      this.parallaxOffsetX += (targetX - this.parallaxOffsetX) * this.parallaxEasing;
-      this.parallaxOffsetY += (targetY - this.parallaxOffsetY) * this.parallaxEasing;
-    } else {
+    if (!this.parallaxEnabled) {
       // When disabled, reset offsets to 0
       this.parallaxOffsetX *= 0.9; // Gradually fade out
       this.parallaxOffsetY *= 0.9;
+      return;
     }
+
+    // Parallax and momentum are completely independent
+    // Parallax always follows mouse position, regardless of drag/momentum state
+    const targetX = this.mouseNormalizedX * this.parallaxStrength;
+    const targetY = this.mouseNormalizedY * this.parallaxStrength * 0.6;
+    
+    // Smoothly interpolate to target offset
+    this.parallaxOffsetX += (targetX - this.parallaxOffsetX) * this.parallaxEasing;
+    this.parallaxOffsetY += (targetY - this.parallaxOffsetY) * this.parallaxEasing;
   }
 
   /**
