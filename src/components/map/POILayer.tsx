@@ -83,6 +83,7 @@ const POILayer = ({
           Math.abs(vector.y) <= 1.15
 
         if (!isOnscreen) {
+          // Don't update transform - let it freeze at last position and just fade out
           el.style.opacity = '0'
           return
         }
@@ -91,10 +92,13 @@ const POILayer = ({
         const y = (-vector.y * 0.5 + 0.5) * size.y
         const scale = activePOIKey === key ? BASE_SCALE * 1.25 : BASE_SCALE
 
-        el.style.setProperty('--poi-x', `${x}px`)
-        el.style.setProperty('--poi-y', `${y}px`)
-        el.style.setProperty('--poi-scale', String(scale))
-        el.style.opacity = String(BASE_OPACITY)
+        // Only update transform when visible to avoid jitter during fade-out
+        if (el.style.opacity !== '0') {
+          el.style.setProperty('--poi-x', `${x}px`)
+          el.style.setProperty('--poi-y', `${y}px`)
+          el.style.setProperty('--poi-scale', String(scale))
+        }
+        el.style.opacity = '1'
       })
 
       rafId = requestAnimationFrame(update)
@@ -112,7 +116,7 @@ const POILayer = ({
           ref={(el) => {
             itemRefs.current[key] = el
           }}
-          className="poi-layer-item"
+          className={`poi-layer-item ${key !== 'FOUNDERS_HOUSE' ? 'poi-gray' : ''}`}
           data-poi={key}
           role="button"
           tabIndex={0}

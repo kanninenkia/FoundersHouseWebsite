@@ -490,9 +490,12 @@ export class HelsinkiScene {
     const centerY = 65
     const distanceFromCenterX = Math.abs(viewportX - centerX)
     const distanceFromCenterY = Math.abs(viewportY - centerY)
+    
+    // Use radial distance for consistent fade-out in all directions
+    const radialDistance = Math.sqrt(distanceFromCenterX * distanceFromCenterX + distanceFromCenterY * distanceFromCenterY)
 
     const threshold = 13
-    const isInCenter = distanceFromCenterX <= threshold && distanceFromCenterY <= threshold
+    const isInCenter = radialDistance <= threshold
 
     const now = Date.now()
     const timeSinceLastInteraction = now - this.lastInteractionTime
@@ -503,10 +506,14 @@ export class HelsinkiScene {
     // CRITICAL: Allow immediate auto-centering if lastInteractionTime was reset (e.g., FH POI focus)
     const allowImmediateCenter = this.lastInteractionTime === 0
 
-    // CRITICAL: Keep hero text visible during immediate centering to prevent flicker
-    // Use a more generous threshold during auto-centering to keep text stable
-    const effectiveThreshold = allowImmediateCenter ? 30 : threshold
-    const isEffectivelyInCenter = distanceFromCenterX <= effectiveThreshold && distanceFromCenterY <= effectiveThreshold
+    // Check if Founders House is reasonably close to screen center
+    // Use generous threshold when we're looking at Founders House area, regardless of exact camera position
+    const isLookingAtFoundersHouse = radialDistance <= 30
+
+    // CRITICAL: Keep hero text visible with generous threshold
+    // More lenient when looking at Founders House area
+    const effectiveThreshold = (this.suppressAutoCentering || isLookingAtFoundersHouse) ? 20 : (allowImmediateCenter ? 30 : threshold)
+    const isEffectivelyInCenter = radialDistance <= effectiveThreshold
 
     const opacity = isEffectivelyInCenter ? 1 : 0
     // Only call callback if opacity changed to avoid triggering React re-renders every frame
@@ -750,57 +757,21 @@ export class HelsinkiScene {
     if (!poi) return
 
     // Suppress auto-centering when focusing nearby POIs to avoid recentering FH.
-    // CRITICAL: Enable auto-centering immediately when focusing on FOUNDERS_HOUSE
+    // CRITICAL: Disable auto-centering for FOUNDERS_HOUSE to prevent drift
     if (poiName === 'FOUNDERS_HOUSE') {
-      this.suppressAutoCentering = false
-      // Reset interaction time so auto-centering can start immediately
-      this.lastInteractionTime = 0
+      this.suppressAutoCentering = true  // Disable drift for Founders House
+      // Camera animation places it at exact initial position - no drift needed
     } else {
       this.suppressAutoCentering = poiName === 'SILO' || poiName === 'LINEAR'
     }
 
     // CRITICAL: Stop all camera momentum before starting POI animation
-    // This prevents teleportation when clicking "Learn More" while camera is moving
-    if (this.controls.syncInternalState) {
-      this.controls.syncInternalState()
-    }
-
-    if (poiName === 'OURA' && animated) {
-      this.poiHighlightManager.clearHighlights()
-
-      if (this.poiAnimation && this.poiAnimation.isActive) {
-        interruptSmoothPOIAnimation(this.poiAnimation)
-      }
-
-      const currentTarget = this.controls.target ? this.controls.target.clone() : new THREE.Vector3(0, 0, 0)
-      const hardcodedCameraPos = new THREE.Vector3(831, 149, -215)
-      const hardcodedTarget = new THREE.Vector3(781, -49, -911)
-
-      this.poiAnimation = {
-        isActive: true,
-        startTime: performance.now() / 1000,
-        duration,
-        startCameraPosition: this.camera.position.clone(),
-        startTargetPosition: currentTarget.clone(),
-        endCameraPosition: hardcodedCameraPos,
-        endTargetPosition: hardcodedTarget,
-        currentVelocity: new THREE.Vector3(),
-        currentTargetVelocity: new THREE.Vector3(),
-        onComplete: () => {
-          this.poiHighlightManager.highlightPOI(poiName)
-          this.controls.setTarget(hardcodedTarget.x, hardcodedTarget.y, hardcodedTarget.z)
-          this.controls.minDistance = 700
-          if (this.controls.syncInternalState) {
-            this.controls.syncInternalState()
-          }
-          if (onComplete) onComplete()
-        },
-        onInterrupt: () => {
-          this.poiHighlightManager.clearHighlights()
-        }
-      }
-      return
-    }
+    // This prevents teleportation when clicking POI while camera is moving
+    // Don't use syncInternalState() as it activates lookAt blend which causes snap
+    this.controls.velocity.set(0, 0, 0)
+    this.controls.rotationVelocity = 0
+    this.controls.lookAtTargetBlend = 0
+    this.controls.lookAtTargetBlendTimeout = 0
 
     const desiredDistance = distance ?? poi.cameraView?.distance ?? 300
     const desiredAzimuth = azimuth ?? poi.cameraView?.azimuth ?? 90
@@ -819,7 +790,18 @@ export class HelsinkiScene {
       }
 
       const currentTarget = this.controls.target ? this.controls.target.clone() : new THREE.Vector3(0, 0, 0)
-      const clampedPOITarget = this.clampPositionToBoundaries(poi.worldCoords)
+      
+      // SPECIAL CASE: Founders House returns to exact initial camera position
+      // Use hardcoded initial position instead of calculating from polar coordinates
+      let targetPosition = poi.worldCoords
+      let endCameraPosition: THREE.Vector3 | null = null
+      
+      if (poiName === 'FOUNDERS_HOUSE') {
+        targetPosition = { x: -152, y: 0, z: -810 } // Initial camera target
+        endCameraPosition = new THREE.Vector3(292, 220, -173) // Initial camera position
+      }
+      
+      const clampedPOITarget = this.clampPositionToBoundaries(targetPosition)
 
       if (directZoom) {
         const poiVec = new THREE.Vector3(clampedPOITarget.x, clampedPOITarget.y, clampedPOITarget.z)
@@ -859,6 +841,50 @@ export class HelsinkiScene {
           return
         }
       }
+      
+      // Create animation - use hardcoded position for Founders House, otherwise calculate
+      if (endCameraPosition) {
+        // Direct position specified (Founders House case)
+        this.poiAnimation = {
+          isActive: true,
+          startTime: this.clock.getElapsedTime(),
+          duration,
+          startCameraPosition: this.camera.position.clone(),
+          startTargetPosition: currentTarget.clone(),
+          startCameraQuaternion: this.camera.quaternion.clone(),
+          endCameraPosition: endCameraPosition,
+          endTargetPosition: new THREE.Vector3(clampedPOITarget.x, clampedPOITarget.y, clampedPOITarget.z),
+          currentVelocity: new THREE.Vector3(),
+          currentTargetVelocity: new THREE.Vector3(),
+          onComplete: () => {
+            this.poiHighlightManager.highlightPOI(poiName)
+            this.controls.setTarget(clampedPOITarget.x, clampedPOITarget.y, clampedPOITarget.z)
+            this.camera.lookAt(clampedPOITarget.x, clampedPOITarget.y, clampedPOITarget.z)
+            const currentDistance = this.camera.position.distanceTo(new THREE.Vector3(clampedPOITarget.x, clampedPOITarget.y, clampedPOITarget.z))
+            this.controls.minDistance = currentDistance * 0.8
+            this.controls.maxDistance = currentDistance * 1.5
+            if (this.originalMinPolarAngle !== null && this.originalMaxPolarAngle !== null) {
+              this.controls.minPolarAngle = this.originalMinPolarAngle
+              this.controls.maxPolarAngle = this.originalMaxPolarAngle
+            }
+            if (this.controls.syncInternalState) {
+              this.controls.syncInternalState()
+            }
+            if (onComplete) {
+              onComplete()
+            }
+          },
+          onInterrupt: () => {
+            this.poiHighlightManager.clearHighlights()
+          }
+        }
+        // Calculate end quaternion manually
+        const tempCamera = this.camera.clone()
+        tempCamera.position.copy(endCameraPosition)
+        tempCamera.lookAt(clampedPOITarget.x, clampedPOITarget.y, clampedPOITarget.z)
+        this.poiAnimation.endCameraQuaternion = tempCamera.quaternion.clone()
+      } else {
+        // Standard POI animation using polar coordinates
         this.poiAnimation = createSmoothPOIAnimation(
           this.camera,
           currentTarget,
@@ -900,6 +926,7 @@ export class HelsinkiScene {
           },
           this.clock.getElapsedTime()
         )
+      }
     } else {
       const config: CameraConfig = {
         targetX: poi.worldCoords.x,

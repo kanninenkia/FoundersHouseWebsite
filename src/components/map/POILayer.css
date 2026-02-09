@@ -8,7 +8,7 @@
 .poi-layer-item {
   position: absolute;
   padding: 6px 10px;
-  background: rgba(216, 46, 17, 0.55);
+  background: rgba(216, 46, 17, 1);
   color: #ffffff;
   font-size: 12px;
   font-weight: 600;
@@ -26,8 +26,13 @@
   will-change: transform, opacity;
   opacity: 0;
   pointer-events: auto;
-  transition: background 200ms ease, padding 200ms ease;
+  transition: opacity 200ms ease;
   cursor: pointer;
+}
+
+.poi-layer-item.poi-gray {
+  background: rgba(128, 128, 128, 1);
+  color: rgba(255, 255, 255, 1);
 }
 
 .poi-layer-item::before {
@@ -53,6 +58,10 @@
   background: rgba(216, 46, 17, 0.85);
   transition: opacity 200ms ease, transform 200ms ease;
   pointer-events: none;
+}
+
+.poi-gray .poi-dot {
+  background: rgba(128, 128, 128, 0.65);
 }
 
 .poi-label-text {
@@ -94,6 +103,10 @@
   transform: translateX(-50%) scale(0.9);
   pointer-events: auto;
   transition-delay: 0ms;
+}
+
+.poi-gray.is-distant .poi-label-text {
+  background: rgba(128, 128, 128, 0.45);
 }
 
 .poi-layer-item.is-distant:hover::before,

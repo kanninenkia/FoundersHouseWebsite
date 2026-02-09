@@ -454,7 +454,7 @@ export const HelsinkiViewer = ({
         className="hero-text-container"
         style={{
           opacity: showHeroText ? heroTextOpacity : 0,
-          transition: 'opacity 3.6s cubic-bezier(0.11, 0.45, 0.08, 1.00) 0.6s',
+          transition: 'opacity 0.4s ease-out',
           pointerEvents: 'none',
         }}
       >

@@ -718,11 +718,10 @@ export class HelsinkiCameraController {
     this.parallaxOffsetX = 0
     this.parallaxOffsetY = 0
 
-    // Enable lookAt behavior after POI handoff - set to full blend
+    // Enable lookAt blend to prevent OrbitControls from recalculating orientation
+    // This will be disabled immediately when user interacts (line 636)
     this.lookAtTargetBlend = 1.0
-
-    // Set timeout for automatic fade-out to prevent continuous camera drift
-    this.lookAtTargetBlendTimeout = performance.now() + this.lookAtTargetHoldDuration
+    this.lookAtTargetBlendTimeout = 0
 
     // Sync orbit controls target
     if (this.orbit && this.orbit.target) {

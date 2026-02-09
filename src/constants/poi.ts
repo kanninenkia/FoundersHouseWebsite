@@ -48,6 +48,7 @@ export interface PointOfInterest {
 /**
  * Primary POI - Founders House
  * The main focal point of the experience
+ * Returns to exact initial page load position
  */
 export const FOUNDERS_HOUSE_POI: PointOfInterest = {
   id: 'founders-house',
@@ -58,20 +59,21 @@ export const FOUNDERS_HOUSE_POI: PointOfInterest = {
     y: 533.42
   },
   worldCoords: {
-    x: 30.77,
+    x: 30.77,    // Badge position (restored to original)
     y: -20.14,
     z: -533.42
   },
   cameraView: {
-    distance: 450,
-    azimuth: 90,
-    elevation: 10
+    distance: 807,   // Distance from initial target to camera
+    azimuth: 55.1,   // Horizontal angle to position camera
+    elevation: 15.8  // Vertical angle to position camera
   }
 }
 
 /**
  * Founders House Screen Tracking Position
  * Used for auto-centering drift and hero text visibility
+ * Points to badge position (where the marker actually appears)
  */
 export const FOUNDERS_HOUSE_SCREEN_POS = new THREE.Vector3(30.77, -20.14, -533.42)
 

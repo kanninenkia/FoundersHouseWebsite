@@ -30,10 +30,12 @@ export interface SmoothPOIAnimation {
   // Start state
   startCameraPosition: THREE.Vector3
   startTargetPosition: THREE.Vector3
+  startCameraQuaternion?: THREE.Quaternion
 
   // End state
   endCameraPosition: THREE.Vector3
   endTargetPosition: THREE.Vector3
+  endCameraQuaternion?: THREE.Quaternion
 
   // Current velocity (for smooth handoff)
   currentVelocity: THREE.Vector3
@@ -92,6 +94,13 @@ export function createSmoothPOIAnimation(
   const MAX_CAMERA_HEIGHT = 300
   const endCameraY = Math.max(MIN_CAMERA_HEIGHT, Math.min(MAX_CAMERA_HEIGHT, calculatedCameraY))
 
+  // Calculate end rotation by creating temp camera and having it look at target
+  const tempCamera = camera.clone()
+  const endPos = new THREE.Vector3(endCameraX, endCameraY, endCameraZ)
+  const endTarget = new THREE.Vector3(poiPosition.x, poiPosition.y, poiPosition.z)
+  tempCamera.position.copy(endPos)
+  tempCamera.lookAt(endTarget)
+
   return {
     isActive: true,
     startTime: startTimeSeconds ?? (performance.now() / 1000),
@@ -99,9 +108,11 @@ export function createSmoothPOIAnimation(
 
     startCameraPosition: camera.position.clone(),
     startTargetPosition: currentTarget.clone(),
+    startCameraQuaternion: camera.quaternion.clone(),
 
-    endCameraPosition: new THREE.Vector3(endCameraX, endCameraY, endCameraZ),
-    endTargetPosition: new THREE.Vector3(poiPosition.x, poiPosition.y, poiPosition.z),
+    endCameraPosition: endPos,
+    endTargetPosition: endTarget,
+    endCameraQuaternion: tempCamera.quaternion.clone(),
 
     currentVelocity: new THREE.Vector3(),
     currentTargetVelocity: new THREE.Vector3(),
@@ -175,15 +186,26 @@ export function updateSmoothPOIAnimation(
     animation.currentVelocity.copy(newCameraPosition).sub(prevCameraPosition).divideScalar(deltaTime)
   }
 
-  // Update camera
+  // Update camera position
   camera.position.copy(newCameraPosition)
-  camera.lookAt(newTargetPosition)
+  
+  // Smoothly interpolate rotation if quaternions are available
+  if (animation.startCameraQuaternion && animation.endCameraQuaternion) {
+    camera.quaternion.slerpQuaternions(animation.startCameraQuaternion, animation.endCameraQuaternion, progress)
+  } else {
+    // Fallback to lookAt if quaternions not available
+    camera.lookAt(newTargetPosition)
+  }
 
   // Check if complete
   if (rawProgress >= 1.0) {
-    // Animation complete - ensure exact final position
+    // Animation complete - ensure exact final position and rotation
     camera.position.copy(animation.endCameraPosition)
-    camera.lookAt(animation.endTargetPosition)
+    if (animation.endCameraQuaternion) {
+      camera.quaternion.copy(animation.endCameraQuaternion)
+    } else {
+      camera.lookAt(animation.endTargetPosition)
+    }
 
     animation.isActive = false
     if (animation.onComplete) {
