@@ -4,6 +4,24 @@
    ================================================ */
 
 @media (max-width: 768px) {
+    .events-page .stage1-text-overlay {
+        gap: 0.2vh;
+        margin-top: 5vh;
+    }
+
+    .events-page .stage1-text-overlay .stage1-text-overlay-wrapper {
+        height: auto;
+    }
+
+    .events-page .stage1-text-overlay .stage1-text-overlay-h2 {
+        flex-direction: column;
+        gap: 5vh;
+        font-size: 14vw;
+        line-height: 14vw;
+    }
+
+    /*----------------------------------------------*/
+
     .events-page {
         height: 100vh !important;
         min-height: 100vh;
@@ -83,21 +101,6 @@
         margin-bottom: 2vh;
     }
 
-    .events-page .stage1-text-overlay {
-        margin-top: 10%;
-        gap: 12px;
-    }
-
-    .events-page .stage1-text-overlay .stage1-text-overlay-wrapper {
-        height: auto;
-        overflow: visible;
-    }
-
-    .events-page .stage1-text-overlay .stage1-text-overlay-h2 {
-        font-size: 2.8rem;
-        line-height: 2.6rem;
-    }
-
     .events-page .events-calendar-button {
         width: 100%;
         transform: none;
@@ -109,7 +112,7 @@
 
     .events-page .events-calendar-button .custom-btn-content {
         font-size: calc(1.4rem * 0.7);
-        padding: 0.25em 1.5em;
+        padding: 0.8em 1.5em 0.2em 1.5em;
         text-align: center;
     }
 

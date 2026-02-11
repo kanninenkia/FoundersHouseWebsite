@@ -7,7 +7,7 @@
 /* Portrait Tablets */
 @media (min-width: 768px) and (max-width: 1050px) and (orientation: portrait) {
     .stage1-text-overlay {
-        gap: 5vh;
+        gap: 0.2vh;
         margin-top: 5vh;
     }
 
@@ -17,7 +17,7 @@
 
     .stage1-text-overlay .stage1-text-overlay-h2 {
         flex-direction: column;
-        gap: 5vh;
+        gap: 0;
         font-size: 11vw;
         line-height: 11vw;
     }
@@ -154,7 +154,7 @@
 /* Standard phones */
 @media (max-width: 767px) {
     .stage1-text-overlay {
-        gap: 5vh;
+        gap: 0.2vh;
         margin-top: 5vh;
     }
 

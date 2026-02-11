@@ -647,13 +647,13 @@ export class HelsinkiScene {
         overlay.updateMatrixWorld(true)
 
         const redMaterial = new THREE.MeshStandardMaterial({
-          color: 0x9E1B1E,
-          emissive: 0x9E1B1E,
-          emissiveIntensity: 0.6,
-          metalness: 0.25,
-          roughness: 0.65,
+          color: 0xF02820,
+          emissive: 0xF02820,
+          emissiveIntensity: 0.3,
+          metalness: 0.99,
+          roughness: 0.99,
           transparent: true,
-          opacity: 0.96,
+          opacity: 0.9,
           polygonOffset: true,
           polygonOffsetFactor: -2,
           polygonOffsetUnits: -2,

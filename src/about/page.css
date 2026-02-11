@@ -32,8 +32,8 @@
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    gap: 100px;
     color: #D82E11;
+    gap: 0;
     z-index: 2;
     margin-top: 5%;
 }

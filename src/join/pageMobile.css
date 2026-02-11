@@ -1,0 +1,308 @@
+/* Landscape Tablets */
+@media (min-width: 768px) and (max-width: 1200px) and (orientation: landscape) {
+    .header-content {
+        width: 92%;
+        margin-left: 4%;
+        padding: 10vh 0 6vh 0;
+        gap: 12px;
+    }
+
+    .header-h1-wrapper .header-h1 {
+        font-size: calc(13rem * 0.75);
+        line-height: calc(10rem * 0.85);
+    }
+
+    .stage1-text-overlay {
+        gap: 5vh;
+        margin-top: 5vh;
+    }
+
+    .stage1-text-overlay .stage1-text-overlay-wrapper {
+        height: auto;
+    }
+
+    .stage1-text-overlay .stage1-text-overlay-h2 {
+        flex-direction: column;
+        gap: 5vh;
+        font-size: 14vw;
+        line-height: 14vw;
+    }
+
+    .section-2 {
+        padding: 6% 4% 4% 4%;
+    }
+
+    .section-2 .content-wrapper {
+        gap: 28px;
+    }
+
+    .section-2 .content-wrapper .join-type .first-border {
+        padding: 34px 26px 40px 26px;
+    }
+
+    .section-2 .content-wrapper .join-type .first-border h2 {
+        font-size: 2.4rem;
+        line-height: 2.3rem;
+    }
+
+    .section-2 .content-wrapper .join-type .first-border p {
+        font-size: 1.05rem;
+        line-height: 1.55rem;
+    }
+
+    .last-section-content {
+        width: 58%;
+        margin-left: 6%;
+        margin-top: 7%;
+    }
+
+    .last-section-content h3 {
+        font-size: 2.6rem;
+        line-height: 3rem;
+    }
+
+    .last-section-content p {
+        font-size: 1.05rem;
+        line-height: 1.7rem;
+    }
+
+    .application-process-content,
+    .community-content {
+        position: relative;
+        top: 4vh;
+    }
+}
+
+
+/* Portrait Tablets */
+@media (min-width: 768px) and (max-width: 1050px) and (orientation: portrait) {
+    .stage1-text-overlay {
+        gap: 0.2vh;
+        margin-top: 5vh;
+    }
+
+    .stage1-text-overlay .stage1-text-overlay-wrapper {
+        height: auto;
+    }
+
+    .stage1-text-overlay .stage1-text-overlay-h2 {
+        flex-direction: column;
+        gap: 0;
+        font-size: 11vw;
+        line-height: 11vw;
+    }
+
+    /*----------------------------------------------*/
+
+    .header-content {
+        display: flex;
+        flex-direction: column;
+        width: auto;
+        align-items: flex-start;
+        gap: 5vh;
+        margin-top: 20%;
+    }
+
+    .header-h3-wrapper {
+        width: 90%;
+    }
+
+    .header-h3-wrapper .header-h3 {
+        font-size: 3rem;
+        line-height: 3.5rem;
+    }
+}
+
+
+/* Standard phones */
+@media (max-width: 767px) {
+    .stage1-text-overlay {
+        gap: 0.2vh;
+        margin-top: 5vh;
+    }
+
+    .stage1-text-overlay .stage1-text-overlay-wrapper {
+        height: auto;
+    }
+
+    .stage1-text-overlay .stage1-text-overlay-h2 {
+        flex-direction: column;
+        gap: 5vh;
+        font-size: 14vw;
+        line-height: 14vw;
+    }
+
+    /*----------------------------------------------*/
+
+    .header-h1-wrapper {
+        height: 125px;
+    }
+
+    .header-h1-wrapper .header-h1 {
+        font-size: 25vw;
+        line-height: 25vw;
+    }
+
+    .header-content {
+        display: flex;
+        flex-direction: column;
+        width: auto;
+        justify-content: space-between;
+        align-items: flex-start;
+        height: 80%;
+        margin-top: 15vh;
+    }
+
+    .header-h3-wrapper {
+        width: 90%;
+    }
+
+    .header-h3-wrapper .header-h3 {
+        font-size: 6vw;
+        line-height: 9vw;
+    }
+
+    .section-2 {
+        overflow: visible;
+        padding: 6% 5% 3% 5%;
+    }
+
+    .section-2 .content-wrapper {
+        flex-direction: column;
+        gap: 28px;
+    }
+
+    .section-2 .content-wrapper .join-type .first-border {
+        padding: 36px 28px 44px 28px;
+        min-height: auto;
+    }
+
+    .section-2 .content-wrapper .join-type .first-border h2 {
+        font-size: 2.4rem;
+        line-height: 2.2rem;
+    }
+
+    .section-2 .content-wrapper .join-type .first-border p {
+        font-size: 1rem;
+        line-height: 1.5rem;
+    }
+
+    .section-2 .content-wrapper .join-type .second-border {
+        top: -14px;
+        left: -14px;
+    }
+
+    .section-2 .second-border-container {
+        height: auto !important;
+    }
+
+    .section-2 .second-border-container > div {
+        height: auto !important;
+    }
+
+    .section-2 .content-wrapper .join-type .type-img-container img {
+        height: 220px;
+    }
+
+    .last-section {
+        padding: 10% 0 55% 0;
+        margin-top: 5vh;
+    }
+
+    .last-section-bg {
+        width: auto;
+        height: 100%;
+    }
+
+    .last-section-content:first-of-type {
+        margin-top: calc(8% - 4vh) !important;
+        min-height: 72vh;
+    }
+
+    .application-process-content,
+    .community-content {
+        position: relative;
+        top: -3vh;
+    }
+
+    .last-section-content {
+        width: 88%;
+        margin-left: 6%;
+        margin-top: 8%;
+    }
+
+    .last-section-content h3 {
+        font-size: 2.4rem;
+        line-height: 2.8rem;
+    }
+
+    .last-section-content p {
+        font-size: 1rem;
+        line-height: 1.6rem;
+    }
+
+    .last-section-content + .last-section-content {
+        margin-top: calc(16% - 2vh) !important;
+    }
+}
+
+
+/* Small phones */
+@media (max-width: 480px) {
+    .header-h1-wrapper {
+        height: calc(10rem * 0.75);
+    }
+
+    .header-h1-wrapper .header-h1 {
+        font-size: calc(13rem * 0.52);
+        line-height: calc(10rem * 0.75);
+    }
+
+    .section-2 .content-wrapper .join-type .first-border {
+        padding: 30px 22px 38px 22px;
+    }
+
+    .section-2 .content-wrapper .join-type .first-border h2 {
+        font-size: 2.1rem;
+        line-height: 2rem;
+    }
+
+    .section-2 .content-wrapper .join-type .type-img-container img {
+        height: 200px;
+    }
+
+    .last-section-content {
+        width: 90%;
+        margin-left: 5%;
+        margin-top: 10%;
+    }
+
+    .last-section-bg-container {
+        height: 64vh;
+    }
+
+    .last-section-content:first-of-type {
+        margin-top: calc(10% - 4vh) !important;
+        min-height: 64vh;
+    }
+
+    .application-process-content,
+    .community-content {
+        position: relative;
+        top: -3vh;
+    }
+
+    .last-section-content h3 {
+        font-size: 2rem;
+        line-height: 2.4rem;
+    }
+
+    .last-section-content p {
+        font-size: 0.95rem;
+        line-height: 1.45rem;
+    }
+
+    .last-section-content + .last-section-content {
+        margin-top: calc(16% - 2vh) !important;
+    }
+}

@@ -478,25 +478,49 @@ export const HelsinkiViewer = ({
         )}
 
         <div className="hero-text-wrapper">
-         <div 
+          {/*
+          <div 
             className="hero-subtext-row"
             style={{
               transform: `translate(${mousePos.x * 8}px, ${mousePos.y * 8}px)`,
               transition: 'transform 2s cubic-bezier(0.17, 0.67, 0.3, 0.99)'
             }}
           >
-                        <p className="hero-subtext hero-subtext-left">BUILT FOR THE OBSESSED.</p>
+            <p className="hero-subtext hero-subtext-left">BUILT FOR THE OBSESSED.</p>
+            <b className="hero-location">HELSINKI</b>
             <p className="hero-subtext hero-subtext-right">BUILT FOR THE EXCEPTIONAL.</p>
           </div>
-         <h1 
+          */}
+          <div 
+            className="hero-subtext-row"
+            style={{
+              transform: `translate(${mousePos.x * 8}px, ${mousePos.y * 8}px)`,
+              transition: 'transform 2s cubic-bezier(0.17, 0.67, 0.3, 0.99)'
+            }}
+          >
+            <p className="hero-subtext hero-subtext-left">THIS IS WHERE GENERATIONAL FOUNDERS ARE BORN.</p>
+          </div>
+          <h1
             className="hero-title"
             style={{
               transform: `translate(${mousePos.x * 15}px, ${mousePos.y * 15}px)`,
               transition: 'transform 2s cubic-bezier(0.17, 0.67, 0.3, 0.99)'
             }}
           >
-                        <span className="hero-title-founders">FOUNDERS</span> <span className="hero-title-house">HOUSE</span>
+            <span className="hero-title-founders">FOUNDERS</span> <span className="hero-title-house">HOUSE</span>
           </h1>
+          
+          <div 
+            className="hero-details-wrapper"
+            style={{
+              transform: `translate(${mousePos.x * 15}px, ${mousePos.y * 15}px)`,
+              transition: 'transform 2s cubic-bezier(0.17, 0.67, 0.3, 0.99)'
+            }}
+          >
+            <p className="hero-details-text">Sähkötalo, 00100 Helsinki</p>
+            <p className="hero-details-text">60°10'3.60" N 24°55'29.99" E</p>
+          </div>
+  
           <div 
             className="hero-line-wrapper"
             style={{

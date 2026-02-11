@@ -31,7 +31,7 @@
 }
 
 .poi-layer-item.poi-gray {
-  background: rgba(128, 128, 128, 1);
+  background: rgba(160, 160, 160, 1);
   color: rgba(255, 255, 255, 1);
 }
 
@@ -61,7 +61,7 @@
 }
 
 .poi-gray .poi-dot {
-  background: rgba(128, 128, 128, 0.65);
+  background: rgba(160, 160, 160, 0.85);
 }
 
 .poi-label-text {
@@ -106,7 +106,7 @@
 }
 
 .poi-gray.is-distant .poi-label-text {
-  background: rgba(128, 128, 128, 0.45);
+  background: rgba(160, 160, 160, 1);
 }
 
 .poi-layer-item.is-distant:hover::before,

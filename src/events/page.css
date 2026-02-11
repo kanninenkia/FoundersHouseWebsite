@@ -6,7 +6,6 @@ body.events-cursor * {
     -webkit-user-select: none !important;
     -moz-user-select: none !important;
     -ms-user-select: none !important;
-    cursor: none !important;
 }
 
 body.events-cursor a,
@@ -97,6 +96,8 @@ body.events-cursor.events-cursor-interactive .custom-cursor {
     width: 100vw;
     height: 100vh;
     overflow: hidden;
+    z-index: 10;
+    pointer-events: none;
 }
 
 .events-page .header-content {
@@ -108,12 +109,12 @@ body.events-cursor.events-cursor-interactive .custom-cursor {
     margin-left: 4%;
     justify-content: flex-start;
     align-items: flex-start;
-    margin-top: 11%;
-    gap: 43vh;
+    bottom: 5vh;
+    gap: 30%;
 }
 
 .events-page .header-h1-wrapper {
-    height: 119px;
+    height: 114px;
     overflow: hidden;
 }
 
@@ -171,6 +172,7 @@ body.events-cursor.events-cursor-interactive .custom-cursor {
     display: inline-block;
     transition: transform 0.3s ease;
     width: fit-content;
+    pointer-events: auto;
 }
 
 .events-page .calendar-button:hover {
@@ -185,6 +187,7 @@ body.events-cursor.events-cursor-interactive .custom-cursor {
 /* Events page specific button styling */
 .events-page .events-calendar-button {
     transform: scale(0.9) translateX(-2.5vh);
+    pointer-events: auto;
 }
 
 .events-page .events-calendar-button:hover {
@@ -258,13 +261,77 @@ body.events-cursor.events-cursor-interactive .custom-cursor {
 .events-page .events-scroll-container {
     position: fixed;
     bottom: -5vh;
-    left: 60vw;
-    width: 40vw;
+    left: 0;
+    width: 100vw;
     height: 70vh;
-    z-index: 5;
-    overflow: hidden;
+    z-index: 2;
     pointer-events: auto;
     cursor: none;
+}
+
+/* Gradual blur on left edge of scroll container */
+.events-page .events-scroll-blur {
+    position: absolute;
+    z-index: 10;
+    inset: 0 auto 0 0;
+    width: 200px;
+    height: 100%;
+    pointer-events: none;
+}
+
+.events-page .events-scroll-blur > div,
+.events-page .events-scroll-blur::before {
+    position: absolute;
+    inset: 0;
+}
+
+.events-page .events-scroll-blur::before {
+    content: "";
+    z-index: 1;
+    backdrop-filter: blur(0px);
+    -webkit-backdrop-filter: blur(0px);
+    mask: linear-gradient(to right, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 12.5%, rgba(0,0,0,0) 25%);
+    -webkit-mask-image: linear-gradient(to right, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 12.5%, rgba(0,0,0,0) 25%);
+}
+
+.events-page .events-scroll-blur > div:nth-of-type(1) {
+    z-index: 2;
+    backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
+    mask: linear-gradient(to right, rgba(0,0,0,1) 12.5%, rgba(0,0,0,1) 25%, rgba(0,0,0,0) 37.5%);
+    -webkit-mask-image: linear-gradient(to right, rgba(0,0,0,1) 12.5%, rgba(0,0,0,1) 25%, rgba(0,0,0,0) 37.5%);
+}
+
+.events-page .events-scroll-blur > div:nth-of-type(2) {
+    z-index: 3;
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    mask: linear-gradient(to right, rgba(0,0,0,1) 25%, rgba(0,0,0,1) 37.5%, rgba(0,0,0,0) 50%);
+    -webkit-mask-image: linear-gradient(to right, rgba(0,0,0,1) 25%, rgba(0,0,0,1) 37.5%, rgba(0,0,0,0) 50%);
+}
+
+.events-page .events-scroll-blur > div:nth-of-type(3) {
+    z-index: 4;
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    mask: linear-gradient(to right, rgba(0,0,0,1) 37.5%, rgba(0,0,0,1) 50%, rgba(0,0,0,0) 62.5%);
+    -webkit-mask-image: linear-gradient(to right, rgba(0,0,0,1) 37.5%, rgba(0,0,0,1) 50%, rgba(0,0,0,0) 62.5%);
+}
+
+.events-page .events-scroll-blur > div:nth-of-type(4) {
+    z-index: 5;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    mask: linear-gradient(to right, rgba(0,0,0,1) 50%, rgba(0,0,0,1) 62.5%, rgba(0,0,0,0) 75%);
+    -webkit-mask-image: linear-gradient(to right, rgba(0,0,0,1) 50%, rgba(0,0,0,1) 62.5%, rgba(0,0,0,0) 75%);
+}
+
+.events-page .events-scroll-blur > div:nth-of-type(5) {
+    z-index: 6;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    mask: linear-gradient(to right, rgba(0,0,0,1) 62.5%, rgba(0,0,0,1) 75%, rgba(0,0,0,0) 87.5%);
+    -webkit-mask-image: linear-gradient(to right, rgba(0,0,0,1) 62.5%, rgba(0,0,0,1) 75%, rgba(0,0,0,0) 87.5%);
 }
 
 .events-page .events-scroll-container:active {
@@ -274,7 +341,7 @@ body.events-cursor.events-cursor-interactive .custom-cursor {
 .events-page .events-scroll-track {
     display: flex;
     gap: 0;
-    padding: 0 2rem 1rem 0;
+    padding: 0 2rem 1rem 50vw;
     height: 100%;
     width: max-content;
     align-items: center;
@@ -346,14 +413,13 @@ body.events-cursor.events-cursor-interactive .custom-cursor {
     position: fixed;
     pointer-events: none;
     z-index: 10000;
-    transform: translate(-50%, -50%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .events-page .cursor-icon {
-    width: auto;
+    width: 100px;
     height: auto;
-    max-width: 150px;
-    max-height: 150px;
-    transform: translate(-50%, -50%);
-    filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.3));
+    transform: translate(0, 0);
 }

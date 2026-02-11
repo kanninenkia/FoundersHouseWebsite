@@ -88,9 +88,10 @@ export default function EventsPage() {
   const [showNavBar, setShowNavBar] = useState(false);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const trackRef = useRef<HTMLDivElement>(null);
-  const cursorX = useMotionValue(0);
-  const cursorY = useMotionValue(0);
+  const [cursorPosition, setCursorPosition] = useState({ x: 0, y: 0 });
+  const targetCursorPosition = useRef({ x: 0, y: 0 });
   const [showCustomCursor, setShowCustomCursor] = useState(false);
+  const [scrollX, setScrollX] = useState(0);
   const displayedTitle = "EVENTS";
   const [isEventTitle, setIsEventTitle] = useState(false);
   const [displayedDateLocation, setDisplayedDateLocation] = useState("");
@@ -259,6 +260,7 @@ export default function EventsPage() {
         const constrainedX = Math.max(maxScroll, Math.min(0, newX));
 
         track.style.transform = `translateX(${constrainedX}px)`;
+        setScrollX(constrainedX);
 
         // Apply friction
         velocity *= 0.95;
@@ -294,6 +296,7 @@ export default function EventsPage() {
 
       // Apply transform
       track.style.transform = `translateX(${constrainedX}px)`;
+      setScrollX(constrainedX);
     };
 
     const handleMouseDown = (e: MouseEvent) => {
@@ -337,6 +340,7 @@ export default function EventsPage() {
       const constrainedX = Math.max(maxScroll, Math.min(0, newX));
 
       track.style.transform = `translateX(${constrainedX}px)`;
+      setScrollX(constrainedX);
     };
 
     const handleMouseUp = () => {
@@ -364,8 +368,7 @@ export default function EventsPage() {
   // Custom cursor tracking - entire page with hover detection
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
-      cursorX.set(e.clientX);
-      cursorY.set(e.clientY);
+      targetCursorPosition.current = { x: e.clientX, y: e.clientY };
       const target = document.elementFromPoint(e.clientX, e.clientY);
       const isInteractive = !!target?.closest(
         'a, button, .hamburger-button, .calendar-button, .events-calendar-button, .events-header, .event-card, .event-card-image'
@@ -384,6 +387,32 @@ export default function EventsPage() {
       document.body.classList.remove('events-cursor-interactive');
     };
   }, [stage]);
+
+  // Smooth cursor lerp animation
+  useEffect(() => {
+    let animationFrameId: number;
+
+    const smoothCursor = () => {
+      setCursorPosition(prev => {
+        const dx = targetCursorPosition.current.x - prev.x;
+        const dy = targetCursorPosition.current.y - prev.y;
+        
+        // Lerp factor - lower = smoother but slower, higher = faster but less smooth
+        const lerp = 0.3;
+        
+        return {
+          x: prev.x + dx * lerp,
+          y: prev.y + dy * lerp
+        };
+      });
+      
+      animationFrameId = requestAnimationFrame(smoothCursor);
+    };
+
+    animationFrameId = requestAnimationFrame(smoothCursor);
+
+    return () => cancelAnimationFrame(animationFrameId);
+  }, []);
 
   useEffect(() => {
     document.body.classList.add('events-cursor');
@@ -500,15 +529,15 @@ export default function EventsPage() {
         <motion.div
           className="custom-cursor"
           style={{
-            x: cursorX,
-            y: cursorY,
+            left: `${cursorPosition.x}px`,
+            top: `${cursorPosition.y}px`,
           }}
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 0.8 }}
           transition={{ duration: 0.2 }}
         >
-          <img src="/assets/icons/dragnexplore.svg" alt="Drag to explore" className="cursor-icon" />
+          <img src="/assets/icons/eventsexplore.svg" alt="Drag to explore" className="cursor-icon" />
         </motion.div>
       )}
 
@@ -642,7 +671,7 @@ export default function EventsPage() {
             key="stage2"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            style={{ position: "relative", width: "100%", zIndex: 4 }}
+            style={{ position: "relative", width: "100%", zIndex: 4, pointerEvents: "none" }}
             className="stage2-wrapper"
           >
             <div className="header-wrapper" style={{pointerEvents: "none"}}>
@@ -689,7 +718,7 @@ export default function EventsPage() {
                         style={{ textDecoration: 'none' }}
                       >
                         <Button className="calendar-button events-calendar-button">
-                          Subscribe to our events calendar
+                          Subscribe Here
                         </Button>
                       </a>
                     </motion.div>
@@ -723,6 +752,15 @@ export default function EventsPage() {
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 3.2, duration: 1.2, ease: [0.11, 0.45, 0.08, 1.00] }}
           >
+            {/*}
+            <div className="events-scroll-blur">
+              <div></div>
+              <div></div>
+              <div></div>
+              <div></div>
+              <div></div>
+            </div>
+            */}
             <motion.div
               ref={trackRef}
               className="events-scroll-track"
@@ -811,22 +849,46 @@ export default function EventsPage() {
                 const isHovered = hoveredCardId === event.id;
                 const isOtherHovered = hoveredCardId !== null && !isHovered;
 
+                // Calculate fade based on card position on screen
+                // Cards fade when they cross 40vw from the left edge
+                const fadeThresholdVw = 40;
+                const fadeThreshold = typeof window !== 'undefined' ? window.innerWidth * (fadeThresholdVw / 100) : 400;
+                const cardWidth = typeof window !== 'undefined' ? window.innerWidth * 0.35 : 350; // 35vw per card
+                const cardOverlap = typeof window !== 'undefined' ? window.innerWidth * 0.14 : 140; // 14vw overlap (margin-left: -14vw)
+                const initialPadding = typeof window !== 'undefined' ? window.innerWidth * 0.5 : 500; // 50vw initial padding
+                
+                // Calculate card's left position on screen
+                // First card starts at initialPadding, each subsequent card is offset by (cardWidth - cardOverlap)
+                const cardLeftPosition = initialPadding + scrollX + (index * (cardWidth - cardOverlap));
+                
+                // Fade zone: 200px before the threshold
+                const fadeStart = fadeThreshold;
+                const fadeEnd = fadeThreshold - 200;
+                
+                let fadeOpacity = 1;
+                if (cardLeftPosition < fadeStart) {
+                  // Card is past the threshold, calculate fade
+                  fadeOpacity = Math.max(0, Math.min(1, (cardLeftPosition - fadeEnd) / (fadeStart - fadeEnd)));
+                }
+
                 return (
                   <motion.div
                     key={event.id}
                     className="event-card"
                     style={{
-                      zIndex: isHovered ? 100 : (index % 2 === 0 ? 5 : 4)
+                      zIndex: isHovered ? 100 : (index % 2 === 0 ? 5 : 4),
+                      opacity: fadeOpacity
                     }}
                     initial={{ opacity: 0, x: 50 }}
                     animate={{
-                      opacity: 1,
+                      opacity: fadeOpacity,
                       x: 0
                     }}
                     transition={{
                       delay: 3.4 + (index * 0.1),
                       duration: 0.8,
-                      ease: [0.11, 0.45, 0.08, 1.00]
+                      ease: [0.11, 0.45, 0.08, 1.00],
+                      opacity: { duration: 0.1, delay: 0 } // Fast opacity transition, no delay
                     }}
                     onMouseEnter={handleMouseEnter}
                     onMouseLeave={handleMouseLeave}

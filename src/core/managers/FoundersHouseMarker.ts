@@ -11,10 +11,10 @@ export class FoundersHouseMarker {
   constructor() {
     // Create a single reusable red material
     this.redMaterial = new THREE.MeshStandardMaterial({
-      color: 0xAD1013, // Founders House red
-      emissive: 0xAD1013,
-      emissiveIntensity: 0.3,
-      metalness: 0.3,
+      color: 0x2B0A05, // Founders House red
+      emissive: 0x2B0A05,
+      emissiveIntensity: 0.9,
+      metalness: 0,
       roughness: 0.7,
       transparent: true,
       opacity: 0.98,

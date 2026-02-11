@@ -4,6 +4,7 @@ import { useMotionValue, useTransform } from "framer-motion";
 import GridDistortion from '../effects/GridDistortion.tsx';
 import ParallaxMotion from '../effects/ParallaxMotion.tsx';
 import "./page.css";
+import "./pageMobile.css";
 import { HelsinkiViewer } from "../components/map";
 import { Footer, NavBar } from "../components/layout";
 import { Button } from "../components/ui";
