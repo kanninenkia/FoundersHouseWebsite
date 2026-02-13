@@ -8,6 +8,12 @@ body.events-cursor * {
     -ms-user-select: none !important;
 }
 
+/* Show grabbing cursor when dragging */
+body.events-cursor.events-dragging,
+body.events-cursor.events-dragging * {
+    cursor: grabbing !important;
+}
+
 body.events-cursor a,
 body.events-cursor a *,
 body.events-cursor button,
@@ -49,14 +55,14 @@ body.events-cursor.events-cursor-interactive .custom-cursor {
 }
 
 .events-page .corner-element p {
-    font-family: 'IBMPlexSans', sans-serif;
+    font-family: 'IBM Plex Sans', sans-serif;
     font-size: 0.9rem;
     font-weight: 500;
     color: #D82E11;
 }
 
 .events-page .stage1-img-container .stage1-img {
-    will-change: transform
+    will-change: transform;
 }
 
 .events-page .stage1-text-overlay {
@@ -97,7 +103,7 @@ body.events-cursor.events-cursor-interactive .custom-cursor {
     height: 100vh;
     overflow: hidden;
     z-index: 10;
-    pointer-events: none;
+    /* pointer-events: none; removed to allow custom cursor everywhere */
 }
 
 .events-page .header-content {
@@ -111,6 +117,7 @@ body.events-cursor.events-cursor-interactive .custom-cursor {
     align-items: flex-start;
     bottom: 5vh;
     gap: 30%;
+    pointer-events: auto;
 }
 
 .events-page .header-h1-wrapper {
@@ -148,12 +155,14 @@ body.events-cursor.events-cursor-interactive .custom-cursor {
     display: flex;
     flex-direction: column;
     gap: 4vh;
+    pointer-events: auto;
 }
 
 .events-page .header-h3-parallax {
     display: flex;
     flex-direction: column;
     gap: 4vh;
+    pointer-events: auto;
 }
 
 @media (max-width: 1366px) {
@@ -416,6 +425,11 @@ body.events-cursor.events-cursor-interactive .custom-cursor {
     display: flex;
     align-items: center;
     justify-content: center;
+    transition: transform 0.15s ease;
+}
+
+.events-page .custom-cursor.dragging {
+    transform: scale(0.9);
 }
 
 .events-page .cursor-icon {

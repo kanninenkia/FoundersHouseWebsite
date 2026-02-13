@@ -2,8 +2,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { AnimatedHamburger } from '../ui'
 import './FullScreenMenu.css'
-import ParallaxMotion from '../../effects/ParallaxMotion'
-import { useState } from 'react'
+import { useState, useRef, useEffect, useMemo } from 'react'
 
 interface FullScreenMenuProps {
   isOpen: boolean
@@ -16,6 +15,8 @@ export const FullScreenMenu = ({ isOpen, onClose, currentPage = '/' }: FullScree
   const location = useLocation()
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 })
   const isDesktop = typeof window !== 'undefined' && window.innerWidth > 1024
+  const rafRef = useRef<number | null>(null)
+  const pendingMouseUpdate = useRef<{ x: number; y: number } | null>(null)
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!isDesktop) return
@@ -27,8 +28,29 @@ export const FullScreenMenu = ({ isOpen, onClose, currentPage = '/' }: FullScree
     const x = (clientX / innerWidth) * 2 - 1
     const y = (clientY / innerHeight) * 2 - 1
     
-    setMousePos({ x, y })
+    // Store pending update
+    pendingMouseUpdate.current = { x, y }
+    
+    // Only schedule RAF if not already scheduled
+    if (rafRef.current === null) {
+      rafRef.current = requestAnimationFrame(() => {
+        if (pendingMouseUpdate.current) {
+          setMousePos(pendingMouseUpdate.current)
+          pendingMouseUpdate.current = null
+        }
+        rafRef.current = null
+      })
+    }
   }
+
+  // Cleanup RAF on unmount
+  useEffect(() => {
+    return () => {
+      if (rafRef.current !== null) {
+        cancelAnimationFrame(rafRef.current)
+      }
+    }
+  }, [])
 
   const handleNavigation = (path: string) => {
     if (path === '/') {
@@ -41,6 +63,45 @@ export const FullScreenMenu = ({ isOpen, onClose, currentPage = '/' }: FullScree
       onClose()
     }, 100)
   }
+
+  // Memoize styles to prevent recalculation
+  const navStyle = useMemo(() => {
+    if (!isDesktop) return {}
+    return {
+      transform: `translate(${mousePos.x * 5}px, ${mousePos.y * 5}px)`,
+      transition: 'transform 1.2s cubic-bezier(0.17, 0.67, 0.3, 0.99)'
+    }
+  }, [mousePos.x, mousePos.y, isDesktop])
+
+  const stockholmStyle = useMemo(() => {
+    if (!isDesktop) return {}
+    return {
+      transform: `translate(${mousePos.x * 10}px, ${mousePos.y * 10}px)`,
+      transition: 'transform 1s cubic-bezier(0.17, 0.67, 0.3, 0.99)'
+    }
+  }, [mousePos.x, mousePos.y, isDesktop])
+
+  const mapStyle1 = useMemo(() => {
+    if (!isDesktop) return { mixBlendMode: "multiply" as const, isolation: "isolate" as const, height: "100%", zIndex: 1 }
+    return {
+      mixBlendMode: "multiply" as const,
+      isolation: "isolate" as const,
+      height: "100%",
+      zIndex: 1,
+      transform: `translate(${mousePos.x * 20}px, ${mousePos.y * 20}px)`,
+      transition: 'transform 2s cubic-bezier(0.17, 0.67, 0.3, 0.99)'
+    }
+  }, [mousePos.x, mousePos.y, isDesktop])
+
+  const mapStyle2 = useMemo(() => {
+    if (!isDesktop) return { height: "100%", zIndex: 2 }
+    return {
+      height: "100%",
+      zIndex: 2,
+      transform: `translate(${mousePos.x * 20}px, ${mousePos.y * 20}px)`,
+      transition: 'transform 2.3s cubic-bezier(0.17, 0.67, 0.3, 0.99)'
+    }
+  }, [mousePos.x, mousePos.y, isDesktop])
 
   return (
     <AnimatePresence>
@@ -65,10 +126,7 @@ export const FullScreenMenu = ({ isOpen, onClose, currentPage = '/' }: FullScree
             <div className="menu-left">
               <nav 
                 className="menu-nav"
-                style={isDesktop ? {
-                  transform: `translate(${mousePos.x * 5}px, ${mousePos.y * 5}px)`,
-                  transition: 'transform 1.2s cubic-bezier(0.17, 0.67, 0.3, 0.99)'
-                } : {}}
+                style={navStyle}
               >
                 <button onClick={() => handleNavigation('/')} className={`menu-nav-item ${location.pathname === '/' ? 'active' : ''}`}>
                   <span className="menu-nav-item-text">
@@ -127,10 +185,7 @@ export const FullScreenMenu = ({ isOpen, onClose, currentPage = '/' }: FullScree
               <div className="content-img-container">
                 <div 
                   className="img-container-stockholm"
-                  style={isDesktop ? {
-                    transform: `translate(${mousePos.x * 10}px, ${mousePos.y * 10}px)`,
-                    transition: 'transform 1s cubic-bezier(0.17, 0.67, 0.3, 0.99)'
-                  } : {}}
+                  style={stockholmStyle}
                 >
                   <a 
                     href="https://founders-house.com" 
@@ -153,38 +208,24 @@ export const FullScreenMenu = ({ isOpen, onClose, currentPage = '/' }: FullScree
                 </div>
                 <div 
                   className="section-5-map-img-container" 
-                  style={{ 
-                    mixBlendMode: "multiply", 
-                    isolation: "isolate", 
-                    height: "100%", 
-                    zIndex: 1,
-                    ...(isDesktop ? {
-                      transform: `translate(${mousePos.x * 20}px, ${mousePos.y * 20}px)`,
-                      transition: 'transform 2s cubic-bezier(0.17, 0.67, 0.3, 0.99)'
-                    } : {})
-                  }}
+                  style={mapStyle1}
                 >
-                  <motion.img
+                  <img
                     className="section-5-map-img"
                     src="/assets/models/birdseyemaps.webp"
                     alt="2D Map"
+                    loading="lazy"
                   />
                 </div>
                 <div 
                   className="section-5-map-img-container" 
-                  style={{ 
-                    height: "100%", 
-                    zIndex: 2,
-                    ...(isDesktop ? {
-                      transform: `translate(${mousePos.x * 20}px, ${mousePos.y * 20}px)`,
-                      transition: 'transform 2.3s cubic-bezier(0.17, 0.67, 0.3, 0.99)'
-                    } : {})
-                  }}
+                  style={mapStyle2}
                 >
-                  <motion.img
+                  <img
                     className="section-5-map-img"
                     src="/assets/models/radar.webp"
                     alt="2D Map Pin"
+                    loading="lazy"
                   />
                 </div>
               </div>
@@ -201,10 +242,10 @@ export const FullScreenMenu = ({ isOpen, onClose, currentPage = '/' }: FullScree
           </div>
 
           <div className="menu-footer">
-            <button className="menu-footer-link">
+            <button className="menu-footer-link" onClick={() => handleNavigation('/privacy-policy')}>
               PRIVACY POLICY
             </button>
-            <button className="menu-footer-link">
+            <button className="menu-footer-link" onClick={() => handleNavigation('/cookies')}>
               COOKIES SETTINGS
             </button>
           </div>

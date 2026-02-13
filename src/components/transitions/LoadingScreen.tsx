@@ -9,6 +9,8 @@ interface LoadingScreenProps {
   scrollProgress: number
   onScrollProgressChange: (progress: number) => void
   isReturnVisit?: boolean
+  audioRef: React.MutableRefObject<HTMLAudioElement | null>
+  audio2Ref: React.MutableRefObject<HTMLAudioElement | null>
 }
 
 interface MapLoadingState {
@@ -34,12 +36,10 @@ interface Block {
 
 type Stage = 'logo-loading' | 'logo-blur' | 'pixel-out-to-text1' | 'text1' | 'text2' | 'map-slide-in' | 'map-expand' | 'complete' | 'return-loading' | 'return-pixel-in' | 'return-pixel-hold' | 'return-pixel-out'
 
-export const LoadingScreen = ({ onComplete, duration, scrollProgress, isReturnVisit = false }: LoadingScreenProps) => {
+export const LoadingScreen = ({ onComplete, duration, scrollProgress, isReturnVisit = false, audioRef, audio2Ref }: LoadingScreenProps) => {
   // Check sessionStorage directly to ensure we have the correct value on mount
   const isReturnVisitRef = useRef(sessionStorage.getItem('hasVisitedMap') === 'true')
   const isReturn = isReturnVisitRef.current
-  
-  console.log('🔍 LoadingScreen mount:', { isReturn, isReturnVisit, hasVisitedMap: sessionStorage.getItem('hasVisitedMap') })
   
   const [blocks, setBlocks] = useState<Block[]>([])
   const shouldSkipIntro = sessionStorage.getItem('skipIntro') === 'true'
@@ -65,6 +65,40 @@ export const LoadingScreen = ({ onComplete, duration, scrollProgress, isReturnVi
 
   const [showSkipButton, setShowSkipButton] = useState(false)
   const [hasSkipped, setHasSkipped] = useState(false)
+  const [waitingForConsent, setWaitingForConsent] = useState(false)
+  const [soundEnabled, setSoundEnabled] = useState(true)
+  const consentGivenRef = useRef(false)
+  const startTimeRef = useRef<number>(0)
+  const pausedAtRef = useRef<number>(0)
+  const resumeOffsetRef = useRef<number>(0)
+  const audioContextRef = useRef<AudioContext | null>(null)
+  const lowPassFilterRef = useRef<BiquadFilterNode | null>(null)
+
+  // Initialize audio at 0.5 volume on return visits (autoplay with sound)
+  useEffect(() => {
+    if (isReturn && audioRef.current && audio2Ref.current) {
+      audioRef.current.volume = 0.5
+      audio2Ref.current.volume = 0.3
+      
+      audioRef.current.play().catch(err => {
+        console.error('Audio autoplay failed:', err)
+        // If autoplay with sound fails, try muted
+        if (audioRef.current) {
+          audioRef.current.volume = 0
+          audioRef.current.play().catch(err2 => console.error('Muted autoplay also failed:', err2))
+        }
+      })
+      
+      // Delay ambience by 2 seconds
+      setTimeout(() => {
+        if (audio2Ref.current) {
+          audio2Ref.current.play().catch(err => {
+            console.error('Ambience autoplay failed:', err)
+          })
+        }
+      }, 2000)
+    }
+  }, [isReturn, audioRef, audio2Ref])
 
   useEffect(() => {
     if (shouldSkipIntro) {
@@ -91,6 +125,85 @@ export const LoadingScreen = ({ onComplete, duration, scrollProgress, isReturnVi
         setStage('complete')
       }, 1500)
     }, 1600)
+  }
+
+  const handleEnter = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault()
+    e.stopPropagation()
+    consentGivenRef.current = true
+    setFadeOutText1(true)
+    
+    // Play audio based on user preference with fade-in
+    if (audioRef.current && audio2Ref.current) {
+      // Resume AudioContext on user interaction (required by browsers)
+      const audioContext = (window as any).__audioContext
+      const gainNodeRef = (window as any).__gainNodeRef
+      const gain2NodeRef = (window as any).__gain2NodeRef
+      const isUserMutedRef = (window as any).__isUserMutedRef
+      
+      if (audioContext && audioContext.state === 'suspended') {
+        audioContext.resume()
+      }
+      
+      // Play music immediately
+      audioRef.current.play()
+        .catch(err => {
+          console.error('❌ Music play failed:', err)
+        })
+      
+      // Delay ambience by 2 seconds
+      setTimeout(() => {
+        if (audio2Ref.current) {
+          audio2Ref.current.play()
+            .catch(err => {
+              console.error('❌ Ambience play failed:', err)
+            })
+        }
+      }, 2000)
+      
+      // Set user muted state
+      if (isUserMutedRef) {
+        isUserMutedRef.current = !soundEnabled
+      }
+      
+      // Gradually fade in music to target volume via gain nodes (if Web Audio API is set up)
+      const targetMusicVolume = soundEnabled ? 0.5 : 0
+      const targetAmbienceVolume = soundEnabled ? 0.3 : 0
+      const fadeInDuration = 2000 // 2 seconds
+      const steps = 60 // 60 steps for smooth fade
+      const musicIncrement = targetMusicVolume / steps
+      const ambienceIncrement = targetAmbienceVolume / steps
+      const intervalTime = fadeInDuration / steps
+      
+      // Fade in music immediately
+      let currentStep = 0
+      const fadeInterval = setInterval(() => {
+        if (audioRef.current && currentStep < steps) {
+          currentStep++
+          audioRef.current.volume = Math.min(musicIncrement * currentStep, targetMusicVolume)
+        } else {
+          clearInterval(fadeInterval)
+        }
+      }, intervalTime)
+      
+      // Fade in ambience after 2-second delay
+      setTimeout(() => {
+        let ambienceStep = 0
+        const ambienceFadeInterval = setInterval(() => {
+          if (audio2Ref.current && ambienceStep < steps) {
+            ambienceStep++
+            audio2Ref.current.volume = Math.min(ambienceIncrement * ambienceStep, targetAmbienceVolume)
+          } else {
+            clearInterval(ambienceFadeInterval)
+          }
+        }, intervalTime)
+      }, 2000)
+    } else {
+      console.error('❌ No audio element found!')
+    }
+    
+    // Small delay before removing button to allow fade animation
+    setTimeout(() => setWaitingForConsent(false), 400)
   }
 
   useEffect(() => {
@@ -144,8 +257,14 @@ export const LoadingScreen = ({ onComplete, duration, scrollProgress, isReturnVi
 
   useEffect(() => {
     const generatedBlocks: Block[] = []
-    const cols = 18
-    const rows = 10
+    // Adjust grid size for mobile to prevent squished pixels (matches TransitionOverlay)
+    const isMobile = typeof window !== 'undefined' && window.innerWidth <= 768
+    const viewportWidth = typeof window !== 'undefined' ? window.innerWidth : 1
+    const viewportHeight = typeof window !== 'undefined' ? window.innerHeight : 1
+    const cols = isMobile ? 10 : 18
+    const rows = isMobile
+      ? Math.max(1, Math.ceil(cols * (viewportHeight / viewportWidth)))
+      : 10
     const blockWidth = 100 / cols
     const blockHeight = 100 / rows
 
@@ -181,13 +300,25 @@ export const LoadingScreen = ({ onComplete, duration, scrollProgress, isReturnVi
   useEffect(() => {
     if (!canProceedToBlur || hasSkipped) return
 
-    const startTime = Date.now()
+    // Initialize startTime only once
+    if (startTimeRef.current === 0) {
+      startTimeRef.current = Date.now()
+    }
 
     const checkInterval = setInterval(() => {
-      const elapsed = Date.now() - startTime
+      // If waiting for consent, pause the timer
+      if (waitingForConsent && pausedAtRef.current === 0) {
+        pausedAtRef.current = Date.now() - startTimeRef.current
+      }
+      
+      // If consent was given, calculate resume offset
+      if (consentGivenRef.current && pausedAtRef.current > 0 && resumeOffsetRef.current === 0) {
+        resumeOffsetRef.current = Date.now() - startTimeRef.current - pausedAtRef.current
+      }
+      
+      const elapsed = waitingForConsent ? pausedAtRef.current : (Date.now() - startTimeRef.current - resumeOffsetRef.current)
 
       if (isReturn) {
-        console.log('⏱️ Return visit timeline:', { elapsed, stage })
         // Return visit: load bar → pixel-in → pixel-out → complete
         const pixelInDuration = 1600
         const pixelOutDuration = 800
@@ -201,7 +332,6 @@ export const LoadingScreen = ({ onComplete, duration, scrollProgress, isReturnVi
           clearInterval(checkInterval)
         }
       } else if (shouldSkipIntro) {
-        console.log('⏱️ Skip intro timeline:', { elapsed, stage })
         if (elapsed >= 500 && elapsed < 1300) {
           setStage('logo-blur')
         } else if (elapsed >= 1300 && elapsed < 3100) {
@@ -214,20 +344,24 @@ export const LoadingScreen = ({ onComplete, duration, scrollProgress, isReturnVi
         }
       }
       else {
-        console.log('⏱️ Full intro timeline:', { elapsed, stage })
         if (elapsed >= 500 && elapsed < 1300) {
           setStage('logo-blur')
         } else if (elapsed >= 1300 && elapsed < 2800) {
           setStage('pixel-out-to-text1')
-        } else if (elapsed >= 2800 && elapsed < 6800) {
+        } else if (elapsed >= 2800 && !waitingForConsent && !consentGivenRef.current) {
+          // Reached text1 stage - wait for user consent
           setStage('text1')
-        } else if (elapsed >= 6800 && elapsed < 9000) {
+          setWaitingForConsent(true)
+        } else if (consentGivenRef.current && elapsed >= 2800 && elapsed < 4200) {
+          // After consent given, show text1 for 1.4 seconds before transitioning
+          setStage('text1')
+        } else if (elapsed >= 4200 && elapsed < 6400) {
           setStage('text2')
-        } else if (elapsed >= 9000 && elapsed < 9500) {
+        } else if (elapsed >= 6400 && elapsed < 6900) {
           setStage('map-slide-in')
-        } else if (elapsed >= 11500 && elapsed < 13000) {
+        } else if (elapsed >= 9000 && elapsed < 10500) {
           setStage('map-expand')
-        } else if (elapsed >= 13000) {
+        } else if (elapsed >= 10500) {
           setStage('complete')
           clearInterval(checkInterval)
         }
@@ -237,7 +371,7 @@ export const LoadingScreen = ({ onComplete, duration, scrollProgress, isReturnVi
     return () => {
       clearInterval(checkInterval)
     }
-  }, [canProceedToBlur, scrollProgress, hasSkipped, shouldSkipIntro, isReturn])
+  }, [canProceedToBlur, scrollProgress, hasSkipped, shouldSkipIntro, isReturn, waitingForConsent])
 
   const showLogo = isReturn
     ? (stage === 'return-loading' || stage === 'return-pixel-in' || stage === 'return-pixel-out')
@@ -257,17 +391,14 @@ export const LoadingScreen = ({ onComplete, duration, scrollProgress, isReturnVi
 
   useEffect(() => {
     let showTimeout: ReturnType<typeof setTimeout> | undefined
-    let fadeOutTimeout: ReturnType<typeof setTimeout> | undefined
     if (stage === 'text1') {
       showTimeout = setTimeout(() => setShowText1Delayed(true), 300)
-      fadeOutTimeout = setTimeout(() => setFadeOutText1(true), 3400)
     } else {
       setShowText1Delayed(false)
       setFadeOutText1(false)
     }
     return () => {
       if (showTimeout) clearTimeout(showTimeout)
-      if (fadeOutTimeout) clearTimeout(fadeOutTimeout)
     }
   }, [stage])
 
@@ -309,6 +440,52 @@ export const LoadingScreen = ({ onComplete, duration, scrollProgress, isReturnVi
             <div style={{ display: stage === 'text1' && showText1 ? 'block' : 'none' }}>
               <div className="fade-up-wrapper"><AnimatedText text="FOR THE NEXT" fadeUp={true} fadeOut={fadeOutText1} /></div>
               <div className="fade-up-wrapper"><AnimatedText text="FOUNDER GENERATION" fadeUp={true} fadeOut={fadeOutText1} /></div>
+              {waitingForConsent && (
+                <div className="enter-buttons-wrapper">
+                  <button
+                    type="button"
+                    className="enter-button"
+                    onClick={handleEnter}
+                    aria-label="Enter site"
+                    style={{ pointerEvents: 'auto' }}
+                  >
+                    enter
+                  </button>
+                  <button
+                    type="button"
+                    className={`sound-toggle-button ${soundEnabled ? '' : 'muted'}`}
+                    onClick={(e) => {
+                      e.preventDefault()
+                      e.stopPropagation()
+                      setSoundEnabled(!soundEnabled)
+                    }}
+                    aria-label={soundEnabled ? 'Disable sound' : 'Enable sound'}
+                    style={{ pointerEvents: 'auto' }}
+                  >
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path
+                        d="M11 5L6 9H2v6h4l5 4V5z"
+                        stroke="currentColor"
+                        strokeWidth="1.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        fill="none"
+                      />
+                      {soundEnabled ? (
+                        <>
+                          <path d="M15.54 8.46a5 5 0 0 1 0 7.07" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                          <path d="M18.07 5.93a9 9 0 0 1 0 12.73" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                        </>
+                      ) : (
+                        <>
+                          <line x1="16" y1="9" x2="22" y2="15" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                          <line x1="22" y1="9" x2="16" y2="15" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+                        </>
+                      )}
+                    </svg>
+                  </button>
+                </div>
+              )}
             </div>
             <div
               style={{ display: !isReturn && (stage === 'text2' || stage === 'map-slide-in' || stage === 'map-expand' || stage === 'complete') ? 'block' : 'none' }}
@@ -387,6 +564,8 @@ export const LoadingScreen = ({ onComplete, duration, scrollProgress, isReturnVi
               shouldPause={false}
               onMapLoadingChange={setMapLoadingState}
               scrollProgress={(stage === 'map-expand' || stage === 'complete' || stage === 'return-pixel-out') ? 1 : 0}
+              audioRef={audioRef}
+              audio2Ref={audio2Ref}
             />
           </div>
         </div>

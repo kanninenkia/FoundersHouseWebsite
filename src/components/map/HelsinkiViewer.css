@@ -455,7 +455,7 @@
   display: flex;
   flex-direction: row;
   justify-content: space-between;
-  pointer-events: all; /* CRITICAL: Details text should not block canvas interactions */
+  pointer-events: none; /* CRITICAL: Details text should not block canvas interactions */
 }
 
 .hero-details-text {
@@ -475,7 +475,7 @@
   flex-direction: column;
   align-items: center;
   margin-top: 0.5rem;
-  pointer-events: auto;
+  pointer-events: none;
   user-select: none;
   -webkit-user-select: none;
 }
@@ -491,6 +491,7 @@
 .hero-learn-more-btn {
   display: block;
   transform: scale(0.9);
+  pointer-events: auto;
 }
 
 /* Enable clicking when visible */

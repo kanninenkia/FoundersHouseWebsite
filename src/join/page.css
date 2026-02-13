@@ -32,14 +32,14 @@
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    gap: 20px;
+    gap: 0px;
     color: #D82E11;
     z-index: 2;
     margin-top: 5%;
 }
 
 .stage1-text-overlay .stage1-text-overlay-wrapper {
-    height: 80px;
+    height: 100px;
     width: 100%;
     overflow: hidden;
     display: flex;

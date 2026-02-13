@@ -28,6 +28,11 @@
   pointer-events: auto;
   transition: opacity 200ms ease;
   cursor: pointer;
+  outline: none;
+}
+
+.poi-layer-item:focus-visible {
+  outline: none;
 }
 
 .poi-layer-item.poi-gray {

@@ -80,13 +80,16 @@ const Footer: React.FC = () => {
             </MagneticElement>
           </div>
 
-          {/* Column 3: News */}
+          {/* Column 3: Join & Legal */}
           <div className="footer-column">
             <MagneticElement strength={0.3} range={80}>
               <Link to="/join" className="footer-link footer-heading">JOIN</Link>
             </MagneticElement>
             <MagneticElement strength={0.3} range={80}>
-              <a href="/privacy" className="footer-link">PRIVACY POLICIES</a>
+              <Link to="/privacy-policy" className="footer-link">PRIVACY POLICY</Link>
+            </MagneticElement>
+            <MagneticElement strength={0.3} range={80}>
+              <Link to="/cookies" className="footer-link">COOKIES</Link>
             </MagneticElement>
           </div>
         </div>

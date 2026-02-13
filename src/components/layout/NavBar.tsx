@@ -4,7 +4,8 @@
  * Used across all pages for consistent navigation
  */
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { AnimatedHamburger } from '../ui'
 import { FullScreenMenu } from './FullScreenMenu'
 import './NavBar.css'
@@ -17,6 +18,8 @@ interface NavBarProps {
   style?: React.CSSProperties
   opacity?: number // Control visibility with smooth transition
   onMenuChange?: (isOpen: boolean) => void // Callback when menu state changes
+  audioRef?: React.MutableRefObject<HTMLAudioElement | null> // Audio control
+  audio2Ref?: React.MutableRefObject<HTMLAudioElement | null> // Second audio control
 }
 
 export const NavBar = ({ 
@@ -26,14 +29,125 @@ export const NavBar = ({
   className = '',
   style = {},
   opacity = 1,
-  onMenuChange
+  onMenuChange,
+  audioRef,
+  audio2Ref
 }: NavBarProps) => {
+  const navigate = useNavigate()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [isMuted, setIsMuted] = useState(() => {
+    // Simple check: if audio is playing, it's not muted
+    if (audioRef?.current && !audioRef.current.paused) {
+      return false
+    }
+    
+    // If audio hasn't started yet, check isUserMutedRef
+    const isUserMutedRef = (window as any).__isUserMutedRef
+    if (isUserMutedRef !== undefined) {
+      return isUserMutedRef.current
+    }
+    
+    // Default: show as muted if audio not initialized
+    return true
+  })
+
+  // Sync muted state with audio playing state and user mute preference
+  useEffect(() => {
+    const audio = audioRef?.current
+    if (!audio) return
+    
+    const isUserMutedRef = (window as any).__isUserMutedRef
+    
+    const updateMutedState = () => {
+      // If user manually muted, respect that
+      if (isUserMutedRef?.current === true) {
+        setIsMuted(true)
+        return
+      }
+      
+      // Otherwise, check if audio is playing
+      setIsMuted(audio.paused)
+    }
+
+    // Listen to play/pause events for immediate updates
+    audio.addEventListener('play', updateMutedState)
+    audio.addEventListener('pause', updateMutedState)
+    
+    // Check periodically in case state changes
+    const interval = setInterval(updateMutedState, 1000)
+    
+    // Initial check
+    updateMutedState()
+
+    return () => {
+      audio.removeEventListener('play', updateMutedState)
+      audio.removeEventListener('pause', updateMutedState)
+      clearInterval(interval)
+    }
+  }, [audioRef])
 
   const handleMenuToggle = () => {
     const newState = !isMenuOpen
     setIsMenuOpen(newState)
     onMenuChange?.(newState)
+  }
+
+  const toggleAudio = () => {
+    if (audioRef?.current) {
+      const gainNodeRef = (window as any).__gainNodeRef
+      const gain2NodeRef = (window as any).__gain2NodeRef
+      const isUserMutedRef = (window as any).__isUserMutedRef
+      const audioContext = (window as any).__audioContext
+      
+      if (isMuted) {
+        // Resume AudioContext if suspended (required after direct navigation)
+        if (audioContext && audioContext.state === 'suspended') {
+          audioContext.resume().then(() => {
+            console.log('✅ AudioContext resumed from NavBar toggle')
+          })
+        }
+        
+        // Control via Web Audio API gain nodes (audio element volume doesn't work once routed through Web Audio)
+        if (gainNodeRef?.current && audioContext) {
+          gainNodeRef.current.gain.setTargetAtTime(0.5, audioContext.currentTime, 0.3)
+        }
+        
+        // Only set ambience volume if we're on the map page
+        const isMapPage = window.location.pathname === '/'
+        if (gain2NodeRef?.current && audioContext) {
+          const targetVolume = isMapPage ? 0.5 : 0
+          gain2NodeRef.current.gain.setTargetAtTime(targetVolume, audioContext.currentTime, 0.3)
+        }
+        
+        // Ensure audio is playing
+        if (audioRef.current.paused) {
+          audioRef.current.play().catch(err => console.error('Audio play failed:', err))
+        }
+        if (audio2Ref?.current && audio2Ref.current.paused) {
+          audio2Ref.current.play().catch(err => console.error('Audio2 play failed:', err))
+        }
+        
+        // Update mute state
+        if (isUserMutedRef) {
+          isUserMutedRef.current = false
+        }
+        setIsMuted(false)
+      } else {
+        // Mute via gain nodes
+        if (gainNodeRef?.current && audioContext) {
+          gainNodeRef.current.gain.setTargetAtTime(0, audioContext.currentTime, 0.3)
+        }
+        if (gain2NodeRef?.current && audioContext) {
+          gain2NodeRef.current.gain.setTargetAtTime(0, audioContext.currentTime, 0.3)
+        }
+        
+        // Update mute state
+        if (isUserMutedRef) {
+          isUserMutedRef.current = true
+        }
+        setIsMuted(true)
+      }
+    }
   }
 
   const logoSrc = logoColor === 'light' 
@@ -43,7 +157,7 @@ export const NavBar = ({
   return (
     <>
       <nav className={`navbar ${className}`} style={style}>
-        {/* Logo - Top Left */}
+        {/* Logo - Left */}
         <div 
           className="navbar-logo-container"
           style={{
@@ -52,26 +166,78 @@ export const NavBar = ({
             pointerEvents: opacity > 0 ? 'auto' : 'none'
           }}
         >
-          <a href="/" style={{ display: 'block', lineHeight: 0 }}>
+          <button 
+            onClick={() => {
+              sessionStorage.setItem('hasVisitedMap', 'true')
+              navigate('/')
+            }}
+            style={{ 
+              display: 'block', 
+              lineHeight: 0, 
+              background: 'none', 
+              border: 'none', 
+              padding: 0, 
+              cursor: 'pointer' 
+            }}
+          >
             <img src={logoSrc} alt="Founders House Logo" className="navbar-logo" />
-          </a>
+          </button>
         </div>
 
-        {/* Hamburger Menu - Top Right */}
-        <div 
-          className="navbar-hamburger"
-          style={{
-            opacity,
-            transition: 'opacity 0.8s cubic-bezier(0.22, 1, 0.36, 1)',
-            pointerEvents: opacity > 0 ? 'auto' : 'none'
-          }}
-        >
-          <AnimatedHamburger
-            isOpen={isMenuOpen}
-            onClick={handleMenuToggle}
-            streakColor={streakColor}
-            color={hamburgerColor}
-          />
+        {/* Right side controls */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
+          {/* Sound Toggle */}
+          {audioRef && (
+            <button
+              className="navbar-sound-toggle"
+              onClick={toggleAudio}
+              aria-label={isMuted ? 'Unmute sound' : 'Mute sound'}
+              style={{
+                opacity,
+                transition: 'opacity 0.8s cubic-bezier(0.22, 1, 0.36, 1)',
+                pointerEvents: opacity > 0 ? 'auto' : 'none'
+              }}
+            >
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path
+                  d="M11 5L6 9H2v6h4l5 4V5z"
+                  stroke={hamburgerColor}
+                  strokeWidth="1.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  fill="none"
+                />
+                {!isMuted ? (
+                  <>
+                    <path d="M15.54 8.46a5 5 0 0 1 0 7.07" stroke={hamburgerColor} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                    <path d="M18.07 5.93a9 9 0 0 1 0 12.73" stroke={hamburgerColor} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                  </>
+                ) : (
+                  <>
+                    <line x1="16" y1="9" x2="22" y2="15" stroke={hamburgerColor} strokeWidth="1.5" strokeLinecap="round" />
+                    <line x1="22" y1="9" x2="16" y2="15" stroke={hamburgerColor} strokeWidth="1.5" strokeLinecap="round" />
+                  </>
+                )}
+              </svg>
+            </button>
+          )}
+
+          {/* Hamburger Menu */}
+          <div 
+            className="navbar-hamburger"
+            style={{
+              opacity,
+              transition: 'opacity 0.8s cubic-bezier(0.22, 1, 0.36, 1)',
+              pointerEvents: opacity > 0 ? 'auto' : 'none'
+            }}
+          >
+            <AnimatedHamburger
+              isOpen={isMenuOpen}
+              onClick={handleMenuToggle}
+              streakColor={streakColor}
+              color={hamburgerColor}
+            />
+          </div>
         </div>
       </nav>
 

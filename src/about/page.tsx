@@ -27,7 +27,7 @@ const PROFILE_IMAGES = [
   "/assets/images/team/robin.webp"
 ];
 
-export default function AboutPage() {
+export default function AboutPage({ audioRef, audio2Ref }: { audioRef?: React.MutableRefObject<HTMLAudioElement | null>, audio2Ref?: React.MutableRefObject<HTMLAudioElement | null> }) {
   const [stage, setStage] = useState(1);
   const [showNavBar, setShowNavBar] = useState(false);
   // For team hover effect
@@ -172,7 +172,7 @@ export default function AboutPage() {
 
   return (
     <div style={{ position: "relative", maxWidth: "100%", minHeight: "100vh", background: "#2B0906" }}>
-      <NavBar logoColor="dark" hamburgerColor="#FFF8F2" streakColor="rgba(216, 46, 17, 1)" opacity={showNavBar ? 1 : 0} />
+      <NavBar logoColor="dark" hamburgerColor="#FFF8F2" streakColor="rgba(216, 46, 17, 1)" opacity={showNavBar ? 1 : 0} audioRef={audioRef} audio2Ref={audio2Ref} />
       
       {/*---------------------------------------------------------------------*/}
       {/* Persistent animated image container */}
@@ -343,7 +343,7 @@ export default function AboutPage() {
                 <ParallaxMotion speedX={30} speedY={32} easing={[0.17, 0.67, 0.3, 0.99]}>
                   <div style={{ position: 'relative', display: 'inline-block', overflow: 'hidden' }}>
                     <motion.p
-                      initial={{ y: 80 }}
+                      initial={{ y: 0 }}
                       whileInView={{ y: 0 }}
                       viewport={{ once: true, amount: 0.3 }}
                       transition={{ duration: 1.2, ease: [0.11, 0.45, 0.08, 1.00] }}
@@ -414,7 +414,7 @@ export default function AboutPage() {
                 <ParallaxMotion speedX={30} speedY={32} easing={[0.17, 0.67, 0.3, 0.99]}>
                   <div style={{ position: 'relative', display: 'inline-block', overflow: 'hidden' }}>
                     <motion.p
-                      initial={{ y: 80 }}
+                      initial={{ y: 0 }}
                       whileInView={{ y: 0 }}
                       viewport={{ once: true, amount: 0.3 }}
                       transition={{ duration: 1.2, ease: [0.11, 0.45, 0.08, 1.00] }}

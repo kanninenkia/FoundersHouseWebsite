@@ -15,7 +15,7 @@ const RESIDENT_SRC = "/assets/images/membership/resident.webp";
 const MEMBER_SRC = "/assets/images/membership/member.webp";
 const PROCESS_SRC = "/assets/images/membership/join-process.webp";
 
-export default function JoinPage() {
+export default function JoinPage({ audioRef, audio2Ref }: { audioRef?: React.MutableRefObject<HTMLAudioElement | null>, audio2Ref?: React.MutableRefObject<HTMLAudioElement | null> }) {
   const [stage, setStage] = useState(1);
   const [showNavBar, setShowNavBar] = useState(false);
   const [enableScrollScale, setEnableScrollScale] = useState(false);
@@ -100,7 +100,7 @@ export default function JoinPage() {
 
   return (
     <div style={{ position: "relative", maxWidth: "100%", minHeight: "100vh", background: "#2B0906" }}>
-      <NavBar logoColor="dark" hamburgerColor="#FFF8F2" streakColor="rgba(216, 46, 17, 1)" opacity={showNavBar ? 1 : 0} />
+      <NavBar logoColor="dark" hamburgerColor="#FFF8F2" streakColor="rgba(216, 46, 17, 1)" opacity={showNavBar ? 1 : 0} audioRef={audioRef} audio2Ref={audio2Ref} />
       <section className="visually-hidden" aria-label="Join Founders House">
         <h1>Join Founders House</h1>
         <p>Apply to become part of Founders House in Helsinki.</p>

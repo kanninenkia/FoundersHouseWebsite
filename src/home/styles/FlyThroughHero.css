@@ -331,6 +331,35 @@
     bottom: -33vh;
 }
 
+/* Sahkotalo image next to nextgen, desktop only */
+.part-sahkotalo-image {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding-right: 3vw;
+    position: absolute;
+    right: -8%;
+}
+.sahkotalo-img-parallax {
+    display: flex;
+    align-items: center;
+    height: 100%;
+}
+.sahkotalo-img {
+    margin-top: -10%;
+    max-height: 80vh;
+    width: auto;
+    max-width: 50vw;
+    object-fit: contain;
+    display: block;
+    filter: brightness(0.5) contrast(1.4) grayscale(0.9);
+}
+@media (max-width: 1024px) {
+    .part-sahkotalo-image {
+        display: none !important;
+    }
+}
+
 /*--------------- Builders ---------------*/
 .scroll-section .part-builders {
     margin-bottom: 5%;

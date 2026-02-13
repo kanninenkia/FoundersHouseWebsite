@@ -68,6 +68,7 @@ export class HelsinkiScene {
   private initialLoadTime: number = Date.now()
   private lastHeroTextOpacity: number = -1
   private suppressAutoCentering: boolean = false
+  private isAtFoundersHouseInitialPosition: boolean = false
   private originalMinPolarAngle: number | null = null
   private originalMaxPolarAngle: number | null = null
   private angleRestoreAnimation: {
@@ -83,6 +84,13 @@ export class HelsinkiScene {
   // Separate renderer and scene for sähkötalo (renders without greyscale)
   private sahkotaloRenderer: THREE.WebGLRenderer | null = null
   private sahkotaloScene: THREE.Scene | null = null
+
+  private particleGroup: THREE.Group | null = null
+  private particles: Array<{ mesh: THREE.Mesh, swayPhase: number }> = []
+  private particleDensity: number = 1 / 5 // 1 particle per 5 cubic meters
+  private particleArea: number = 2000 * 2000 // Default area (2km x 2km)
+  private particleColor: number = 0xff0000 // Red for visibility
+  private particleSize: number = 40 // 5x bigger
 
   public revealProgress: number = 0
 
@@ -160,6 +168,9 @@ export class HelsinkiScene {
     }).then((result) => {
       this.helsinkiModel = result.mainMap
       this.loadFoundersHouseOverlay()
+      // Create particles after model loads
+      this.createFloatingParticles();
+      console.log('createFloatingParticles called:', this.particles.length, 'particles');
     }).catch(() => {
     })
 
@@ -460,6 +471,9 @@ export class HelsinkiScene {
       this.updateAutoCentering()
     }
 
+    // Animate floating particles with wind-like motion
+    this.updateFloatingParticles(elapsed)
+
     if (this.composer) {
       this.composer.render()
     } else {
@@ -512,17 +526,21 @@ export class HelsinkiScene {
 
     // CRITICAL: Keep hero text visible with generous threshold
     // More lenient when looking at Founders House area
-    const effectiveThreshold = (this.suppressAutoCentering || isLookingAtFoundersHouse) ? 20 : (allowImmediateCenter ? 30 : threshold)
+    // BUT hide text completely when focused on other POIs (suppressAutoCentering indicates other POI focus)
+    const effectiveThreshold = isLookingAtFoundersHouse ? 20 : (allowImmediateCenter ? 30 : threshold)
     const isEffectivelyInCenter = radialDistance <= effectiveThreshold
 
-    const opacity = isEffectivelyInCenter ? 1 : 0
+    // Hide hero text when viewing other POIs (when suppressAutoCentering is true, we're at Silo/Linear)
+    // BUT show text when at Founders House initial position
+    const opacity = (isEffectivelyInCenter && !this.suppressAutoCentering) || this.isAtFoundersHouseInitialPosition ? 1 : 0
     // Only call callback if opacity changed to avoid triggering React re-renders every frame
     if (this.onHeroTextOpacityChange && opacity !== this.lastHeroTextOpacity) {
       this.lastHeroTextOpacity = opacity
       this.onHeroTextOpacityChange(opacity)
     }
 
-    if (this.suppressAutoCentering) return
+    // Suppress drift when at Founders House initial position OR when viewing other POIs
+    if (this.suppressAutoCentering || this.isAtFoundersHouseInitialPosition) return
 
     // When immediate centering is allowed, don't require isInCenter check
     const shouldAutoCenter = allowImmediateCenter || (isInCenter && timeSinceLastInteraction >= idleThreshold && timeSinceLoad >= initialLoadDelay)
@@ -562,6 +580,50 @@ export class HelsinkiScene {
           }
         }
       }
+    }
+  }
+
+  /**
+   * Animate floating particles with wind-like motion
+   * Creates idle movement using sine waves for natural floating effect
+   */
+  private updateFloatingParticles(elapsed: number): void {
+    if (!this.particles || this.particles.length === 0) return
+
+    for (let i = 0; i < this.particles.length; i++) {
+      const particle = this.particles[i]
+      const { mesh, swayPhase } = particle
+
+      // Store original position on first update
+      if (!mesh.userData.originalPosition) {
+        mesh.userData.originalPosition = mesh.position.clone()
+      }
+
+      const originalPos = mesh.userData.originalPosition
+
+      // Wind parameters - create natural, varied movement
+      const windSpeed = 0.4 // Lower = slower movement
+      const windStrengthX = 5.0 // Horizontal drift distance
+      const windStrengthZ = 3.5 // Depth variation
+      const verticalBob = 2.5 // Vertical bobbing distance
+      
+      // Use different frequencies for each axis to avoid synchronized movement
+      const timeX = elapsed * windSpeed + swayPhase
+      const timeY = elapsed * windSpeed * 0.7 + swayPhase * 1.3
+      const timeZ = elapsed * windSpeed * 0.5 + swayPhase * 0.8
+
+      // Apply sine wave motion on each axis
+      const offsetX = Math.sin(timeX) * windStrengthX
+      const offsetY = Math.sin(timeY) * verticalBob
+      const offsetZ = Math.sin(timeZ) * windStrengthZ
+
+      // Update position with floating motion
+      mesh.position.x = originalPos.x + offsetX
+      mesh.position.y = originalPos.y + offsetY
+      mesh.position.z = originalPos.z + offsetZ
+
+      // Subtle rotation for added realism
+      mesh.rotation.z = Math.sin(timeX * 0.5) * 0.3
     }
   }
 
@@ -757,12 +819,15 @@ export class HelsinkiScene {
     if (!poi) return
 
     // Suppress auto-centering when focusing nearby POIs to avoid recentering FH.
-    // CRITICAL: Disable auto-centering for FOUNDERS_HOUSE to prevent drift
+    // CRITICAL: For FOUNDERS_HOUSE, use special flag to show text but suppress drift
+    // For SILO/LINEAR, suppress to hide text
     if (poiName === 'FOUNDERS_HOUSE') {
-      this.suppressAutoCentering = true  // Disable drift for Founders House
+      this.suppressAutoCentering = false  // Don't suppress text visibility
+      this.isAtFoundersHouseInitialPosition = true  // But suppress drift
       // Camera animation places it at exact initial position - no drift needed
     } else {
       this.suppressAutoCentering = poiName === 'SILO' || poiName === 'LINEAR'
+      this.isAtFoundersHouseInitialPosition = false
     }
 
     // CRITICAL: Stop all camera momentum before starting POI animation
@@ -1031,6 +1096,56 @@ export class HelsinkiScene {
         }
       },
       onInterrupt: () => {}
+    }
+  }
+
+  private createFloatingParticles(): void {
+    // Remove previous group if exists
+    if (this.particleGroup) {
+      this.scene.remove(this.particleGroup);
+    }
+    this.particleGroup = new THREE.Group();
+    this.particles = [];
+    // Get map center from helsinkiModel
+    let centerX = 0, centerZ = 0;
+    if (this.helsinkiModel) {
+      const boundingBox = new THREE.Box3().setFromObject(this.helsinkiModel);
+      centerX = (boundingBox.max.x + boundingBox.min.x) / 2;
+      centerZ = (boundingBox.max.z + boundingBox.min.z) / 2;
+      const mapWidth = boundingBox.max.x - boundingBox.min.x;
+      const mapDepth = boundingBox.max.z - boundingBox.min.z;
+      const mapHeight = boundingBox.max.y - boundingBox.min.y;
+      // Calculate volume in cubic meters (assuming 1 unit = 1 meter)
+      const volume = mapWidth * mapDepth * mapHeight;
+      const density = 1 / 5; // 1 particle per 5 cubic meters
+      const count = 1000; // Exactly 1000 particles for balanced effect and performance
+      // Set particle size to 1/2000th of map width
+      const size = Math.min(mapWidth, mapDepth) / 2000;
+      console.log('Creating', count, 'particles at', centerX, centerZ, 'size', size);
+      for (let i = 0; i < count; i++) {
+        const geometry = new THREE.PlaneGeometry(size, size);
+        const material = new THREE.MeshBasicMaterial({
+          color: 0xbababa,
+          transparent: true,
+          opacity: 0.8,
+          depthWrite: false,
+          side: THREE.DoubleSide,
+        });
+        const mesh = new THREE.Mesh(geometry, material);
+        // Spread particles randomly within map bounds
+        const x = centerX + (Math.random() - 0.5) * mapWidth;
+        // Random y between original (50) and ceiling (150)
+        const y = 50 + Math.random() * (300 - 50);
+        const z = centerZ + (Math.random() - 0.5) * mapDepth;
+        mesh.position.set(x, y, z);
+        mesh.rotation.z = Math.random() * Math.PI;
+        // Sway phase for side-to-side motion
+        const swayPhase = Math.random() * Math.PI * 2;
+        this.particles.push({ mesh, swayPhase });
+        this.particleGroup.add(mesh);
+      }
+      this.scene.add(this.particleGroup);
+      return;
     }
   }
 }

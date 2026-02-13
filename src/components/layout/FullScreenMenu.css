@@ -82,6 +82,8 @@
   margin-top: 0;
   justify-content: flex-start;
   min-height: 0;
+  will-change: transform;
+  transform: translate3d(0, 0, 0);
 }
 
 .menu-nav-item {
@@ -122,8 +124,13 @@
 .char-clone {
   display: block;
   transition: transform var(--menu-animation-default);
-  will-change: transform;
   color: inherit;
+}
+
+/* Only enable will-change on hover to reduce GPU memory */
+.menu-nav-item:hover .char-original,
+.menu-nav-item:hover .char-clone {
+  will-change: transform;
 }
 
 .fullscreen-menu.menu-red-hover .menu-nav-item:hover .char-original,
@@ -183,6 +190,8 @@
   object-fit: contain;
   opacity: 0.9;
   flex: 2;
+  will-change: transform;
+  transform: translate3d(0, 0, 0);
 }
 
 .menu-right .content-img-container {
@@ -193,11 +202,23 @@
     background-color: #590D0F;
 }
 
+.section-5-map-img-container {
+  will-change: transform;
+  transform: translate3d(0, 0, 0);
+}
+
+.section-5-map-img {
+  will-change: transform;
+  transform: translate3d(0, 0, 0);
+}
+
 .menu-right .img-container-stockholm {
   position: absolute;
   bottom: 2rem;
   left: 2rem;
   z-index: 10;
+  will-change: transform;
+  transform: translate3d(0, 0, 0);
 }
 
 .stockholm-link {

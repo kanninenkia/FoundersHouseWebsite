@@ -820,9 +820,9 @@
   padding: 0;
   background: transparent;
   border: none;
-  color: rgba(255, 255, 255, 0.7);
+  color: rgba(255, 255, 255, 0.5);
   font-family: 'IBM Plex Sans', sans-serif;
-  font-size: 0.875rem;
+  font-size: 0.675rem;
   font-weight: 400;
   letter-spacing: 0.05em;
   cursor: pointer;
@@ -838,12 +838,96 @@
 
 .skip-intro-button:hover {
   color: rgba(255, 255, 255, 1);
-  transform: translateX(4px) translateZ(0);
 }
 
 .skip-intro-button:focus-visible {
   outline: 2px solid rgba(255, 255, 255, 0.5);
   outline-offset: 4px;
+}
+
+/* Enter button for sound consent - centered below text */
+.enter-buttons-wrapper {
+  display: flex;
+  gap: 5px;
+  align-items: center;
+  justify-content: center;
+  margin-top: 3rem;
+}
+
+.enter-button {
+  position: relative;
+  display: inline-block;
+  margin-top: 0;
+  padding: 0.75rem 2rem;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: rgba(255, 255, 255, 0.9);
+  font-family: 'IBM Plex Sans', sans-serif;
+  font-size: 0.875rem;
+  font-weight: 400;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+  text-transform: uppercase;
+  opacity: 0;
+  animation: fadeIn 600ms cubic-bezier(0.22, 1, 0.36, 1) 800ms forwards;
+  transition: all 250ms cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: transform, opacity, border-color;
+  backface-visibility: hidden;
+}
+
+.enter-button:hover {
+  border-color: rgba(255, 255, 255, 0.7);
+  color: rgba(255, 255, 255, 1);
+  transform: translateY(-2px) translateZ(0);
+}
+
+.enter-button:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.5);
+  outline-offset: 4px;
+}
+
+/* Sound toggle button next to enter button */
+.sound-toggle-button {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 0;
+  padding: 0.75rem;
+  width: 48px;
+  height: 48px;
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.9);
+  cursor: pointer;
+  opacity: 0;
+  animation: fadeIn 600ms cubic-bezier(0.22, 1, 0.36, 1) 800ms forwards;
+  transition: all 250ms cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: transform, opacity;
+  backface-visibility: hidden;
+}
+
+.sound-toggle-button:hover {
+  color: rgba(255, 255, 255, 1);
+  transform: translateY(-2px) translateZ(0);
+}
+
+.sound-toggle-button:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.5);
+  outline-offset: 4px;
+}
+
+.sound-toggle-button.muted {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.sound-toggle-button.muted:hover {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.sound-toggle-button svg {
+  width: 24px;
+  height: 24px;
 }
 
 @keyframes fadeIn {
@@ -904,7 +988,6 @@
 
   .fade-up-wrapper {
     height: auto;
-    min-height: 80px;
   }
 
   /* Smaller logo on mobile */

@@ -254,7 +254,7 @@ function HeroText({ scrollYProgress }: { scrollYProgress: MotionValue<number> })
 // MAIN COMPONENT
 // =============================================================================
 
-export function FlyThroughHero() { 
+export function FlyThroughHero({ audioRef, audio2Ref }: { audioRef?: React.MutableRefObject<HTMLAudioElement | null>, audio2Ref?: React.MutableRefObject<HTMLAudioElement | null> }) { 
   const navigate = useNavigate();
   const [showNavBar, setShowNavBar] = useState(false);
 
@@ -338,6 +338,7 @@ export function FlyThroughHero() {
     const nextgenImg = useTransform(nextgenScroll, [0, 1], [-150, 100]);
     const nextgenImgContent = useTransform(nextgenScroll, [0, 1], [-100, 50]);
     const nextgenText = useTransform(nextgenScroll, [0, 1], [250, -250]);
+    const nextgenBuilding = useTransform(nextgenScroll, [0, 1], [-200, 400]);
 
     //---------- LOCALIZED PARALLAX Y MOVEMENT FOR BUILDERS IMAGE ----------//
     const buildersSectionRef = useRef<HTMLDivElement>(null);
@@ -384,7 +385,7 @@ export function FlyThroughHero() {
     
 return (
     <>
-        <NavBar logoColor="dark" hamburgerColor="#FFF8F2" streakColor="rgba(216, 46, 17, 1)" opacity={showNavBar ? 1 : 0} />
+        <NavBar logoColor="dark" hamburgerColor="#FFF8F2" streakColor="rgba(216, 46, 17, 1)" opacity={showNavBar ? 1 : 0} audioRef={audioRef} audio2Ref={audio2Ref} />
         
         {/* Fixed hero viewport, fades out at end, fades back in if user scrolls up */}
         <motion.div
@@ -761,63 +762,77 @@ return (
 
 
                 {/*------------------- NEXTGEN ------------------*/}
-                <div className="part part-nextgen" ref={nextgenSectionRef}>
-                  <motion.div 
-                    className="bg-shape"
-                    style={{  }}
-                    initial={{ scale: 1.2 }}
-                    animate={{ scale: inView ? 1 : 1.2 }}
-                    transition={{ type: 'spring', stiffness: 150, damping: 44 }}
-                  />
+                <div style={{display: 'flex', flexDirection: 'row', alignItems: 'stretch', width: '100%'}}>
+                  <div className="part part-nextgen" ref={nextgenSectionRef} style={{flex: 1, position: 'relative'}}>
+                    <motion.div 
+                      className="bg-shape"
+                      style={{  }}
+                      initial={{ scale: 1.2 }}
+                      animate={{ scale: inView ? 1 : 1.2 }}
+                      transition={{ type: 'spring', stiffness: 150, damping: 44 }}
+                    />
 
-                  <div className="part-img-wrapper">
-                    <motion.div className="part-img-squares" style={{ y: nextgenImgContent }}>
-                        <ParallaxMotion speedX={24} speedY={24} delay={0} easing={[0.17, 0.67, 0.3, 0.99]}>
-                            <div className="square-1"></div>
+                    <div className="part-img-wrapper">
+                      <motion.div className="part-img-squares" style={{ y: nextgenImgContent }}>
+                          <ParallaxMotion speedX={24} speedY={24} delay={0} easing={[0.17, 0.67, 0.3, 0.99]}>
+                              <div className="square-1"></div>
+                          </ParallaxMotion>
+                          <ParallaxMotion speedX={35} speedY={35} delay={0} easing={[0.17, 0.67, 0.3, 0.99]}>
+                              <div className="square-2"></div>
+                          </ParallaxMotion>
+                      </motion.div>
+                      <motion.div className="part-img-text" style={{ y: nextgenImgContent }}>
+                          <ParallaxMotion speedX={isMobileView ? 0 : 10} speedY={isMobileView ? 0 : 10} delay={0} easing={[0.17, 0.67, 0.3, 0.99]}>
+                              <div style={{ position: 'relative', display: 'inline-block', overflow: 'hidden' }}>
+                                <p style={{ position: 'relative', zIndex: 0 }}>
+                                  {homeContent.values.nextgen.description}
+                                </p>
+                                <motion.div
+                                  initial={{ translateY: "0%" }}
+                                  whileInView={{ translateY: "100%" }}
+                                  transition={{ duration: 0.8, delay: 0.25, ease: [0.22, 1, 0.36, 1] }}
+                                  viewport={{ once: true, amount: 0.5 }}
+                                  style={{
+                                    position: "absolute",
+                                    top: 0,
+                                    left: 0,
+                                    width: "100%",
+                                    height: "100%",
+                                    backgroundColor: "#D82E11",
+                                    zIndex: 1
+                                  }}
+                                />
+                              </div>
+                          </ParallaxMotion>
+                      </motion.div>
+                      <div className='part-img'>
+                        <ParallaxMotion speedX={8} speedY={8} delay={12} easing={[0.17, 0.67, 0.3, 0.99]}>
+                          <motion.img
+                            src="/assets/images/values/nextgen.webp" 
+                            alt="Founders House NextGen Part" 
+                            style={{ y: nextgenImg, scale: 1.1 }}
+                          />
                         </ParallaxMotion>
-                        <ParallaxMotion speedX={35} speedY={35} delay={0} easing={[0.17, 0.67, 0.3, 0.99]}>
-                            <div className="square-2"></div>
-                        </ParallaxMotion>
+                      </div>
+                    </div>
+
+                    <motion.div className="part-img-title" style={{ y: nextgenText }}>
+                      <ParallaxMotion speedX={24} speedY={24} delay={12} easing={[0.17, 0.67, 0.3, 0.99]}>
+                          <h3>{homeContent.values.nextgen.title}</h3>
+                      </ParallaxMotion>
                     </motion.div>
-                    <motion.div className="part-img-text" style={{ y: nextgenImgContent }}>
-                        <ParallaxMotion speedX={isMobileView ? 0 : 10} speedY={isMobileView ? 0 : 10} delay={0} easing={[0.17, 0.67, 0.3, 0.99]}>
-                            <div style={{ position: 'relative', display: 'inline-block', overflow: 'hidden' }}>
-                              <p style={{ position: 'relative', zIndex: 0 }}>
-                                {homeContent.values.nextgen.description}
-                              </p>
-                              <motion.div
-                                initial={{ translateY: "0%" }}
-                                whileInView={{ translateY: "100%" }}
-                                transition={{ duration: 0.8, delay: 0.25, ease: [0.22, 1, 0.36, 1] }}
-                                viewport={{ once: true, amount: 0.5 }}
-                                style={{
-                                  position: "absolute",
-                                  top: 0,
-                                  left: 0,
-                                  width: "100%",
-                                  height: "100%",
-                                  backgroundColor: "#D82E11",
-                                  zIndex: 1
-                                }}
-                              />
-                            </div>
-                        </ParallaxMotion>
-                    </motion.div>
-                    <div className='part-img'>
-                      <ParallaxMotion speedX={8} speedY={8} delay={12} easing={[0.17, 0.67, 0.3, 0.99]}>
-                        <motion.img
-                          src="/assets/images/values/nextgen.webp" 
-                          alt="Founders House NextGen Part" 
-                          style={{ y: nextgenImg, scale: 1.1 }}
+                  </div>
+                  {/* Sahkotalo image, desktop only */}
+                  <motion.div className="part-sahkotalo-image" style={{ y: nextgenBuilding }}>
+                    <div className="sahkotalo-img-parallax">
+                      <ParallaxMotion speedX={32} speedY={32} delay={0} easing={[0.17, 0.67, 0.3, 0.99]}>
+                        <img 
+                          src="/assets/images/values/sahkotalo.webp" 
+                          alt="Sähkötalo"
+                          className="sahkotalo-img"
                         />
                       </ParallaxMotion>
                     </div>
-                  </div>
-
-                  <motion.div className="part-img-title" style={{ y: nextgenText }}>
-                    <ParallaxMotion speedX={24} speedY={24} delay={12} easing={[0.17, 0.67, 0.3, 0.99]}>
-                        <h3>{homeContent.values.nextgen.title}</h3>
-                    </ParallaxMotion>
                   </motion.div>
                 </div>
 

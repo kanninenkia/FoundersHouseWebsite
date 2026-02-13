@@ -4,6 +4,7 @@
  */
 
 import { useEffect, useRef, useState, useCallback } from 'react'
+import FloatingParticlesOverlay from './FloatingParticlesOverlay'
 import { HelsinkiScene } from '../../core'
 import { motion } from 'framer-motion'
 import type { PointOfInterest } from '../../constants/poi'
@@ -29,6 +30,8 @@ interface HelsinkiViewerProps {
   showUI?: boolean
   staticMode?: boolean; // disables drag/zoom/pan, enables only mouse-move camera
   environmentColor?: string; // custom background/environment color
+  audioRef?: React.MutableRefObject<HTMLAudioElement | null>
+  audio2Ref?: React.MutableRefObject<HTMLAudioElement | null>
 }
 
 export const HelsinkiViewer = ({
@@ -38,6 +41,8 @@ export const HelsinkiViewer = ({
   onMapLoadingChange,
   staticMode = false,
   environmentColor,
+  audioRef,
+  audio2Ref,
 }: HelsinkiViewerProps) => {  const containerRef = useRef<HTMLDivElement>(null)
 
   const sceneRef = useRef<HelsinkiScene | null>(null)
@@ -59,6 +64,8 @@ export const HelsinkiViewer = ({
   const [isCameraFlying, setIsCameraFlying] = useState(false)
   const [showNavBar, setShowNavBar] = useState(false)
   const [showCustomCursor, setShowCustomCursor] = useState(false)
+    // Track animation paused state
+    const animationPausedRef = useRef<boolean>(false)
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const lastInteractionTime = useRef<number>(Date.now())
   const [cursorPosition, setCursorPosition] = useState({ x: 0, y: 0 })
@@ -77,15 +84,7 @@ export const HelsinkiViewer = ({
 
     if (isTransitionActive) return
 
-    const globalSetTransitionActive = (window as any).setTransitionActive
-
     setIsTransitionActive(true)
-
-    if (globalSetTransitionActive) {
-      window.setTimeout(() => {
-        globalSetTransitionActive(true)
-      }, 500)
-    }
 
     if (sceneRef.current) {
       // Use dedicated zoom method for consistent transition
@@ -94,17 +93,15 @@ export const HelsinkiViewer = ({
           ;(window as any).navigateToLearnMore()
         }
 
-        setTimeout(() => {
-          if (globalSetTransitionActive) {
-            globalSetTransitionActive(false)
-          }
-          setIsTransitionActive(false)
-        }, 1500)
+        setIsTransitionActive(false)
       })
     }
   }, [isTransitionActive])
 
   useEffect(() => {
+    // Don't attach mousemove listener when menu is open
+    if (isMenuOpen) return;
+
     const handleMouseMove = (e: MouseEvent) => {
        targetCursorPosition.current = { x: e.clientX, y: e.clientY }
       const target = document.elementFromPoint(e.clientX, e.clientY)
@@ -129,10 +126,13 @@ export const HelsinkiViewer = ({
     return () => {
       window.removeEventListener('mousemove', handleMouseMove)
     }
-  }, [])
+  }, [isMenuOpen])
 
 
   useEffect(() => {
+    // Don't run cursor smoothing when menu is open
+    if (isMenuOpen) return;
+
     let animationFrameId: number
 
     const smoothCursor = () => {
@@ -155,7 +155,7 @@ export const HelsinkiViewer = ({
     animationFrameId = requestAnimationFrame(smoothCursor)
 
     return () => cancelAnimationFrame(animationFrameId)
-  }, [])
+  }, [isMenuOpen])
 
 
   useEffect(() => {
@@ -438,6 +438,8 @@ export const HelsinkiViewer = ({
         hamburgerColor={isMenuOpen ? "#FFF8F2" : "#D82E11"}
         opacity={showNavBar && !isTransitionActive ? 1 : 0}
         onMenuChange={setIsMenuOpen}
+        audioRef={audioRef}
+        audio2Ref={audio2Ref}
       />
       <div
         className="ui-overlay"
@@ -525,13 +527,15 @@ export const HelsinkiViewer = ({
             className="hero-line-wrapper"
             style={{
               opacity: showHeroText ? heroTextOpacity : 0,
-              pointerEvents: showHeroText && heroTextOpacity > 0.5 ? 'auto' : 'none',
               transition: 'opacity 0.3s cubic-bezier(0.22, 1, 0.36, 1), transform 2s cubic-bezier(0.17, 0.67, 0.3, 0.99)',
               transform: `translate(${mousePos.x * 24}px, ${mousePos.y * 24}px)` }}
           >
             <Button 
               className="hero-learn-more-btn" 
               onClick={() => handleLearnMoreClick()}
+              style={{
+                pointerEvents: showHeroText && heroTextOpacity > 0.5 ? 'auto' : 'none'
+              }}
             >
               Learn more
             </Button>

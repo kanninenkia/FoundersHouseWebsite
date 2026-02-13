@@ -83,14 +83,16 @@ const shuffleText = (
   return () => clearInterval(interval);
 };
 
-export default function EventsPage() {
+export default function EventsPage({ audioRef, audio2Ref }: { audioRef?: React.MutableRefObject<HTMLAudioElement | null>, audio2Ref?: React.MutableRefObject<HTMLAudioElement | null> }) {
   const [stage, setStage] = useState(1);
   const [showNavBar, setShowNavBar] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const trackRef = useRef<HTMLDivElement>(null);
   const [cursorPosition, setCursorPosition] = useState({ x: 0, y: 0 });
   const targetCursorPosition = useRef({ x: 0, y: 0 });
   const [showCustomCursor, setShowCustomCursor] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
   const [scrollX, setScrollX] = useState(0);
   const displayedTitle = "EVENTS";
   const [isEventTitle, setIsEventTitle] = useState(false);
@@ -182,7 +184,7 @@ export default function EventsPage() {
 
 
   const parallaxScale = isMobile ? 0.5 : 1;
-  const lockedBrightness = isCardLocked ? 0.36 : 0.4;
+  const lockedBrightness = isCardLocked ? 0.3 : 0.35;
 
   useEffect(() => {
     if (!isMobile) {
@@ -301,6 +303,7 @@ export default function EventsPage() {
 
     const handleMouseDown = (e: MouseEvent) => {
       isDragging = true;
+      setIsDragging(true);
       startX = e.pageX;
       lastX = e.pageX;
       lastTime = Date.now();
@@ -345,6 +348,7 @@ export default function EventsPage() {
 
     const handleMouseUp = () => {
       isDragging = false;
+      setIsDragging(false);
       // Start momentum
       if (Math.abs(velocity) > 0.5) {
         applyMomentum();
@@ -367,13 +371,17 @@ export default function EventsPage() {
 
   // Custom cursor tracking - entire page with hover detection
   useEffect(() => {
+    if (isMenuOpen) {
+      setShowCustomCursor(false);
+      return;
+    }
     const handleMouseMove = (e: MouseEvent) => {
       targetCursorPosition.current = { x: e.clientX, y: e.clientY };
       const target = document.elementFromPoint(e.clientX, e.clientY);
       const isInteractive = !!target?.closest(
-        'a, button, .hamburger-button, .calendar-button, .events-calendar-button, .events-header, .event-card, .event-card-image'
+        'a, button, .hamburger-button, .calendar-button, .events-calendar-button, .events-header'
       );
-      // Hide custom cursor when hovering over interactive elements OR when menu is open
+      // Hide custom cursor when hovering over interactive elements (but keep it visible on event cards)
       setShowCustomCursor(!isInteractive);
       document.body.classList.toggle('events-cursor-interactive', isInteractive);
     };
@@ -386,7 +394,7 @@ export default function EventsPage() {
       setShowCustomCursor(false);
       document.body.classList.remove('events-cursor-interactive');
     };
-  }, [stage]);
+  }, [stage, isMenuOpen]);
 
   // Smooth cursor lerp animation
   useEffect(() => {
@@ -420,10 +428,20 @@ export default function EventsPage() {
     return () => {
       document.body.classList.remove('events-cursor');
       document.body.classList.remove('events-cursor-interactive');
+      document.body.classList.remove('events-dragging');
       document.documentElement.classList.remove('events-cursor');
       document.documentElement.classList.remove('events-cursor-interactive');
     };
   }, []);
+
+  // Toggle dragging cursor class
+  useEffect(() => {
+    if (isDragging) {
+      document.body.classList.add('events-dragging');
+    } else {
+      document.body.classList.remove('events-dragging');
+    }
+  }, [isDragging]);
 
   // Comprehensive cleanup on unmount to prevent stuck transitions
   useEffect(() => {
@@ -527,7 +545,7 @@ export default function EventsPage() {
       {/* Custom Cursor */}
       {showCustomCursor && (
         <motion.div
-          className="custom-cursor"
+          className={`custom-cursor ${isDragging ? 'dragging' : ''}`}
           style={{
             left: `${cursorPosition.x}px`,
             top: `${cursorPosition.y}px`,
@@ -541,7 +559,15 @@ export default function EventsPage() {
         </motion.div>
       )}
 
-      <NavBar logoColor="dark" hamburgerColor="#FFF8F2" streakColor="rgba(216, 46, 17, 1)" opacity={showNavBar ? 1 : 0} />
+      <NavBar 
+        logoColor="dark" 
+        hamburgerColor="#FFF8F2" 
+        streakColor="rgba(216, 46, 17, 1)" 
+        opacity={showNavBar ? 1 : 0} 
+        audioRef={audioRef} 
+        audio2Ref={audio2Ref}
+        onMenuChange={setIsMenuOpen}
+      />
 
 
       {/*---------------------------------------------------------------------*/}
@@ -585,7 +611,7 @@ export default function EventsPage() {
             initial={false}
             animate={
                 stage === 1
-                ? { width: "100%", height: "100vh", position: "absolute", objectFit: "cover", filter: "grayscale(1) brightness(0.9)", scale: 1.4 }
+                ? { width: "100%", height: "100vh", position: "absolute", objectFit: "cover", filter: "grayscale(1) brightness(0.6)", scale: 1.4 }
                 : { width: "100%", height: "100vh", position: "absolute", objectFit: "cover", filter: `grayscale(1) brightness(${lockedBrightness})`, scale: 1.05 }
             }
             transition={{ duration: 2, ease: [0.32, 0.26, 0, 1] }}

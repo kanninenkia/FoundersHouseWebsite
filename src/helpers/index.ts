@@ -35,3 +35,17 @@ export {
   createRenderTarget,
   handleResize
 } from './sceneSetup'
+
+export {
+  type CookieCategory,
+  type CookiePreferences,
+  getCookiePreferences,
+  saveCookiePreferences,
+  hasConsented,
+  acceptAllCookies,
+  rejectAllCookies,
+  applyCookiePreferences,
+  clearCookiePreferences,
+  isCategoryEnabled,
+  initializeCookieManager
+} from './cookieManager'
