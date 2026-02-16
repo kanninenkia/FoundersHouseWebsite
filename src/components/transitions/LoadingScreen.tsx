@@ -83,14 +83,9 @@ export const LoadingScreen = ({ onComplete, duration, scrollProgress, isReturnVi
   const lowPassFilterRef = useRef<BiquadFilterNode | null>(null)
 
   // Initialize audio on return visits
-  // Start with volume at 0 to avoid autoplay failures affecting Web Audio API initialization
-  // Let the Web Audio API gain nodes handle the actual volume control
+  // Note: Volume is controlled by Web Audio API gain nodes in App.tsx
   useEffect(() => {
     if (isReturn && audioRef.current && audio2Ref.current) {
-      // Set element volumes to 0 - Web Audio gain nodes will control actual volume
-      audioRef.current.volume = 0
-      audio2Ref.current.volume = 0
-
       // Try to start playback (required for Web Audio to work)
       audioRef.current.play().catch(err => {
         console.log('Audio autoplay on return visit:', err.message)
@@ -139,25 +134,25 @@ export const LoadingScreen = ({ onComplete, duration, scrollProgress, isReturnVi
     e.stopPropagation()
     consentGivenRef.current = true
     setFadeOutText1(true)
-    
-    // Play audio based on user preference with fade-in
+
+    // Play audio based on user preference with fade-in using Web Audio API gain nodes
     if (audioRef.current && audio2Ref.current) {
       // Resume AudioContext on user interaction (required by browsers)
       const audioContext = (window as any).__audioContext
       const gainNodeRef = (window as any).__gainNodeRef
       const gain2NodeRef = (window as any).__gain2NodeRef
       const isUserMutedRef = (window as any).__isUserMutedRef
-      
+
       if (audioContext && audioContext.state === 'suspended') {
         audioContext.resume()
       }
-      
+
       // Play music immediately
       audioRef.current.play()
         .catch(err => {
           console.error('❌ Music play failed:', err)
         })
-      
+
       // Delay ambience by 2 seconds
       setTimeout(() => {
         if (audio2Ref.current) {
@@ -167,7 +162,7 @@ export const LoadingScreen = ({ onComplete, duration, scrollProgress, isReturnVi
             })
         }
       }, 2000)
-      
+
       // Set user muted state
       if (isUserMutedRef) {
         isUserMutedRef.current = !soundEnabled
@@ -179,43 +174,32 @@ export const LoadingScreen = ({ onComplete, duration, scrollProgress, isReturnVi
       } catch (err) {
         console.error('Failed to save audio preference:', err)
       }
-      
-      // Gradually fade in music to target volume via gain nodes (if Web Audio API is set up)
-      const targetMusicVolume = soundEnabled ? 0.5 : 0
-      const targetAmbienceVolume = soundEnabled ? 0.3 : 0
-      const fadeInDuration = 2000 // 2 seconds
-      const steps = 60 // 60 steps for smooth fade
-      const musicIncrement = targetMusicVolume / steps
-      const ambienceIncrement = targetAmbienceVolume / steps
-      const intervalTime = fadeInDuration / steps
-      
-      // Fade in music immediately
-      let currentStep = 0
-      const fadeInterval = setInterval(() => {
-        if (audioRef.current && currentStep < steps) {
-          currentStep++
-          audioRef.current.volume = Math.min(musicIncrement * currentStep, targetMusicVolume)
-        } else {
-          clearInterval(fadeInterval)
-        }
-      }, intervalTime)
-      
-      // Fade in ambience after 2-second delay
-      setTimeout(() => {
-        let ambienceStep = 0
-        const ambienceFadeInterval = setInterval(() => {
-          if (audio2Ref.current && ambienceStep < steps) {
-            ambienceStep++
-            audio2Ref.current.volume = Math.min(ambienceIncrement * ambienceStep, targetAmbienceVolume)
-          } else {
-            clearInterval(ambienceFadeInterval)
-          }
-        }, intervalTime)
-      }, 2000)
+
+      // Fade in using Web Audio API gain nodes (smooth exponential ramp)
+      if (audioContext && gainNodeRef?.current && gain2NodeRef?.current) {
+        const currentTime = audioContext.currentTime
+        const fadeInDuration = 2.0 // 2 seconds
+
+        // Target volumes based on user preference
+        const targetMusicVolume = soundEnabled ? 0.5 : 0
+        const targetAmbienceVolume = soundEnabled ? 0.5 : 0 // 0.5 on map page
+
+        // Fade in music immediately using exponential ramp for smoothness
+        gainNodeRef.current.gain.cancelScheduledValues(currentTime)
+        gainNodeRef.current.gain.setValueAtTime(0, currentTime)
+        gainNodeRef.current.gain.linearRampToValueAtTime(targetMusicVolume, currentTime + fadeInDuration)
+
+        // Fade in ambience after 2-second delay
+        gain2NodeRef.current.gain.cancelScheduledValues(currentTime)
+        gain2NodeRef.current.gain.setValueAtTime(0, currentTime)
+        gain2NodeRef.current.gain.linearRampToValueAtTime(targetAmbienceVolume, currentTime + 2 + fadeInDuration)
+
+        console.log(`🎵 Audio fade-in started: music=${targetMusicVolume}, ambience=${targetAmbienceVolume}`)
+      }
     } else {
       console.error('❌ No audio element found!')
     }
-    
+
     // Small delay before removing button to allow fade animation
     setTimeout(() => setWaitingForConsent(false), 400)
   }

@@ -16,7 +16,7 @@ export default function PrivacyPolicyPage() {
       <main className="legal-content">
         <div className="legal-container">
           <h1>Privacy Policy</h1>
-          <p className="last-updated">Last Updated: February 13, 2026</p>
+          <p className="last-updated">Last Updated: February 26th, 2026</p>
 
           <section>
             <h2>1. Introduction</h2>
@@ -30,7 +30,7 @@ export default function PrivacyPolicyPage() {
               <strong>Data Controller:</strong><br />
               Founders House Ry<br />
               Helsinki, Finland<br />
-              Email: privacy@foundershouse.fi
+              Email: team@foundershouse.fi
             </p>
           </section>
 

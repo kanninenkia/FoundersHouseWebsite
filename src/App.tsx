@@ -32,14 +32,15 @@ function AppContent() {
   const gain2NodeRef = useRef<GainNode | null>(null) // Separate gain for second track
   const previousPathnameRef = useRef<string>(location.pathname)
   // Restore user's audio preference from localStorage
-  const isUserMutedRef = useRef(() => {
+  const getInitialMutedState = () => {
     try {
       const saved = localStorage.getItem('fh_audio_muted')
       return saved === 'true'
     } catch {
       return false
     }
-  })
+  }
+  const isUserMutedRef = useRef(getInitialMutedState())
   const [isTransitionActive, setIsTransitionActive] = useState(false)
   const [isReturnVisit, setIsReturnVisit] = useState(() => {
     return sessionStorage.getItem('hasVisitedMap') === 'true'
@@ -212,35 +213,37 @@ function AppContent() {
   useEffect(() => {
     const isMapPage = location.pathname === '/' // Only map page has no filter
     const wasMapPage = previousPathnameRef.current === '/'
-    
+    const goingToMap = isMapPage && !wasMapPage // Navigating TO map page
+
+    // Use longer transition time when going TO map page for smoother effect
+    const timeConstant = goingToMap ? 2.5 : 1.5
+
     // === TRACK 1: Low-pass filter for music ===
     if (lowPassFilterRef.current && audioContextRef.current) {
       const targetFrequency = isMapPage ? 22000 : 200 // No filter on map, 200Hz on other pages
-      const timeConstant = (isMapPage && !wasMapPage) ? 1.5 : 1.5
-      
+
       lowPassFilterRef.current.frequency.setTargetAtTime(
         targetFrequency,
         audioContextRef.current.currentTime,
         timeConstant
       )
-      console.log(`🎵 Music filter ${isMapPage ? 'disabled' : 'enabled (200Hz)'} for ${location.pathname}`)
+      console.log(`🎵 Music filter ${isMapPage ? 'disabled' : 'enabled (200Hz)'} for ${location.pathname} (transition: ${timeConstant}s)`)
     }
-    
+
     // === TRACK 2: Volume control for ambience (no pause/play, just volume fade) ===
     // Only adjust ambience if user hasn't manually muted
     if (gain2NodeRef.current && audioContextRef.current && audio2Ref.current && !isUserMutedRef.current) {
-      const targetVolume = isMapPage ? 0.5 : 0 // Lower volume on map, muted on other pages
-      const timeConstant = 1.5
-      
+      const targetVolume = isMapPage ? 0.5 : 0 // 0.5 on map page, 0 on other pages
+
       gain2NodeRef.current.gain.setTargetAtTime(
         targetVolume,
         audioContextRef.current.currentTime,
         timeConstant
       )
-      
-      console.log(`🌊 Ambience ${isMapPage ? 'enabled (0.5)' : 'muted (0)'} for ${location.pathname}`)
+
+      console.log(`🌊 Ambience ${isMapPage ? 'enabled (0.5)' : 'muted (0)'} for ${location.pathname} (transition: ${timeConstant}s)`)
     }
-    
+
     // Update previous pathname
     previousPathnameRef.current = location.pathname
   }, [location.pathname])

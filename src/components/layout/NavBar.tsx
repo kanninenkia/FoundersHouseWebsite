@@ -98,27 +98,29 @@ export const NavBar = ({
       const gain2NodeRef = (window as any).__gain2NodeRef
       const isUserMutedRef = (window as any).__isUserMutedRef
       const audioContext = (window as any).__audioContext
-      
+      const isMapPage = window.location.pathname === '/'
+
       if (isMuted) {
+        // UNMUTING - volumes depend on current page
+
         // Resume AudioContext if suspended (required after direct navigation)
         if (audioContext && audioContext.state === 'suspended') {
           audioContext.resume().then(() => {
             console.log('✅ AudioContext resumed from NavBar toggle')
           })
         }
-        
-        // Control via Web Audio API gain nodes (audio element volume doesn't work once routed through Web Audio)
+
+        // Audio 1 (music): Always goes to 0.5 when unmuting
         if (gainNodeRef?.current && audioContext) {
           gainNodeRef.current.gain.setTargetAtTime(0.5, audioContext.currentTime, 0.3)
         }
-        
-        // Only set ambience volume if we're on the map page
-        const isMapPage = window.location.pathname === '/'
+
+        // Audio 2 (ambience): 0.5 on map page, 0 on other pages
         if (gain2NodeRef?.current && audioContext) {
           const targetVolume = isMapPage ? 0.5 : 0
           gain2NodeRef.current.gain.setTargetAtTime(targetVolume, audioContext.currentTime, 0.3)
         }
-        
+
         // Ensure audio is playing
         if (audioRef.current.paused) {
           audioRef.current.play().catch(err => console.error('Audio play failed:', err))
@@ -126,7 +128,7 @@ export const NavBar = ({
         if (audio2Ref?.current && audio2Ref.current.paused) {
           audio2Ref.current.play().catch(err => console.error('Audio2 play failed:', err))
         }
-        
+
         // Update mute state
         if (isUserMutedRef) {
           isUserMutedRef.current = false
@@ -138,15 +140,18 @@ export const NavBar = ({
           console.error('Failed to save audio preference:', err)
         }
         setIsMuted(false)
+
+        console.log(`🔊 Audio unmuted on ${isMapPage ? 'map' : 'non-map'} page: music=0.5, ambience=${isMapPage ? '0.5' : '0'}`)
       } else {
-        // Mute via gain nodes
+        // MUTING - both tracks go to 0 regardless of page
+
         if (gainNodeRef?.current && audioContext) {
           gainNodeRef.current.gain.setTargetAtTime(0, audioContext.currentTime, 0.3)
         }
         if (gain2NodeRef?.current && audioContext) {
           gain2NodeRef.current.gain.setTargetAtTime(0, audioContext.currentTime, 0.3)
         }
-        
+
         // Update mute state
         if (isUserMutedRef) {
           isUserMutedRef.current = true
@@ -158,6 +163,8 @@ export const NavBar = ({
           console.error('Failed to save audio preference:', err)
         }
         setIsMuted(true)
+
+        console.log('🔇 Audio muted: music=0, ambience=0')
       }
     }
   }

@@ -132,6 +132,13 @@ body.events-cursor.events-cursor-interactive .custom-cursor {
     font-weight: 600;
     color: #D82E11;
     margin: 0;
+    transition: font-size 0.3s ease;
+}
+
+/* Smaller font size when displaying event titles on hover */
+.events-page .header-h1-wrapper .header-h1.is-event-title {
+    font-size: 4rem;
+    line-height: 4rem;
 }
 
 .events-page .calendar-button-wrapper {
@@ -140,12 +147,12 @@ body.events-cursor.events-cursor-interactive .custom-cursor {
 
 .events-page .header-date-location {
     font-family: 'IBM Plex Sans', sans-serif;
-    font-size: 3.01rem;
+    font-size: 2rem;
     font-weight: 700;
     color: #FFF8F2;
     margin: 0;
     position: absolute;
-    top: 119px;
+    top: 60px;
     left: 0;
     letter-spacing: 0.05rem;
 }

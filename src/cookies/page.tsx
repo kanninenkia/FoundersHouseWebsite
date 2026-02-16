@@ -77,7 +77,7 @@ export default function CookiesPage() {
       <main className="legal-content">
         <div className="legal-container">
           <h1>Cookie Settings</h1>
-          <p className="last-updated">Last Updated: February 13, 2026</p>
+          <p className="last-updated">Last Updated: February 26th, 2026</p>
 
           <section>
             <h2>About Cookies</h2>
@@ -247,7 +247,7 @@ export default function CookiesPage() {
             <h2>Contact Us</h2>
             <p>
               If you have any questions about our use of cookies, please contact us at 
-              privacy@foundershouse.fi or visit our <Link to="/privacy-policy">Privacy Policy</Link>.
+              team@foundershouse.fi or visit our <Link to="/privacy-policy">Privacy Policy</Link>.
             </p>
           </section>
         </div>
