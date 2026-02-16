@@ -11,6 +11,7 @@ import type { PointOfInterest } from '../../constants/poi'
 import { POINTS_OF_INTEREST } from '../../constants/poi'
 import { POINavigator } from './POINavigator'
 import POILayer from './POILayer'
+import { POIInfoBox } from './POIInfoBox'
 import { Button } from '../ui'
 import { NavBar } from '../layout'
 import './HelsinkiViewer.css'
@@ -67,12 +68,15 @@ export const HelsinkiViewer = ({
     // Track animation paused state
     const animationPausedRef = useRef<boolean>(false)
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const isMenuOpenRef = useRef<boolean>(false)
   const lastInteractionTime = useRef<number>(Date.now())
   const [cursorPosition, setCursorPosition] = useState({ x: 0, y: 0 })
   const targetCursorPosition = useRef({ x: 0, y: 0 })
   const [showDragIndicator, setShowDragIndicator] = useState(true)
   const [activePOIKey, setActivePOIKey] = useState<string | null>('FOUNDERS_HOUSE')
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 })
+  const [selectedPOIInfo, setSelectedPOIInfo] = useState<PointOfInterest | null>(null)
+  const poiInfoBoxRef = useRef<HTMLDivElement>(null)
 
   const hasInteractedRef = useRef(false)
   const [isTransitionActive, setIsTransitionActive] = useState(false)
@@ -98,6 +102,11 @@ export const HelsinkiViewer = ({
     }
   }, [isTransitionActive])
 
+  // Sync menu state to ref so animate function can access it without recreating scene
+  useEffect(() => {
+    isMenuOpenRef.current = isMenuOpen
+  }, [isMenuOpen])
+
   useEffect(() => {
     // Don't attach mousemove listener when menu is open
     if (isMenuOpen) return;
@@ -106,7 +115,7 @@ export const HelsinkiViewer = ({
        targetCursorPosition.current = { x: e.clientX, y: e.clientY }
       const target = document.elementFromPoint(e.clientX, e.clientY)
       const isInteractive = !!target?.closest(
-        'a, button, .clickable, .navbar, .navbar-hamburger, .navbar-logo-container, .poi-navigator-wrapper, .full-screen-menu'
+        'a, button, .clickable, .navbar, .navbar-hamburger, .navbar-logo-container, .poi-navigator-wrapper, .full-screen-menu, .poi-info-box'
       )
       if (isInteractive !== hoveringInteractiveRef.current) {
         hoveringInteractiveRef.current = isInteractive
@@ -232,18 +241,21 @@ export const HelsinkiViewer = ({
 
       const animate = (currentTime: number) => {
         if (sceneRef.current) {
-          // CHROME FIX: Always update, but track frame timing for smoothness
-          const frameTime = currentTime - lastFrameTimeRef.current
-          lastFrameTimeRef.current = currentTime
+          // Pause rendering when menu is open to improve performance
+          if (!isMenuOpenRef.current) {
+            // CHROME FIX: Always update, but track frame timing for smoothness
+            const frameTime = currentTime - lastFrameTimeRef.current
+            lastFrameTimeRef.current = currentTime
 
-          // Add to rolling average (keeps last 3 frames)
-          frameTimesRef.current.push(frameTime)
-          if (frameTimesRef.current.length > 3) {
-            frameTimesRef.current.shift()
+            // Add to rolling average (keeps last 3 frames)
+            frameTimesRef.current.push(frameTime)
+            if (frameTimesRef.current.length > 3) {
+              frameTimesRef.current.shift()
+            }
+
+            // Always update - the scene's delta clamping handles spikes
+            sceneRef.current.update()
           }
-
-          // Always update - the scene's delta clamping handles spikes
-          sceneRef.current.update()
 
           animationFrameRef.current = requestAnimationFrame(animate)
         }
@@ -398,6 +410,37 @@ export const HelsinkiViewer = ({
     return () => clearTimeout(failsafeTimer)
   }, [loading])
 
+  // Click-outside and touch handler for POI info box
+  useEffect(() => {
+    if (!selectedPOIInfo) return
+
+    const handleInteractionOutside = (event: MouseEvent | TouchEvent) => {
+      const target = event.target as HTMLElement
+
+      // Check if interaction is outside the info box
+      const isOutsideInfoBox = poiInfoBoxRef.current && !poiInfoBoxRef.current.contains(target)
+
+      // Check if interaction is on a POI button (allow POI clicks to handle themselves)
+      const isOnPOIButton = target.closest('.poi-item, .poi-fan-item, .poi-fan-lead, .poi-layer-item')
+
+      if (isOutsideInfoBox && !isOnPOIButton) {
+        setSelectedPOIInfo(null)
+      }
+    }
+
+    // Add listener after a short delay to prevent immediate closing
+    const timeoutId = setTimeout(() => {
+      document.addEventListener('mousedown', handleInteractionOutside)
+      document.addEventListener('touchstart', handleInteractionOutside)
+    }, 100)
+
+    return () => {
+      clearTimeout(timeoutId)
+      document.removeEventListener('mousedown', handleInteractionOutside)
+      document.removeEventListener('touchstart', handleInteractionOutside)
+    }
+  }, [selectedPOIInfo])
+
   const handlePOISelect = (poi: PointOfInterest) => {
     if (sceneRef.current && (sceneRef.current as any).focusPOI) {
       const poiKey = Object.entries(POINTS_OF_INTEREST).find(
@@ -408,6 +451,13 @@ export const HelsinkiViewer = ({
         setActivePOIKey(poiKey)
         setIsCameraFlying(true)
         ;(sceneRef.current as any).focusPOI(poiKey)
+
+        // Show info box for all POIs except Founders House
+        if (poiKey !== 'FOUNDERS_HOUSE') {
+          setSelectedPOIInfo(poi)
+        } else {
+          setSelectedPOIInfo(null)
+        }
 
         setTimeout(() => {
           setIsCameraFlying(false)
@@ -559,7 +609,7 @@ export const HelsinkiViewer = ({
       )}
 
       {scrollProgress >= 1 && (
-       
+
        <motion.div
           className="drag-cursor-indicator"
           initial={{ opacity: 0 }}
@@ -573,6 +623,13 @@ export const HelsinkiViewer = ({
           <img src="/assets/icons/mapdragicon.svg" alt="Drag to explore" className="cursor-icon" />
         </motion.div>
       )}
+
+      <div ref={poiInfoBoxRef}>
+        <POIInfoBox
+          poi={selectedPOIInfo}
+          onClose={() => setSelectedPOIInfo(null)}
+        />
+      </div>
     </>
   )
 }

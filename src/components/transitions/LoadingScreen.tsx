@@ -66,7 +66,15 @@ export const LoadingScreen = ({ onComplete, duration, scrollProgress, isReturnVi
   const [showSkipButton, setShowSkipButton] = useState(false)
   const [hasSkipped, setHasSkipped] = useState(false)
   const [waitingForConsent, setWaitingForConsent] = useState(false)
-  const [soundEnabled, setSoundEnabled] = useState(true)
+  const [soundEnabled, setSoundEnabled] = useState(() => {
+    // Restore user's audio preference from localStorage
+    try {
+      const saved = localStorage.getItem('fh_audio_muted')
+      return saved !== 'true' // Invert because soundEnabled is opposite of muted
+    } catch {
+      return true // Default to sound enabled
+    }
+  })
   const consentGivenRef = useRef(false)
   const startTimeRef = useRef<number>(0)
   const pausedAtRef = useRef<number>(0)
@@ -74,26 +82,25 @@ export const LoadingScreen = ({ onComplete, duration, scrollProgress, isReturnVi
   const audioContextRef = useRef<AudioContext | null>(null)
   const lowPassFilterRef = useRef<BiquadFilterNode | null>(null)
 
-  // Initialize audio at 0.5 volume on return visits (autoplay with sound)
+  // Initialize audio on return visits
+  // Start with volume at 0 to avoid autoplay failures affecting Web Audio API initialization
+  // Let the Web Audio API gain nodes handle the actual volume control
   useEffect(() => {
     if (isReturn && audioRef.current && audio2Ref.current) {
-      audioRef.current.volume = 0.5
-      audio2Ref.current.volume = 0.3
-      
+      // Set element volumes to 0 - Web Audio gain nodes will control actual volume
+      audioRef.current.volume = 0
+      audio2Ref.current.volume = 0
+
+      // Try to start playback (required for Web Audio to work)
       audioRef.current.play().catch(err => {
-        console.error('Audio autoplay failed:', err)
-        // If autoplay with sound fails, try muted
-        if (audioRef.current) {
-          audioRef.current.volume = 0
-          audioRef.current.play().catch(err2 => console.error('Muted autoplay also failed:', err2))
-        }
+        console.log('Audio autoplay on return visit:', err.message)
       })
-      
+
       // Delay ambience by 2 seconds
       setTimeout(() => {
         if (audio2Ref.current) {
           audio2Ref.current.play().catch(err => {
-            console.error('Ambience autoplay failed:', err)
+            console.log('Ambience autoplay on return visit:', err.message)
           })
         }
       }, 2000)
@@ -164,6 +171,13 @@ export const LoadingScreen = ({ onComplete, duration, scrollProgress, isReturnVi
       // Set user muted state
       if (isUserMutedRef) {
         isUserMutedRef.current = !soundEnabled
+      }
+
+      // Save preference to localStorage
+      try {
+        localStorage.setItem('fh_audio_muted', (!soundEnabled).toString())
+      } catch (err) {
+        console.error('Failed to save audio preference:', err)
       }
       
       // Gradually fade in music to target volume via gain nodes (if Web Audio API is set up)

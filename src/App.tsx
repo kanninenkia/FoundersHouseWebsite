@@ -31,7 +31,15 @@ function AppContent() {
   const gainNodeRef = useRef<GainNode | null>(null)
   const gain2NodeRef = useRef<GainNode | null>(null) // Separate gain for second track
   const previousPathnameRef = useRef<string>(location.pathname)
-  const isUserMutedRef = useRef(false) // Track if user has manually muted audio
+  // Restore user's audio preference from localStorage
+  const isUserMutedRef = useRef(() => {
+    try {
+      const saved = localStorage.getItem('fh_audio_muted')
+      return saved === 'true'
+    } catch {
+      return false
+    }
+  })
   const [isTransitionActive, setIsTransitionActive] = useState(false)
   const [isReturnVisit, setIsReturnVisit] = useState(() => {
     return sessionStorage.getItem('hasVisitedMap') === 'true'
@@ -150,28 +158,29 @@ function AppContent() {
         
         // Create gain node for music
         gainNodeRef.current = audioContextRef.current.createGain()
-        // Initialize gain to match current audio element volume (for smooth transition from element control to Web Audio)
-        gainNodeRef.current.gain.value = audioRef.current.volume
-        
+        // Initialize gain based on user's saved preference
+        // If not muted, set to target volumes; if muted, start at 0
+        const initialMusicGain = isUserMutedRef.current ? 0 : 0.5
+        gainNodeRef.current.gain.value = initialMusicGain
+
         // Connect: source -> filter -> gain -> destination
         audioSourceRef.current.connect(lowPassFilterRef.current)
         lowPassFilterRef.current.connect(gainNodeRef.current)
         gainNodeRef.current.connect(audioContextRef.current.destination)
-        
+
         // === TRACK 2: Ambience with volume control only ===
         audio2SourceRef.current = audioContextRef.current.createMediaElementSource(audio2Ref.current)
-        
+
         // Create gain node for ambience (no filter)
         gain2NodeRef.current = audioContextRef.current.createGain()
-        // Initialize gain to match current audio element volume
-        gain2NodeRef.current.gain.value = audio2Ref.current.volume
-        
+        // Initialize gain based on user's saved preference and current page
+        const isMapPage = location.pathname === '/'
+        const initialAmbienceGain = isUserMutedRef.current ? 0 : (isMapPage ? 0.5 : 0)
+        gain2NodeRef.current.gain.value = initialAmbienceGain
+
         // Connect: source -> gain -> destination (no filter)
         audio2SourceRef.current.connect(gain2NodeRef.current)
         gain2NodeRef.current.connect(audioContextRef.current.destination)
-        
-        // Initialize user muted state based on current volume
-        isUserMutedRef.current = audioRef.current.volume === 0
         
         console.log('✅ Audio filter chain initialized successfully', {
           contextState: audioContextRef.current.state,

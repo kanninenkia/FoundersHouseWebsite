@@ -131,6 +131,12 @@ export const NavBar = ({
         if (isUserMutedRef) {
           isUserMutedRef.current = false
         }
+        // Save preference to localStorage
+        try {
+          localStorage.setItem('fh_audio_muted', 'false')
+        } catch (err) {
+          console.error('Failed to save audio preference:', err)
+        }
         setIsMuted(false)
       } else {
         // Mute via gain nodes
@@ -144,6 +150,12 @@ export const NavBar = ({
         // Update mute state
         if (isUserMutedRef) {
           isUserMutedRef.current = true
+        }
+        // Save preference to localStorage
+        try {
+          localStorage.setItem('fh_audio_muted', 'true')
+        } catch (err) {
+          console.error('Failed to save audio preference:', err)
         }
         setIsMuted(true)
       }

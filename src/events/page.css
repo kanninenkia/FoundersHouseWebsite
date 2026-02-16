@@ -117,7 +117,7 @@ body.events-cursor.events-cursor-interactive .custom-cursor {
     align-items: flex-start;
     bottom: 5vh;
     gap: 30%;
-    pointer-events: auto;
+    pointer-events: none;
 }
 
 .events-page .header-h1-wrapper {

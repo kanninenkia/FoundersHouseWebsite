@@ -29,6 +29,7 @@ const POILayer = ({
   onPOISelect,
 }: POILayerProps) => {
   const itemRefs = useRef<Record<string, HTMLDivElement | null>>({})
+  const hoverStates = useRef<Record<string, { current: number; target: number }>>({})
 
   const poiList = useMemo(
     () =>
@@ -90,13 +91,24 @@ const POILayer = ({
 
         const x = (vector.x * 0.5 + 0.5) * size.x
         const y = (-vector.y * 0.5 + 0.5) * size.y
-        const scale = activePOIKey === key ? BASE_SCALE * 1.25 : BASE_SCALE
+        const baseScale = activePOIKey === key ? BASE_SCALE * 1.25 : BASE_SCALE
+
+        // Initialize hover state if not exists
+        if (!hoverStates.current[key]) {
+          hoverStates.current[key] = { current: 1, target: 1 }
+        }
+
+        // Smooth lerp for hover scale (200ms ~ 0.25 lerp factor at 60fps)
+        const hoverState = hoverStates.current[key]
+        hoverState.current += (hoverState.target - hoverState.current) * 0.25
+
+        const finalScale = baseScale * hoverState.current
 
         // Only update transform when visible to avoid jitter during fade-out
         if (el.style.opacity !== '0') {
           el.style.setProperty('--poi-x', `${x}px`)
           el.style.setProperty('--poi-y', `${y}px`)
-          el.style.setProperty('--poi-scale', String(scale))
+          el.style.setProperty('--poi-scale', String(finalScale))
         }
         el.style.opacity = '1'
       })
@@ -121,6 +133,16 @@ const POILayer = ({
           role="button"
           tabIndex={0}
           onClick={() => onPOISelect?.(poi)}
+          onMouseEnter={() => {
+            if (hoverStates.current[key]) {
+              hoverStates.current[key].target = 1.1
+            }
+          }}
+          onMouseLeave={() => {
+            if (hoverStates.current[key]) {
+              hoverStates.current[key].target = 1
+            }
+          }}
           onKeyDown={(event) => {
             if (event.key === 'Enter' || event.key === ' ') {
               event.preventDefault()

@@ -29,6 +29,7 @@ export interface PointOfInterest {
   id: string
   name: string
   description: string
+  website?: string
   mapCoords: {
     x: number   // Map X: positive = right, negative = left
     y: number   // Map Y: positive = north, negative = south
@@ -54,6 +55,7 @@ export const FOUNDERS_HOUSE_POI: PointOfInterest = {
   id: 'founders-house',
   name: 'Founders House',
   description: 'The heart of innovation and entrepreneurship',
+  website: 'https://foundershouse.fi',
   mapCoords: {
     x: 30.77,
     y: 533.42
@@ -83,7 +85,8 @@ export const FOUNDERS_HOUSE_SCREEN_POS = new THREE.Vector3(30.77, -20.14, -533.4
 export const OURA_POI: PointOfInterest = {
   id: 'oura',
   name: 'Oura',
-  description: 'Oura Ring - Health technology and wearables',
+  description: 'Smart ring for health metrics and personalized wellness insights',
+  website: 'https://ouraring.com',
   mapCoords: {
     x: 778.20,
     y: 517.65
@@ -106,7 +109,8 @@ export const OURA_POI: PointOfInterest = {
 export const SUPERCELL_POI: PointOfInterest = {
   id: 'supercell',
   name: 'Supercell',
-  description: 'Supercell - Mobile game developer',
+  description: 'Creating games played by millions for years and remembered forever',
+  website: 'https://supercell.com',
   mapCoords: {
     x: -530.54,
     y: -295.63
@@ -130,7 +134,8 @@ export const SUPERCELL_POI: PointOfInterest = {
 export const RELEX_POI: PointOfInterest = {
   id: 'relex',
   name: 'Relex',
-  description: 'Relex - Supply chain and retail planning',
+  description: 'AI-powered supply chain and retail planning platform',
+  website: 'https://relexsolutions.com',
   mapCoords: {
     x: -250,
     y: 400
@@ -153,7 +158,8 @@ export const RELEX_POI: PointOfInterest = {
 export const SILO_POI: PointOfInterest = {
   id: 'silo',
   name: 'Silo',
-  description: 'Silo - Technology and innovation',
+  description: 'Leading AI lab building human-centric artificial intelligence solutions',
+  website: 'https://silo.ai',
   mapCoords: {
     x: 65.16,
     y: 371.43
@@ -176,7 +182,8 @@ export const SILO_POI: PointOfInterest = {
 export const WOLT_POI: PointOfInterest = {
   id: 'wolt',
   name: 'Wolt',
-  description: 'Wolt - Food delivery and retail technology',
+  description: 'Technology company delivering food and merchandise to neighborhoods worldwide',
+  website: 'https://wolt.com',
   mapCoords: {
     x: -107.40,
     y: 774.90
@@ -199,7 +206,8 @@ export const WOLT_POI: PointOfInterest = {
 export const LIFELINE_VENTURES_POI: PointOfInterest = {
   id: 'lifeline-ventures',
   name: 'Lifeline Ventures',
-  description: 'Lifeline Ventures - Venture capital firm',
+  description: 'Early-stage VC supporting resilient founders from day one',
+  website: 'https://lifelineventures.com',
   mapCoords: {
     x: 218.08,
     y: -594.14
@@ -222,7 +230,8 @@ export const LIFELINE_VENTURES_POI: PointOfInterest = {
 export const SWAPPIE_POI: PointOfInterest = {
   id: 'swappie',
   name: 'Swappie',
-  description: 'Swappie - Refurbished smartphone marketplace',
+  description: 'Europe\'s #1 marketplace for refurbished smartphones',
+  website: 'https://swappie.com',
   mapCoords: {
     x: -622.55,
     y: 107.02
@@ -245,7 +254,8 @@ export const SWAPPIE_POI: PointOfInterest = {
 export const LINEAR_POI: PointOfInterest = {
   id: 'linear',
   name: 'Linear',
-  description: 'Linear - Project management and issue tracking',
+  description: 'Fast issue tracking and project management for high-performing teams',
+  website: 'https://linear.app',
   mapCoords: {
     x: 163.29,
     y: 289.33
@@ -268,7 +278,8 @@ export const LINEAR_POI: PointOfInterest = {
 export const SMARTLY_POI: PointOfInterest = {
   id: 'smartly',
   name: 'Smartly',
-  description: 'Smartly - Social media advertising automation',
+  description: 'AI advertising platform powering beautifully effective ads',
+  website: 'https://smartly.io',
   mapCoords: {
     x: 432.35,
     y: 1003.46
@@ -291,7 +302,8 @@ export const SMARTLY_POI: PointOfInterest = {
 export const ILLUSIAN_POI: PointOfInterest = {
   id: 'illusian',
   name: 'Illusian',
-  description: 'Illusian - Technology and innovation',
+  description: 'Family office of Supercell\'s founder supporting next-gen entrepreneurs',
+  website: 'https://illusian.org',
   mapCoords: {
     x: 948.37,
     y: 664.52

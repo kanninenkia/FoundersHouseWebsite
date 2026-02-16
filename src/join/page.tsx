@@ -278,7 +278,9 @@ export default function JoinPage({ audioRef, audio2Ref }: { audioRef?: React.Mut
                           <div className="img-square resident-square square-br-2" />
                           <div className="img-square resident-square square-br-3" />
                         </div>
-                        <Button className="button">{joinContent.membershipTypes.resident.buttonText}</Button>
+                        <a href="https://forms.fillout.com/t/7TEkwvviqPus" target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none' }}>
+                          <Button className="button">{joinContent.membershipTypes.resident.buttonText}</Button>
+                        </a>
                       </div>
                     </ParallaxMotion>
                   </ParallaxMotion>
@@ -308,7 +310,9 @@ export default function JoinPage({ audioRef, audio2Ref }: { audioRef?: React.Mut
                           <div className="img-square member-square member-square-bl-2" />
                           <div className="img-square member-square member-square-bl-3" />
                         </div>
-                        <Button className="button">{joinContent.membershipTypes.member.buttonText}</Button>
+                        <a href="https://forms.fillout.com/t/mt825jk2bGus" target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none' }}>
+                          <Button className="button">{joinContent.membershipTypes.member.buttonText}</Button>
+                        </a>
                       </div>
                     </ParallaxMotion>
                   </ParallaxMotion>
