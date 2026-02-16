@@ -103,7 +103,7 @@ function initializeAnalytics(): void {
   if (typeof window !== 'undefined' && !(window as any).gtag) {
     const script = document.createElement('script');
     script.async = true;
-    script.src = 'https://www.googletagmanager.com/gtag/js?id=GA_MEASUREMENT_ID'; // Replace with actual GA ID
+    script.src = 'https://www.googletagmanager.com/gtag/js?id=G-R1WCS12085'; // Replace with actual GA ID
     document.head.appendChild(script);
 
     (window as any).dataLayer = (window as any).dataLayer || [];
@@ -111,7 +111,7 @@ function initializeAnalytics(): void {
       (window as any).dataLayer.push(arguments);
     };
     (window as any).gtag('js', new Date());
-    (window as any).gtag('config', 'GA_MEASUREMENT_ID'); // Replace with actual GA ID
+    (window as any).gtag('config', 'G-R1WCS12085'); // Replace with actual GA ID
   }
 
   // Hotjar
@@ -134,7 +134,7 @@ function initializeAnalytics(): void {
 function blockAnalytics(): void {
   // Disable Google Analytics
   if (typeof window !== 'undefined') {
-    (window as any)['ga-disable-GA_MEASUREMENT_ID'] = true; // Replace with actual GA ID
+    (window as any)['ga-disable-G-R1WCS12085'] = true; // Replace with actual GA ID
   }
   
   // Remove Hotjar
