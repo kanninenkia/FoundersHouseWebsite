@@ -12,6 +12,7 @@ const PageTransition: React.FC<PageTransitionProps> = ({ children, skipEnter = f
   const [showPixelCover, setShowPixelCover] = useState(false);
   const [showPixelReveal, setShowPixelReveal] = useState(false);
   const [showContent, setShowContent] = useState(skipEnter);
+  const [suspenseResolved, setSuspenseResolved] = useState(false);
   const timersRef = useRef<number[]>([]);
   const exitRafRef = useRef<number | null>(null);
 
@@ -65,6 +66,7 @@ const PageTransition: React.FC<PageTransitionProps> = ({ children, skipEnter = f
       setShowContent(true);
       setShowPixelCover(false);
       setShowPixelReveal(false);
+      setSuspenseResolved(true);
       return;
     }
     clearTimers();
@@ -72,48 +74,28 @@ const PageTransition: React.FC<PageTransitionProps> = ({ children, skipEnter = f
     setShowPixelCover(false);
     setShowPixelReveal(false);
     setShowContent(false);
+    setSuspenseResolved(false);
+  }, [isPresent, skipEnter]);
 
-    // Use requestAnimationFrame to ensure state updates are processed correctly on mobile
-    requestAnimationFrame(() => {
-      const startRevealTimer = window.setTimeout(() => {
-        requestAnimationFrame(() => {
-          setShowContent(true);
-          setShowPixelReveal(true);
-        });
-        const stopRevealTimer = window.setTimeout(
-          () => {
-            requestAnimationFrame(() => setShowPixelReveal(false));
-          },
-          maxDelayMs + TRANSITION_TIMING.overlayFadeMs
-        );
-        timersRef.current.push(stopRevealTimer);
-      }, totalDurationMs + newPageDelayMs + pixelRevealDelayMs);
-      timersRef.current.push(startRevealTimer);
-
-      const failSafeTimer = window.setTimeout(() => {
-        requestAnimationFrame(() => {
-          setShowContent(true);
-          setShowPixelCover(false);
-          setShowPixelReveal(false);
-        });
-      }, totalDurationMs + newPageDelayMs + pixelRevealDelayMs + maxDelayMs + TRANSITION_TIMING.overlayFadeMs + 200);
-      timersRef.current.push(failSafeTimer);
-
-      const watchdogTimer = window.setTimeout(() => {
-        requestAnimationFrame(() => {
-          setShowContent(true);
-          setShowPixelCover(false);
-          setShowPixelReveal(false);
-        });
-      }, maxTransitionMs);
-      timersRef.current.push(watchdogTimer);
-    });
-
-    return () => {
-      clearTimers();
-      clearExitRaf();
-    };
-  }, [isPresent, totalDurationMs, newPageDelayMs, maxDelayMs, pixelRevealDelayMs, skipEnter]);
+  // When Suspense resolves (new page is ready), trigger pixel-in
+  useEffect(() => {
+    if (!suspenseResolved || skipEnter) return;
+    // Show content and pixel-in overlay
+    setShowContent(true);
+    setShowPixelReveal(true);
+    // Hide pixel-in overlay after animation
+    const stopRevealTimer = window.setTimeout(() => {
+      setShowPixelReveal(false);
+    }, maxDelayMs + TRANSITION_TIMING.overlayFadeMs);
+    timersRef.current.push(stopRevealTimer);
+    // Failsafe: hide overlays if something goes wrong
+    const failSafeTimer = window.setTimeout(() => {
+      setShowPixelReveal(false);
+      setShowPixelCover(false);
+    }, maxDelayMs + TRANSITION_TIMING.overlayFadeMs + 400);
+    timersRef.current.push(failSafeTimer);
+    return () => clearTimeout(stopRevealTimer);
+  }, [suspenseResolved, skipEnter, maxDelayMs]);
   return (
     <>
       {/* Pixel cover on exit - progressively takes over the screen */}
@@ -134,15 +116,24 @@ const PageTransition: React.FC<PageTransitionProps> = ({ children, skipEnter = f
           minHeight: "100vh"
         }}
         initial={{ opacity: 0 }}
-        animate={{ opacity: showContent ? 1 : 0 }}
+        animate={{ opacity: showPixelCover ? 1 : (showContent ? 1 : 0) }}
         transition={{
-          duration: pageFadeMs / 1000,
+          duration: showContent ? pageFadeMs / 1000 : 0,
           delay: 0,
           ease: pageFadeEase
         }}
       >
-        <Suspense fallback={<div style={{ background: '#590D0F', width: '100vw', height: '100vh' }} />}>
-          {children}
+        <Suspense
+          fallback={
+            <div
+              style={{ background: 'transparent', width: '100vw', height: '100vh' }}
+              ref={el => {
+                if (el && !suspenseResolved) setSuspenseResolved(false);
+              }}
+            />
+          }
+        >
+          <PageTransitionContent onReady={() => setSuspenseResolved(true)}>{children}</PageTransitionContent>
         </Suspense>
       </motion.div>
     </>

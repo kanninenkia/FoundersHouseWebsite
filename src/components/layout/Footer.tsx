@@ -1,5 +1,5 @@
 import React from 'react'
-import { Link } from 'react-router-dom'
+import { TransitionLink } from '../ui/TransitionLink'
 import './Footer.css'
 import { MagneticElement } from '../ui'
 
@@ -49,13 +49,13 @@ const Footer: React.FC = () => {
       <div className="footer-content">
         {/* Left Column: Brand Logo */}
         <div className="footer-brand">
-          <Link to="/">
+          <TransitionLink to="/">
             <img
               src="/assets/logos/FHLOGO-footer.svg"
               alt="Founders House"
               className="footer-logo"
             />
-          </Link>
+          </TransitionLink>
         </div>
 
         {/* Center: Footer Navigation Links */}
@@ -63,33 +63,33 @@ const Footer: React.FC = () => {
           {/* Column 1: Map */}
           <div className="footer-column">
             <MagneticElement strength={0.3} range={80}>
-              <Link to="/" className="footer-link footer-heading">MAP</Link>
+              <TransitionLink to="/" className="footer-link footer-heading">MAP</TransitionLink>
             </MagneticElement>
             <MagneticElement strength={0.3} range={80}>
-              <Link to="/home" className="footer-link">HOME</Link>
+              <TransitionLink to="/home" className="footer-link">HOME</TransitionLink>
             </MagneticElement>
           </div>
 
           {/* Column 2: About */}
           <div className="footer-column">
             <MagneticElement strength={0.3} range={80}>
-              <Link to="/about" className="footer-link footer-heading">ABOUT</Link>
+              <TransitionLink to="/about" className="footer-link footer-heading">ABOUT</TransitionLink>
             </MagneticElement>
             <MagneticElement strength={0.3} range={80}>
-              <Link to="/events" className="footer-link">EVENTS</Link>
+              <TransitionLink to="/events" className="footer-link">EVENTS</TransitionLink>
             </MagneticElement>
           </div>
 
           {/* Column 3: Join & Legal */}
           <div className="footer-column">
             <MagneticElement strength={0.3} range={80}>
-              <Link to="/join" className="footer-link footer-heading">JOIN</Link>
+              <TransitionLink to="/join" className="footer-link footer-heading">JOIN</TransitionLink>
             </MagneticElement>
             <MagneticElement strength={0.3} range={80}>
-              <Link to="/privacy-policy" className="footer-link">PRIVACY POLICY</Link>
+              <TransitionLink to="/privacy-policy" className="footer-link">PRIVACY POLICY</TransitionLink>
             </MagneticElement>
             <MagneticElement strength={0.3} range={80}>
-              <Link to="/cookies" className="footer-link">COOKIES</Link>
+              <TransitionLink to="/cookies" className="footer-link">COOKIES</TransitionLink>
             </MagneticElement>
           </div>
         </div>

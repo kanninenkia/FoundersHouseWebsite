@@ -5,7 +5,7 @@
  */
 
 import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useTransition } from '../transitions/TransitionContext'
 import { AnimatedHamburger } from '../ui'
 import { FullScreenMenu } from './FullScreenMenu'
 import './NavBar.css'
@@ -33,7 +33,7 @@ export const NavBar = ({
   audioRef,
   audio2Ref
 }: NavBarProps) => {
-  const navigate = useNavigate()
+  const { navigateWithTransition } = useTransition()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isMuted, setIsMuted] = useState(() => {
     // Simple check: if audio is playing, it's not muted
@@ -185,10 +185,9 @@ export const NavBar = ({
             pointerEvents: opacity > 0 ? 'auto' : 'none'
           }}
         >
-          <button 
+          <button
             onClick={() => {
-              sessionStorage.setItem('hasVisitedMap', 'true')
-              navigate('/')
+              navigateWithTransition('/')
             }}
             style={{ 
               display: 'block', 

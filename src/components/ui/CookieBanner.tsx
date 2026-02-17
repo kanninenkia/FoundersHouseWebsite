@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
+import { TransitionLink } from './TransitionLink';
 import { hasConsented, acceptAllCookies, rejectAllCookies } from '../../helpers/cookieManager';
 import './CookieBanner.css';
 
@@ -45,29 +46,29 @@ export default function CookieBanner({ onChoice }: CookieBannerProps) {
           </p>
         </div>
         <div className="cookie-banner-actions">
-          <button 
-            className="cookie-btn cookie-btn-reject" 
+          <button
+            className="cookie-btn cookie-btn-reject"
             onClick={handleRejectAll}
           >
             Reject All
           </button>
-          <Link 
-            to="/cookies" 
+          <TransitionLink
+            to="/cookies"
             className="cookie-btn cookie-btn-customize"
           >
             Customize
-          </Link>
-          <button 
-            className="cookie-btn cookie-btn-accept" 
+          </TransitionLink>
+          <button
+            className="cookie-btn cookie-btn-accept"
             onClick={handleAcceptAll}
           >
             Accept All
           </button>
         </div>
         <div className="cookie-banner-links">
-          <Link to="/privacy-policy">Privacy Policy</Link>
+          <TransitionLink to="/privacy-policy">Privacy Policy</TransitionLink>
           <span className="separator">•</span>
-          <Link to="/cookies">Cookie Settings</Link>
+          <TransitionLink to="/cookies">Cookie Settings</TransitionLink>
         </div>
       </div>
     </div>

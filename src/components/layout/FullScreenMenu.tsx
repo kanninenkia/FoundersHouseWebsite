@@ -1,5 +1,6 @@
 import { motion, AnimatePresence } from 'framer-motion'
-import { useNavigate, useLocation } from 'react-router-dom'
+import { useLocation } from 'react-router-dom'
+import { useTransition } from '../transitions/TransitionContext'
 import { AnimatedHamburger } from '../ui'
 import './FullScreenMenu.css'
 import { useState, useRef, useEffect, useMemo } from 'react'
@@ -11,7 +12,7 @@ interface FullScreenMenuProps {
 }
 
 export const FullScreenMenu = ({ isOpen, onClose, currentPage = '/' }: FullScreenMenuProps) => {
-  const navigate = useNavigate()
+  const { navigateWithTransition } = useTransition()
   const location = useLocation()
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 })
   const isDesktop = typeof window !== 'undefined' && window.innerWidth > 1024
@@ -53,12 +54,7 @@ export const FullScreenMenu = ({ isOpen, onClose, currentPage = '/' }: FullScree
   }, [])
 
   const handleNavigation = (path: string) => {
-    if (path === '/') {
-      sessionStorage.setItem('hasVisitedMap', 'true')
-    }
-    // Navigate first (start pixel transition), then close menu after pixels cover
-    navigate(path)
-    // Close menu after pixel transition starts (let pixels cover the menu too)
+    navigateWithTransition(path)
     setTimeout(() => {
       onClose()
     }, 100)

@@ -1,12 +1,13 @@
 import { useState, useEffect, useRef, lazy } from 'react'
-import { BrowserRouter, Routes, Route, useNavigate, useLocation } from 'react-router-dom'
-import { LoadingScreen, TransitionOverlay, PageTransition } from './components/transitions'
+import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom'
+import { LoadingScreen, TransitionOverlay } from './components/transitions'
+import { TransitionProvider, useTransition } from './components/transitions/TransitionContext'
+import PageContent from './components/transitions/PageContent'
 import CookieBanner from './components/ui/CookieBanner'
 import { initializeCookieManager } from './helpers/cookieManager'
 import Lenis from 'lenis'
 import 'lenis/dist/lenis.css'
 import './App.css'
-import { AnimatePresence } from 'framer-motion'
 import { applyPageMeta, type PageMetaConfig } from './helpers/pageMeta'
 
 // Lazy load route components
@@ -18,9 +19,21 @@ const PrivacyPolicyPage = lazy(() => import('./privacy-policy/page'))
 const CookiesPage = lazy(() => import('./cookies/page'))
 const NotFoundPage = lazy(() => import('./not-found/page'))
 
+/** Derives overlay isActive/mode from the transition phase */
+function AppLevelOverlay() {
+  const { phase, revealMaxDelayMs } = useTransition()
+
+  const isActive = phase === 'covering' || phase === 'covered' || phase === 'revealing'
+  const mode = phase === 'revealing' ? 'in' as const : 'out' as const
+  // Pass home-specific longer stagger only during the reveal phase
+  const maxDelayMs = mode === 'in' && revealMaxDelayMs !== undefined ? revealMaxDelayMs : undefined
+
+  return <TransitionOverlay isActive={isActive} mode={mode} maxDelayMs={maxDelayMs} />
+}
+
 function AppContent() {
-  const navigate = useNavigate()
   const location = useLocation()
+  const { navigateWithTransition } = useTransition()
   const isInitialMount = useRef(true)
   const audioRef = useRef<HTMLAudioElement | null>(null)
   const audio2Ref = useRef<HTMLAudioElement | null>(null) // Second audio track
@@ -41,7 +54,6 @@ function AppContent() {
     }
   }
   const isUserMutedRef = useRef(getInitialMutedState())
-  const [isTransitionActive, setIsTransitionActive] = useState(false)
   const [isReturnVisit, setIsReturnVisit] = useState(() => {
     return sessionStorage.getItem('hasVisitedMap') === 'true'
   })
@@ -70,7 +82,7 @@ function AppContent() {
     },
     '/events': {
       title: 'Events — Founders House',
-      description: 'Curated founder events in Helsinki. Learn what’s next and how to join.',
+      description: 'Curated founder events in Helsinki. Learn what is next and how to join.',
       path: '/events'
     },    '/privacy-policy': {
       title: 'Privacy Policy — Founders House',
@@ -83,7 +95,7 @@ function AppContent() {
       path: '/cookies'
     },    '*': {
       title: '404 — Founders House',
-      description: 'We couldn’t find that page.',
+      description: 'We could not find that page.',
       path: '*',
       robots: 'noindex,follow'
     }
@@ -123,10 +135,10 @@ function AppContent() {
 
   useEffect(() => {
     setHasMounted(true)
-    
+
     // Initialize cookie manager
     initializeCookieManager()
-    
+
     // Set up audio context after component mounts
     if (audioRef.current && audio2Ref.current) {
       setAudioReady(true)
@@ -135,28 +147,28 @@ function AppContent() {
 
   // Setup audio filter chain when audio is initialized
   useEffect(() => {
-    console.log('🔍 Audio setup check:', { 
-      hasAudioElement: !!audioRef.current, 
+    console.log('🔍 Audio setup check:', {
+      hasAudioElement: !!audioRef.current,
       hasAudioContext: !!audioContextRef.current,
       audioReady
     })
-    
+
     if (audioReady && audioRef.current && audio2Ref.current && !audioContextRef.current) {
       try {
         console.log('🎵 Setting up audio filter chain...')
-        
+
         // Create audio context
         audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)()
-        
+
         // === TRACK 1: Main music with low-pass filter ===
         audioSourceRef.current = audioContextRef.current.createMediaElementSource(audioRef.current)
-        
+
         // Create low pass filter for music
         lowPassFilterRef.current = audioContextRef.current.createBiquadFilter()
         lowPassFilterRef.current.type = 'lowpass'
         lowPassFilterRef.current.frequency.value = 22000 // Start with no filtering (above human hearing)
         lowPassFilterRef.current.Q.value = 1
-        
+
         // Create gain node for music
         gainNodeRef.current = audioContextRef.current.createGain()
         // Initialize gain based on user's saved preference
@@ -182,25 +194,25 @@ function AppContent() {
         // Connect: source -> gain -> destination (no filter)
         audio2SourceRef.current.connect(gain2NodeRef.current)
         gain2NodeRef.current.connect(audioContextRef.current.destination)
-        
+
         console.log('✅ Audio filter chain initialized successfully', {
           contextState: audioContextRef.current.state,
           sampleRate: audioContextRef.current.sampleRate
         })
-        
+
         // Expose gain nodes and mute state to window for NavBar access
         ;(window as any).__gainNodeRef = gainNodeRef
         ;(window as any).__gain2NodeRef = gain2NodeRef
         ;(window as any).__isUserMutedRef = isUserMutedRef
         ;(window as any).__audioContext = audioContextRef.current
-        
+
         // Resume audio context if it's suspended (required in some browsers)
         if (audioContextRef.current.state === 'suspended') {
           audioContextRef.current.resume().then(() => {
             console.log('✅ AudioContext resumed')
           })
         }
-        
+
         // Store reference globally for LoadingScreen to access
         (window as any).__audioContext = audioContextRef.current
       } catch (err) {
@@ -276,18 +288,16 @@ function AppContent() {
     sessionStorage.setItem('transitioningToLearnMore', 'true')
     sessionStorage.setItem('skipIntro', 'true')
     sessionStorage.setItem('hasVisitedMap', 'true')
-    navigate('/home')
+    navigateWithTransition('/home')
   }
 
   useEffect(() => {
     ;(window as any).navigateToLearnMore = handleLearnMoreClick
-    ;(window as any).setTransitionActive = setIsTransitionActive
 
     return () => {
       delete (window as any).navigateToLearnMore
-      delete (window as any).setTransitionActive
     }
-  }, [navigate])
+  }, [navigateWithTransition])
 
   return (
     <div className="App">
@@ -295,43 +305,41 @@ function AppContent() {
       <audio ref={audioRef} loop preload="auto">
         <source src="/assets/audio/background-music.mp3" type="audio/mpeg" />
       </audio>
-      
+
       {/* Second audio track - Ambient City Soundscape */}
       <audio ref={audio2Ref} loop preload="auto">
         <source src="/assets/audio/background-sounds.mp3" type="audio/mpeg" />
       </audio>
-      
-      <AnimatePresence mode="wait">
-        <Routes location={location} key={location.pathname}>
-          <Route
-            path="/"
-            element={
-              <PageTransition key="route-/" skipEnter>
-                <LoadingScreen
-                  onComplete={() => {
-                    sessionStorage.setItem('hasVisitedMap', 'true')
-                  }}
-                  duration={6000}
-                  scrollProgress={scrollProgress}
-                  onScrollProgressChange={setScrollProgress}
-                  isReturnVisit={isReturnVisit}
-                  audioRef={audioRef}
-                  audio2Ref={audio2Ref}
-                />
-              </PageTransition>
-            }
-          />
-          <Route path="/home" element={<PageTransition key="route-/home"><Home audioRef={audioRef} audio2Ref={audio2Ref} /></PageTransition>} />
-          <Route path="/about" element={<PageTransition key="route-/about"><AboutPage audioRef={audioRef} audio2Ref={audio2Ref} /></PageTransition>} />
-          <Route path="/join" element={<PageTransition key="route-/join"><JoinPage audioRef={audioRef} audio2Ref={audio2Ref} /></PageTransition>} />
-          <Route path="/events" element={<PageTransition key="route-/events"><EventsPage audioRef={audioRef} audio2Ref={audio2Ref} /></PageTransition>} />
-          <Route path="/privacy-policy" element={<PageTransition key="route-/privacy-policy"><PrivacyPolicyPage /></PageTransition>} />
-          <Route path="/cookies" element={<PageTransition key="route-/cookies"><CookiesPage /></PageTransition>} />
-          <Route path="*" element={<PageTransition key="route-*"><NotFoundPage /></PageTransition>} />
-        </Routes>
-      </AnimatePresence>
 
-      <TransitionOverlay isActive={isTransitionActive} />
+      <Routes>
+        <Route
+          path="/"
+          element={
+            <PageContent skipFadeIn>
+              <LoadingScreen
+                onComplete={() => {
+                  sessionStorage.setItem('hasVisitedMap', 'true')
+                }}
+                duration={6000}
+                scrollProgress={scrollProgress}
+                onScrollProgressChange={setScrollProgress}
+                isReturnVisit={isReturnVisit}
+                audioRef={audioRef}
+                audio2Ref={audio2Ref}
+              />
+            </PageContent>
+          }
+        />
+        <Route path="/home" element={<PageContent><Home audioRef={audioRef} audio2Ref={audio2Ref} /></PageContent>} />
+        <Route path="/about" element={<PageContent><AboutPage audioRef={audioRef} audio2Ref={audio2Ref} /></PageContent>} />
+        <Route path="/join" element={<PageContent><JoinPage audioRef={audioRef} audio2Ref={audio2Ref} /></PageContent>} />
+        <Route path="/events" element={<PageContent><EventsPage audioRef={audioRef} audio2Ref={audio2Ref} /></PageContent>} />
+        <Route path="/privacy-policy" element={<PageContent><PrivacyPolicyPage /></PageContent>} />
+        <Route path="/cookies" element={<PageContent><CookiesPage /></PageContent>} />
+        <Route path="*" element={<PageContent><NotFoundPage /></PageContent>} />
+      </Routes>
+
+      <AppLevelOverlay />
       <CookieBanner />
     </div>
   )
@@ -340,7 +348,9 @@ function AppContent() {
 function App() {
   return (
     <BrowserRouter>
-      <AppContent />
+      <TransitionProvider>
+        <AppContent />
+      </TransitionProvider>
     </BrowserRouter>
   )
 }

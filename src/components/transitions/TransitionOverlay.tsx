@@ -5,7 +5,6 @@
  * - Creates "pixel takeover" effect
  */
 
-import { AnimatePresence, motion } from 'framer-motion'
 import { useMemo } from 'react'
 import './TransitionOverlay.css'
 import { TRANSITION_TIMING } from './config'
@@ -86,37 +85,29 @@ export const TransitionOverlay = ({
   const blocks = useMemo(() => generateBlocks(adjustedCols, adjustedRows, maxDelayMs), [adjustedCols, adjustedRows, maxDelayMs])
   const isReveal = mode === 'in'
 
+  if (!isActive) return null
+
   return (
-    <AnimatePresence mode="wait">
-      {isActive && (
-        <motion.div
-          key={`transition-${mode}`}
-          className={`transition-overlay pixel-transition ${isReveal ? 'pixel-in' : 'pixel-out'}`}
-          initial={{ opacity: 1 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: TRANSITION_TIMING.overlayFadeMs / 1000 }}
-        >
-          {blocks.map((block) => {
-            // For pixel-out: blocks appear progressively (like LoadingScreen)
-            // For pixel-in: blocks disappear progressively (reverse)
-            const delay = isReveal ? maxDelayMs - block.delay : block.delay
-            return (
-              <div
-                key={`pixel-block-${block.id}`}
-                className="pixel-block"
-                style={{
-                  left: `${block.x}%`,
-                  top: `${block.y}%`,
-                  width: `${block.width}%`,
-                  height: `${block.height}%`,
-                  animationDelay: `${delay}ms`,
-                }}
-              />
-            )
-          })}
-        </motion.div>
-      )}
-    </AnimatePresence>
+    <div
+      key={`overlay-${mode}`}
+      className={`transition-overlay pixel-transition ${isReveal ? 'pixel-in' : 'pixel-out'}`}
+    >
+      {blocks.map((block) => {
+        const delay = isReveal ? maxDelayMs - block.delay : block.delay
+        return (
+          <div
+            key={`pixel-block-${block.id}`}
+            className="pixel-block"
+            style={{
+              left: `${block.x}%`,
+              top: `${block.y}%`,
+              width: `${block.width}%`,
+              height: `${block.height}%`,
+              animationDelay: `${delay}ms`,
+            }}
+          />
+        )
+      })}
+    </div>
   )
 }
