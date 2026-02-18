@@ -78,6 +78,9 @@ export const HelsinkiViewer = ({
   const [selectedPOIInfo, setSelectedPOIInfo] = useState<PointOfInterest | null>(null)
   const poiInfoBoxRef = useRef<HTMLDivElement>(null)
 
+  const [showExploreHint, setShowExploreHint] = useState(false)
+  const hintDismissedRef = useRef(false)
+
   const hasInteractedRef = useRef(false)
   const [isTransitionActive, setIsTransitionActive] = useState(false)
   const [isHoveringInteractive, setIsHoveringInteractive] = useState(false)
@@ -198,6 +201,34 @@ export const HelsinkiViewer = ({
     }
   }, [scrollProgress])
 
+  // Cycling explore hint: fade in after 5s, show for duration, hide, repeat
+  useEffect(() => {
+    if (!showUIState) {
+      setShowExploreHint(false)
+      return
+    }
+
+    hintDismissedRef.current = false
+    const timeouts: ReturnType<typeof setTimeout>[] = []
+
+    const cycle = (initialDelay: number) => {
+      const t1 = setTimeout(() => {
+        if (hintDismissedRef.current) return
+        setShowExploreHint(true)
+        const t2 = setTimeout(() => {
+          setShowExploreHint(false)
+          if (!hintDismissedRef.current) cycle(20000)
+        }, 10000)
+        timeouts.push(t2)
+      }, initialDelay)
+      timeouts.push(t1)
+    }
+
+    cycle(5000)
+
+    return () => timeouts.forEach(clearTimeout)
+  }, [showUIState])
+
   const isDemoNightMode = false
 
   const handleHeroTextOpacityChange = useCallback((opacity: number) => {
@@ -296,6 +327,13 @@ export const HelsinkiViewer = ({
     let lastMouseX = 0
     let lastMouseY = 0
 
+    const dismissHint = () => {
+      if (!hintDismissedRef.current) {
+        hintDismissedRef.current = true
+        setShowExploreHint(false)
+      }
+    }
+
     const handleMouseInteraction = (event: MouseEvent) => {
       if (event.type === 'mousemove') {
         if (event.clientX === lastMouseX && event.clientY === lastMouseY) {
@@ -303,6 +341,8 @@ export const HelsinkiViewer = ({
         }
         lastMouseX = event.clientX
         lastMouseY = event.clientY
+      } else {
+        dismissHint()
       }
 
       lastInteractionTime.current = Date.now()
@@ -314,6 +354,7 @@ export const HelsinkiViewer = ({
     }
 
     const handleTouchInteraction = () => {
+      dismissHint()
       lastInteractionTime.current = Date.now()
 
       if (!hasInteractedRef.current) {
@@ -323,6 +364,7 @@ export const HelsinkiViewer = ({
     }
 
     const handleWheelInteraction = () => {
+      dismissHint()
       lastInteractionTime.current = Date.now()
 
       if (!hasInteractedRef.current) {
@@ -623,6 +665,28 @@ export const HelsinkiViewer = ({
           <img src="/assets/icons/mapdragicon.svg" alt="Drag to explore" className="cursor-icon" />
         </motion.div>
       )}
+
+      <div
+        className="explore-hint"
+        style={{
+          position: 'fixed',
+          top: '5vh',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          opacity: showExploreHint ? 1 : 0,
+          transition: 'opacity 0.8s ease',
+          fontFamily: "'IBM Plex Sans', sans-serif",
+          fontWeight: 300,
+          color: '#797979',
+          fontSize: '0.8rem',
+          letterSpacing: '0em',
+          pointerEvents: 'none',
+          whiteSpace: 'nowrap',
+          zIndex: 100,
+        }}
+      >
+        Drag around to explore Finland's Startup Scene
+      </div>
 
       <div ref={poiInfoBoxRef}>
         <POIInfoBox

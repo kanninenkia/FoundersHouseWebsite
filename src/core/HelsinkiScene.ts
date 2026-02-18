@@ -167,6 +167,9 @@ export class HelsinkiScene {
       renderer: this.renderer,
     }).then((result) => {
       this.helsinkiModel = result.mainMap
+      // Wire up the actual model AABB as camera boundaries (replaces static MAP_BOUNDARIES)
+      const modelBox = new THREE.Box3().setFromObject(this.helsinkiModel)
+      this.controls.setBoundingBox(modelBox)
       this.loadFoundersHouseOverlay()
       // Create particles after model loads
       this.createFloatingParticles();
@@ -363,6 +366,10 @@ export class HelsinkiScene {
         this.angleRestoreAnimation.active = false
         this.angleRestoreAnimation = null
       }
+
+      // When the user drags away after clicking the FH badge, let the normal
+      // distance-based opacity logic take over again instead of forcing text visible.
+      this.isAtFoundersHouseInitialPosition = false
 
       this.controls.resetInteractionFlag()
       // Auto-tour manager disabled - no longer using inactivity timers

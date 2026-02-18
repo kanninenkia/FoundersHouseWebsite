@@ -27,20 +27,25 @@ export function TransitionProvider({ children }: { children: React.ReactNode }) 
   const skipRevealRef = useRef(false)
   const timersRef = useRef<number[]>([])
   const phaseRef = useRef<Phase>('idle')
+  const pendingRevealRef = useRef<{ effectiveRevealMaxDelayMs: number } | null>(null)
+  const routeWatchdogRef = useRef<number | null>(null)
 
   const {
     maxDelayMs,
     pixelHoldMs,
     newPageDelayMs,
-    pixelRevealDelayMs,
-    overlayFadeMs,
     maxTransitionMs,
+    routeCommitWatchdogMs,
   } = TRANSITION_TIMING
   const totalCoverMs = maxDelayMs + pixelHoldMs
 
   const clearTimers = () => {
     timersRef.current.forEach(t => clearTimeout(t))
     timersRef.current = []
+    if (routeWatchdogRef.current !== null) {
+      clearTimeout(routeWatchdogRef.current)
+      routeWatchdogRef.current = null
+    }
   }
 
   const setPhaseSync = (p: Phase) => {
@@ -80,30 +85,57 @@ export function TransitionProvider({ children }: { children: React.ReactNode }) 
         }, newPageDelayMs)
         timersRef.current.push(doneTimer)
       } else {
-        // Phase 3: Reveal new page with pixel-in
-        const revealTimer = window.setTimeout(() => {
-          setPhaseSync('revealing')
+        // Covering is done — cancel the short covering watchdog and arm a longer
+        // route-commit watchdog. Reveal fires reactively via location.pathname useEffect.
+        pendingRevealRef.current = { effectiveRevealMaxDelayMs }
+        clearTimers()
+        routeWatchdogRef.current = window.setTimeout(() => {
+          pendingRevealRef.current = null
+          routeWatchdogRef.current = null
+          setPhaseSync('idle')
           setContentReady(true)
-
-          // Phase 4: Reveal complete, back to idle
-          const doneTimer = window.setTimeout(() => {
-            setPhaseSync('idle')
-            setRevealMaxDelayMs(undefined)
-          }, effectiveRevealMaxDelayMs + overlayFadeMs)
-          timersRef.current.push(doneTimer)
-        }, newPageDelayMs + pixelRevealDelayMs)
-        timersRef.current.push(revealTimer)
+        }, routeCommitWatchdogMs)
       }
     }, totalCoverMs)
     timersRef.current.push(coverTimer)
 
-    // Watchdog: force idle after max time
+    // Covering-phase watchdog: fires if CSS animations somehow get stuck before navigate()
     const watchdog = window.setTimeout(() => {
+      pendingRevealRef.current = null
       setPhaseSync('idle')
       setContentReady(true)
     }, maxTransitionMs)
     timersRef.current.push(watchdog)
-  }, [location.pathname, navigate, totalCoverMs, newPageDelayMs, pixelRevealDelayMs, maxDelayMs, overlayFadeMs, maxTransitionMs])
+  }, [location.pathname, navigate, totalCoverMs, newPageDelayMs, maxDelayMs, maxTransitionMs, routeCommitWatchdogMs])
+
+  // Trigger reveal phase reactively once the route has actually committed.
+  // This prevents the old page from showing through pixels if React Router defers the DOM update.
+  useEffect(() => {
+    if (phaseRef.current !== 'covered' || !pendingRevealRef.current) return
+
+    // Route committed — cancel the long route-commit watchdog
+    if (routeWatchdogRef.current !== null) {
+      clearTimeout(routeWatchdogRef.current)
+      routeWatchdogRef.current = null
+    }
+
+    const { effectiveRevealMaxDelayMs } = pendingRevealRef.current
+    pendingRevealRef.current = null
+
+    const { newPageDelayMs: delay, pixelRevealDelayMs: revealDelay, overlayFadeMs: fadeMs } = TRANSITION_TIMING
+
+    const revealTimer = window.setTimeout(() => {
+      setPhaseSync('revealing')
+      setContentReady(true)
+
+      const doneTimer = window.setTimeout(() => {
+        setPhaseSync('idle')
+        setRevealMaxDelayMs(undefined)
+      }, effectiveRevealMaxDelayMs + fadeMs)
+      timersRef.current.push(doneTimer)
+    }, delay + revealDelay)
+    timersRef.current.push(revealTimer)
+  }, [location.pathname]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Expose on window for LoadingScreen compatibility
   useEffect(() => {

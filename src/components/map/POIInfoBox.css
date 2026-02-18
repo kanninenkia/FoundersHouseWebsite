@@ -93,7 +93,8 @@
 @media (max-width: 768px) {
   .poi-info-box {
     width: 80vw;
-    bottom: 10vh;
+    bottom: 50vh;
+    transform: translate(-50%, 50%) !important;
   }
 
   .poi-info-content {

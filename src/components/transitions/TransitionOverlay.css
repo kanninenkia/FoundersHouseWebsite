@@ -39,8 +39,8 @@
 /* Pixel-out: blocks instantly appear at their delay time (like LoadingScreen) */
 
 .pixel-transition.pixel-out .pixel-block {
-  animation: blockReveal 0.25s cubic-bezier(0.22, 1, 0.36, 1) forwards;
-  -webkit-animation: blockReveal 0.25s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  animation: blockReveal 0.001s step-start forwards;
+  -webkit-animation: blockReveal 0.001s step-start forwards;
   /* animationDelay is set inline via style attribute */
 }
 
@@ -48,8 +48,8 @@
 
 .pixel-transition.pixel-in .pixel-block {
   opacity: 1;
-  animation: blockDisappear 0.25s cubic-bezier(0.22, 1, 0.36, 1) forwards;
-  -webkit-animation: blockDisappear 0.25s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  animation: blockDisappear 0.001s step-start forwards;
+  -webkit-animation: blockDisappear 0.001s step-start forwards;
   /* animationDelay is set inline via style attribute */
 }
 
