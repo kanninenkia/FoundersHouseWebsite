@@ -26,10 +26,10 @@ export const eventsData: Event[] = [
   },
   {
     id: 3,
-    title: "Founder Sessions",
+    title: "FH Helsinki Launch",
     description: "Intimate fireside chats and workshops with successful founders sharing real stories, hard-won lessons, and actionable strategies for scaling startups in the Nordics.",
     image: "/assets/images/events/FH_zechen.webp",
-    date: "12.02.2025",
+    date: "26.02.2026",
     location: "HELSINKI"
   },
   {

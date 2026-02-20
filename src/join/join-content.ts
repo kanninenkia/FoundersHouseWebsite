@@ -24,15 +24,15 @@ export const joinContent = {
   membershipTypes: {
     resident: {
       title: "RESIDENT",
-      description: "Resident teams get a private office or desk inside Founders House. We offer 10 private rooms for teams, as well as shared spaces for solo validators or founders. Residents receive 24/7 access, priority admission to events, and benefits, such as resources and credits to speed up the building. Every resident is automatically a member.",
-      additionalInfo: "Residencies are mainly offered for 6 months, whereafter the FH team will have a check in with the resident team's progress and needs.",
+      description: "Residencies are for the ones ready to put everything else aside to build. Resident teams get a private office or desk inside Founders House. We offer both private rooms for teams, as well as shared spaces for solo validators or founders. Residents receive 24/7 access, priority admission to events, and benefits, such as resources and credits to speed up the building.",
+      additionalInfo: "Residencies can last up to 6 months and the FH team will follow up on your progress regularly. Once the residency is over, you automatically become a member.",
       buttonText: "Become a Resident",
     },
     member: {
       title: "MEMBER",
-      description: "Our members get priority invitations to exclusive events, access to a private WhatsApp group, and selected resources.",
-      additionalInfo: "When you become a member of Founders House Helsinki, you keep it. After age 35 you become an Alumni member, which means some benefits shift while new ones open up.",
-      buttonText: "Become a members", // Note: keeping original text with typo for now
+      description: "Our members are some of the top 0.1% talent and technical builders. Members get priority invitations to exclusive events, access to a private WhatsApp group, and selected resources.",
+      additionalInfo: "When you become a member of Founders House Helsinki, you keep it. We don't have a set number of members, but we are very selective and only invite the best to join our community.",
+      buttonText: "Become a member", // Note: keeping original text with typo for now
     },
   },
 
@@ -45,6 +45,6 @@ export const joinContent = {
   // Community section
   community: {
     heading: "Join our community",
-    description: "We're also hosting a few open community events during the year, so if you want to be part of our community follow us on Linkedin and keep an eye on our Luma calendar so you don't miss out.",
+    description: "We're also hosting a few open community events during the year. If you want to be part of our community follow us on our socials and keep an eye on our Luma calendar so you don't miss out.",
   },
 };

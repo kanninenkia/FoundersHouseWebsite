@@ -755,7 +755,7 @@ export default function EventsPage({ audioRef, audio2Ref }: { audioRef?: React.M
                       animate={{ opacity: 1 }}
                       transition={{ delay: 2.6, duration: 1, ease: [0.11, 0.45, 0.08, 1.00] }}
                       >
-                        Join us for inspiring events, networking opportunities, and community building sessions designed to accelerate your startup journey.
+                        We host highly curated events, networking opportunities and community building sessions designed to accelerate your startup journey. 
                     </motion.h3>
                   </ParallaxMotion>
                 </div>

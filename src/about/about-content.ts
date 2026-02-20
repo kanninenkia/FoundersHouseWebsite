@@ -18,7 +18,7 @@ export const aboutContent = {
   // Stage 2: Main page header
   header: {
     title: "ABOUT",
-    subtitle: "We believe that the future generational companies will be built by a small group of exceptional next-gen founders.",
+    subtitle: "We believe that the future generational companies will be built by a small group of exceptional founders.",
   },
 
   // Section 2: First content section
@@ -33,7 +33,7 @@ export const aboutContent = {
 
   // Section 4: Hub description
   section4: {
-    text: "Founders House Helsinki is the hub for Finland's most promising next-gen startups. A home for builders who move faster than anyone else, think differently, and raise the bar for everyone around them.",
+    text: "We provide direct access to customers, capital, talent, and mentoring—with no strings attached. We simply create the environment where generational companies are built faster, side by side.",
   },
 
   // Section 5: Location and vision
@@ -51,7 +51,7 @@ export const aboutContent = {
         tagline: "Operational Lead",
         email: "kia@founders-house.fi",
         linkedin: "https://www.linkedin.com/in/kiakanninen/",
-        image: "assets/images/team/kia.webp",
+        image: "assets/images/team/kia2.0.jpg",
       },
       {
         id: "johannes",
