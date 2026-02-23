@@ -14,6 +14,7 @@ import POILayer from './POILayer'
 import { POIInfoBox } from './POIInfoBox'
 import { Button } from '../ui'
 import { NavBar } from '../layout'
+import { useTransition } from '../transitions/TransitionContext'
 import './HelsinkiViewer.css'
 import './HelsinkiViewerMobile.css'
 import ParallaxMotion from '../../effects/ParallaxMotion'
@@ -44,7 +45,9 @@ export const HelsinkiViewer = ({
   environmentColor,
   audioRef,
   audio2Ref,
-}: HelsinkiViewerProps) => {  const containerRef = useRef<HTMLDivElement>(null)
+}: HelsinkiViewerProps) => {
+  const { navigateWithTransition } = useTransition()
+  const containerRef = useRef<HTMLDivElement>(null)
 
   const sceneRef = useRef<HelsinkiScene | null>(null)
   const animationFrameRef = useRef<number>(0)
@@ -86,6 +89,17 @@ export const HelsinkiViewer = ({
   const [isHoveringInteractive, setIsHoveringInteractive] = useState(false)
   const hoveringInteractiveRef = useRef(false)
 
+  // On mobile: kill the rAF loop as soon as transition fires so iOS Safari's
+  // event loop isn't saturated and React's scheduler can process state updates
+  useEffect(() => {
+    if (isTransitionActive && window.innerWidth <= 1024) {
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current)
+        animationFrameRef.current = 0
+      }
+    }
+  }, [isTransitionActive])
+
   const handleLearnMoreClick = useCallback((event?: { preventDefault?: () => void }) => {
     event?.preventDefault?.()
 
@@ -93,17 +107,33 @@ export const HelsinkiViewer = ({
 
     setIsTransitionActive(true)
 
-    if (sceneRef.current) {
-      // Use dedicated zoom method for consistent transition
-      sceneRef.current.zoomToFoundersHouse(() => {
-        if ((window as any).navigateToLearnMore) {
-          ;(window as any).navigateToLearnMore()
-        }
+    const isMobile = window.innerWidth <= 1024
 
-        setIsTransitionActive(false)
-      })
+    // Cancel the rAF loop immediately on mobile. The isTransitionActive useEffect that
+    // normally does this never fires because React 18 batches setIsTransitionActive(true)
+    // and setIsTransitionActive(false) from the same click handler into one render,
+    // so the effect never sees the true value.
+    if (isMobile && animationFrameRef.current) {
+      cancelAnimationFrame(animationFrameRef.current)
+      animationFrameRef.current = 0
     }
-  }, [isTransitionActive])
+
+    const doNavigate = () => {
+      sessionStorage.setItem('transitioningToLearnMore', 'true')
+      sessionStorage.setItem('skipIntro', 'true')
+      sessionStorage.setItem('hasVisitedMap', 'true')
+      navigateWithTransition('/home')
+      setIsTransitionActive(false)
+    }
+
+    if (sceneRef.current && !isMobile) {
+      // Desktop: play 3D camera zoom into Founders House, then navigate
+      sceneRef.current.zoomToFoundersHouse(doNavigate)
+    } else {
+      // Mobile: skip the 3D zoom and navigate directly — pixel transition still plays
+      doNavigate()
+    }
+  }, [isTransitionActive, navigateWithTransition])
 
   // Sync menu state to ref so animate function can access it without recreating scene
   useEffect(() => {

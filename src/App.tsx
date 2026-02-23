@@ -33,7 +33,7 @@ function AppLevelOverlay() {
 
 function AppContent() {
   const location = useLocation()
-  const { navigateWithTransition } = useTransition()
+
   const isInitialMount = useRef(true)
   const audioRef = useRef<HTMLAudioElement | null>(null)
   const audio2Ref = useRef<HTMLAudioElement | null>(null) // Second audio track
@@ -132,6 +132,14 @@ function AppContent() {
     }
     sessionStorage.setItem('scrollProgress', scrollProgress.toString());
   }, [scrollProgress]);
+
+  // Prefetch the Home chunk as soon as the map is interactive,
+  // so it's cached before the user taps "Learn more"
+  useEffect(() => {
+    if (scrollProgress >= 1) {
+      import('./home')
+    }
+  }, [scrollProgress])
 
   useEffect(() => {
     setHasMounted(true)
@@ -297,20 +305,6 @@ function AppContent() {
     }
   }, [location.pathname])
 
-  const handleLearnMoreClick = () => {
-    sessionStorage.setItem('transitioningToLearnMore', 'true')
-    sessionStorage.setItem('skipIntro', 'true')
-    sessionStorage.setItem('hasVisitedMap', 'true')
-    navigateWithTransition('/home')
-  }
-
-  useEffect(() => {
-    ;(window as any).navigateToLearnMore = handleLearnMoreClick
-
-    return () => {
-      delete (window as any).navigateToLearnMore
-    }
-  }, [navigateWithTransition])
 
   return (
     <div className="App">
