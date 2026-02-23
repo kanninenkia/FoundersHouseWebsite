@@ -136,6 +136,19 @@ function AppContent() {
   useEffect(() => {
     setHasMounted(true)
 
+    // Console signature (guard prevents double-fire in React StrictMode)
+    if (!(window as any).__ilSig) {
+      (window as any).__ilSig = true
+      const _ilIcon = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjI1IiBoZWlnaHQ9IjIyNSIgdmlld0JveD0iMCAwIDIyNSAyMjUiIGZpbGw9Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+CjxwYXRoIGQ9Ik0xMzIuMDQ2IDBWNDIuNDQzNEMxMzIuMDQ2IDUxLjIyODMgMTI5LjQyMyA2MC41ODYyIDEyNC43ODQgNjcuNjE2MkMxMzIuOTIzIDYxLjYyMzEgMTQyLjQ2NiA1Ni40NDUxIDE1Mi44MDYgNTQuNjI2TDIxNC4zODYgNDMuNzkzTDIyMSA4MS4yMTU4TDE1Ni4yNSA5Mi4wNDQ5QzE2Mi43NDggOTUuMjIwMSAxNjguNzgzIDk5LjQ3NjggMTc0LjA2OSAxMDQuNzVMMjE4LjI4NCAxNDguODYyTDE5MS4zNTEgMTc1LjczMkwxMjIuNzY4IDEwNi4xNDdDMTI4Ljc1NSAxMTYuMDQzIDEzMi4wNDYgMTI3LjUwNSAxMzIuMDQ2IDEzOS4zODhWMjI1SDkzLjk1M1YxODIuNTU3QzkzLjk1MyAxNzMuNzcyIDk2LjU3NTcgMTY0LjQxNCAxMDEuMjE1IDE1Ny4zODRDOTMuMDc2IDE2My4zNzcgODMuNTM0MyAxNjguNTU1IDczLjE5MzYgMTcwLjM3NEwxMS42MTQxIDE4MS4yMDdMNSAxNDMuNzg0TDY5Ljc1IDEzMi45NTVDNjMuMjUyIDEyOS43OCA1Ny4yMTY3IDEyNS41MjMgNTEuOTMxIDEyMC4yNUw3LjcxNjMxIDc2LjEzNzdMMzQuNjQ5NCA0OS4yNjc2TDEwMy4yMzEgMTE4Ljg1M0M5Ny4yNDQxIDEwOC45NTcgOTMuOTUzMSA5Ny40OTQ1IDkzLjk1MyA4NS42MTIzVjBIMTMyLjA0NloiIGZpbGw9IiNGRkZFRUEiLz4KPC9zdmc+Cg=='
+      console.log(
+        '%c %c\n Designed & Developed with love by Interract Labs\n %chttps://interractlabs.com%c\n\n © 2026 Interract Labs. All rights reserved. ',
+        `background: url("${_ilIcon}") center/60% no-repeat; background-color:#06070A; font-size:0; padding:75px 80px;`,
+        'color:#FFFEEA;font-family:"Geist",sans-serif;font-size:14px;line-height:1.7;font-weight:300;letter-spacing:0.12em;',
+        'color:#FFFEEA !important;font-family:"Geist",sans-serif;font-size:14px;font-weight:300;letter-spacing:0.12em;text-decoration:underline;',
+        'color:#FFFEEA;font-family:"Geist",sans-serif;font-size:14px;line-height:1.7;font-weight:300;letter-spacing:0.12em;'
+      )
+    }
+
     // Initialize cookie manager
     initializeCookieManager()
 
@@ -147,15 +160,15 @@ function AppContent() {
 
   // Setup audio filter chain when audio is initialized
   useEffect(() => {
-    console.log('🔍 Audio setup check:', {
-      hasAudioElement: !!audioRef.current,
-      hasAudioContext: !!audioContextRef.current,
-      audioReady
-    })
+    // console.log('🔍 Audio setup check:', {
+    //   hasAudioElement: !!audioRef.current,
+    //   hasAudioContext: !!audioContextRef.current,
+    //   audioReady
+    // })
 
     if (audioReady && audioRef.current && audio2Ref.current && !audioContextRef.current) {
       try {
-        console.log('🎵 Setting up audio filter chain...')
+        // console.log('🎵 Setting up audio filter chain...')
 
         // Create audio context
         audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)()
@@ -195,10 +208,10 @@ function AppContent() {
         audio2SourceRef.current.connect(gain2NodeRef.current)
         gain2NodeRef.current.connect(audioContextRef.current.destination)
 
-        console.log('✅ Audio filter chain initialized successfully', {
-          contextState: audioContextRef.current.state,
-          sampleRate: audioContextRef.current.sampleRate
-        })
+        // console.log('✅ Audio filter chain initialized successfully', {
+        //   contextState: audioContextRef.current.state,
+        //   sampleRate: audioContextRef.current.sampleRate
+        // })
 
         // Expose gain nodes and mute state to window for NavBar access
         ;(window as any).__gainNodeRef = gainNodeRef
@@ -209,7 +222,7 @@ function AppContent() {
         // Resume audio context if it's suspended (required in some browsers)
         if (audioContextRef.current.state === 'suspended') {
           audioContextRef.current.resume().then(() => {
-            console.log('✅ AudioContext resumed')
+            // console.log('✅ AudioContext resumed')
           })
         }
 
@@ -239,7 +252,7 @@ function AppContent() {
         audioContextRef.current.currentTime,
         timeConstant
       )
-      console.log(`🎵 Music filter ${isMapPage ? 'disabled' : 'enabled (200Hz)'} for ${location.pathname} (transition: ${timeConstant}s)`)
+      // console.log(`🎵 Music filter ${isMapPage ? 'disabled' : 'enabled (200Hz)'} for ${location.pathname} (transition: ${timeConstant}s)`)
     }
 
     // === TRACK 2: Volume control for ambience (no pause/play, just volume fade) ===
@@ -253,7 +266,7 @@ function AppContent() {
         timeConstant
       )
 
-      console.log(`🌊 Ambience ${isMapPage ? 'enabled (0.5)' : 'muted (0)'} for ${location.pathname} (transition: ${timeConstant}s)`)
+      // console.log(`🌊 Ambience ${isMapPage ? 'enabled (0.5)' : 'muted (0)'} for ${location.pathname} (transition: ${timeConstant}s)`)
     }
 
     // Update previous pathname

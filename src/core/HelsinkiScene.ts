@@ -173,7 +173,7 @@ export class HelsinkiScene {
       this.loadFoundersHouseOverlay()
       // Create particles after model loads
       this.createFloatingParticles();
-      console.log('createFloatingParticles called:', this.particles.length, 'particles');
+      // console.log('createFloatingParticles called:', this.particles.length, 'particles');
     }).catch(() => {
     })
 
@@ -1128,7 +1128,7 @@ export class HelsinkiScene {
       const count = 1000; // Exactly 1000 particles for balanced effect and performance
       // Set particle size to 1/2000th of map width
       const size = Math.min(mapWidth, mapDepth) / 2000;
-      console.log('Creating', count, 'particles at', centerX, centerZ, 'size', size);
+      // console.log('Creating', count, 'particles at', centerX, centerZ, 'size', size);
       for (let i = 0; i < count; i++) {
         const geometry = new THREE.PlaneGeometry(size, size);
         const material = new THREE.MeshBasicMaterial({

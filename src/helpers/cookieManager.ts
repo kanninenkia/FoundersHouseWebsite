@@ -149,7 +149,7 @@ function blockAnalytics(): void {
  */
 function initializeMarketing(): void {
   // Add marketing scripts here (e.g., Facebook Pixel, LinkedIn Insight Tag, etc.)
-  console.log('Marketing cookies enabled');
+  // console.log('Marketing cookies enabled');
 }
 
 /**
@@ -157,7 +157,7 @@ function initializeMarketing(): void {
  */
 function blockMarketing(): void {
   // Block marketing scripts
-  console.log('Marketing cookies disabled');
+  // console.log('Marketing cookies disabled');
 }
 
 /**

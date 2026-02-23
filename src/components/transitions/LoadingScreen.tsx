@@ -87,15 +87,15 @@ export const LoadingScreen = ({ onComplete, duration, scrollProgress, isReturnVi
   useEffect(() => {
     if (isReturn && audioRef.current && audio2Ref.current) {
       // Try to start playback (required for Web Audio to work)
-      audioRef.current.play().catch(err => {
-        console.log('Audio autoplay on return visit:', err.message)
+      audioRef.current.play().catch(_err => {
+        // console.log('Audio autoplay on return visit:', _err.message)
       })
 
       // Delay ambience by 2 seconds
       setTimeout(() => {
         if (audio2Ref.current) {
-          audio2Ref.current.play().catch(err => {
-            console.log('Ambience autoplay on return visit:', err.message)
+          audio2Ref.current.play().catch(_err => {
+            // console.log('Ambience autoplay on return visit:', _err.message)
           })
         }
       }, 2000)
@@ -194,7 +194,7 @@ export const LoadingScreen = ({ onComplete, duration, scrollProgress, isReturnVi
         gain2NodeRef.current.gain.setValueAtTime(0, currentTime)
         gain2NodeRef.current.gain.linearRampToValueAtTime(targetAmbienceVolume, currentTime + 2 + fadeInDuration)
 
-        console.log(`🎵 Audio fade-in started: music=${targetMusicVolume}, ambience=${targetAmbienceVolume}`)
+        // console.log(`🎵 Audio fade-in started: music=${targetMusicVolume}, ambience=${targetAmbienceVolume}`)
       }
     } else {
       console.error('❌ No audio element found!')

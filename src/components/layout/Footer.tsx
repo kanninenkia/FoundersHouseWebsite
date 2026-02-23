@@ -8,6 +8,7 @@ const Footer: React.FC = () => {
     <footer className="footer">
       {/* Section 1: Sponsor / Partner Logos Row */}
       <div className="footer-sponsors">
+        <p className="footer-supported-label">SUPPORTED BY</p>
         <div className="sponsor-logos">
           <img
             src="/assets/logos/partners/Mask group.svg"

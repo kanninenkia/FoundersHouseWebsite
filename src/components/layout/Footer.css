@@ -22,6 +22,16 @@
   flex-shrink: 0;
 }
 
+.footer-supported-label {
+  font-size: clamp(0.55rem, 0.75vw, 0.65rem);
+  font-weight: 400;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(255, 248, 242, 0.25);
+  margin: 0 0 1rem 0;
+  text-align: center;
+}
+
 .sponsor-logos {
   display: flex;
   align-items: center;

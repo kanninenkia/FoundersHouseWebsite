@@ -106,7 +106,7 @@ export const NavBar = ({
         // Resume AudioContext if suspended (required after direct navigation)
         if (audioContext && audioContext.state === 'suspended') {
           audioContext.resume().then(() => {
-            console.log('✅ AudioContext resumed from NavBar toggle')
+            // console.log('✅ AudioContext resumed from NavBar toggle')
           })
         }
 
@@ -141,7 +141,7 @@ export const NavBar = ({
         }
         setIsMuted(false)
 
-        console.log(`🔊 Audio unmuted on ${isMapPage ? 'map' : 'non-map'} page: music=0.5, ambience=${isMapPage ? '0.5' : '0'}`)
+        // console.log(`🔊 Audio unmuted on ${isMapPage ? 'map' : 'non-map'} page: music=0.5, ambience=${isMapPage ? '0.5' : '0'}`)
       } else {
         // MUTING - both tracks go to 0 regardless of page
 
@@ -164,7 +164,7 @@ export const NavBar = ({
         }
         setIsMuted(true)
 
-        console.log('🔇 Audio muted: music=0, ambience=0')
+        // console.log('🔇 Audio muted: music=0, ambience=0')
       }
     }
   }
