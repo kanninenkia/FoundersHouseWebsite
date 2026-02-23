@@ -2,7 +2,6 @@
 
 import { useRef, useState, useEffect } from 'react';
 import { motion, useScroll, useTransform, useSpring, MotionValue, useInView } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
 import ParallaxMotion from '../../effects/ParallaxMotion.tsx';
 import '../styles/FlyThroughHero.css';
 import '../styles/FlyThroughHeroMobile.css';
@@ -11,6 +10,7 @@ import { Button } from '../../components/ui';
 import { NavBar } from '../../components/layout';
 import GridDistortion from '../../effects/GridDistortion.tsx';
 import { homeContent } from '../home-content';
+import { useTransition } from '../../components/transitions/TransitionContext';
 
 // =============================================================================
 // CONFIGURATION
@@ -254,8 +254,8 @@ function HeroText({ scrollYProgress }: { scrollYProgress: MotionValue<number> })
 // MAIN COMPONENT
 // =============================================================================
 
-export function FlyThroughHero({ audioRef, audio2Ref }: { audioRef?: React.MutableRefObject<HTMLAudioElement | null>, audio2Ref?: React.MutableRefObject<HTMLAudioElement | null> }) { 
-  const navigate = useNavigate();
+export function FlyThroughHero({ audioRef, audio2Ref }: { audioRef?: React.MutableRefObject<HTMLAudioElement | null>, audio2Ref?: React.MutableRefObject<HTMLAudioElement | null> }) {
+  const { navigateWithTransition } = useTransition();
   const [showNavBar, setShowNavBar] = useState(false);
 
   useEffect(() => {
@@ -896,9 +896,6 @@ return (
                   </motion.div>
                 </div>
               </motion.div>
-
-
-              
             </motion.div>
           );
         })()}
@@ -944,7 +941,7 @@ return (
                       }}
                     />
                   </div>
-                  <Button className="cta-button" onClick={() => navigate('/join')} style={{ width: 'fit-content' }}>{homeContent.join.buttonText}</Button>
+                  <Button className="cta-button" onClick={() => navigateWithTransition('/join')} style={{ width: 'fit-content' }}>{homeContent.join.buttonText}</Button>
                 </div>
                 {/* Animated squares */}
                 <div className="join-img-square join-square-tl-1" />

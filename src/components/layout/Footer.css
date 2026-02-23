@@ -133,6 +133,12 @@
   gap: 0.4rem;
 }
 
+.footer-social-links {
+  display: flex;
+  gap: 1.5rem;
+  align-items: center;
+}
+
 /* Responsive Design */
 @media (max-width: 1024px) {
   .footer-content {
