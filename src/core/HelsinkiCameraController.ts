@@ -347,36 +347,58 @@ export class HelsinkiCameraController {
   }
 
   /**
-   * Clamp camera and target positions to map boundaries
+   * Stop pan velocity at map boundaries and hard-clamp all position trackers.
+   *
+   * Primary mechanism (Option B): zero out velocity components that are
+   * pushing the camera into a wall. This lets the camera decelerate naturally
+   * at the edge rather than being snapped, which prevents the spiral side-effect
+   * caused by breaking the camera→target offset vector.
+   *
+   * Safety net: hard-clamp camera.position, baseCameraPosition, and
+   * cameraTargetPosition so the update() lerp cannot pull the camera back
+   * outside the boundary each frame. The orbit target is then recomputed from
+   * the clamped camera position + preserved look offset so the look direction
+   * (and therefore rotation behaviour) is never corrupted.
    */
   private clampToMapBoundaries(): void {
     if (!this.orbit) return
 
-    // Use bounding box if set, otherwise fallback to static map boundaries
+    // Snapshot look direction before any position changes
+    const lookOffset = this.orbit.target.clone().sub(this.camera.position)
+
     const box = this.boundingBox
     if (box) {
-      // Clamp camera position
+      // Zero velocity components pushing into a hit wall (checked against
+      // baseCameraPosition — the "intended" position the camera is heading to)
+      if (this.baseCameraPosition.x <= box.min.x && this.velocity.x < 0) this.velocity.x = 0
+      if (this.baseCameraPosition.x >= box.max.x && this.velocity.x > 0) this.velocity.x = 0
+      if (this.baseCameraPosition.z <= box.min.z && this.velocity.z < 0) this.velocity.z = 0
+      if (this.baseCameraPosition.z >= box.max.z && this.velocity.z > 0) this.velocity.z = 0
+
+      // Hard clamp all position trackers
       this.camera.position.x = Math.max(box.min.x, Math.min(box.max.x, this.camera.position.x))
       this.camera.position.z = Math.max(box.min.z, Math.min(box.max.z, this.camera.position.z))
-
-      // Clamp target position
-      this.orbit.target.x = Math.max(box.min.x, Math.min(box.max.x, this.orbit.target.x))
-      this.orbit.target.z = Math.max(box.min.z, Math.min(box.max.z, this.orbit.target.z))
-      this.target.copy(this.orbit.target)
-
-      // Update base camera position if clamping occurred (for parallax)
-      // (Removed baseCameraPosition logic)
+      this.baseCameraPosition.x = Math.max(box.min.x, Math.min(box.max.x, this.baseCameraPosition.x))
+      this.baseCameraPosition.z = Math.max(box.min.z, Math.min(box.max.z, this.baseCameraPosition.z))
+      this.cameraTargetPosition.x = Math.max(box.min.x, Math.min(box.max.x, this.cameraTargetPosition.x))
+      this.cameraTargetPosition.z = Math.max(box.min.z, Math.min(box.max.z, this.cameraTargetPosition.z))
     } else {
-      // Fallback to static map boundaries
+      // Fallback: static map boundaries
       const clampedCamera = clampToMapBounds(this.camera.position.x, this.camera.position.z)
       this.camera.position.x = clampedCamera.x
       this.camera.position.z = clampedCamera.z
-      const clampedTarget = clampToMapBounds(this.orbit.target.x, this.orbit.target.z)
-      this.orbit.target.x = clampedTarget.x
-      this.orbit.target.z = clampedTarget.z
-      this.target.copy(this.orbit.target)
-      // (Removed baseCameraPosition logic)
+      const clampedBase = clampToMapBounds(this.baseCameraPosition.x, this.baseCameraPosition.z)
+      this.baseCameraPosition.x = clampedBase.x
+      this.baseCameraPosition.z = clampedBase.z
+      const clampedCT = clampToMapBounds(this.cameraTargetPosition.x, this.cameraTargetPosition.z)
+      this.cameraTargetPosition.x = clampedCT.x
+      this.cameraTargetPosition.z = clampedCT.z
     }
+
+    // Restore orbit target from clamped camera position + original look offset.
+    // Keeps the look direction intact so rotation velocity operates on a valid vector.
+    this.orbit.target.copy(this.camera.position).add(lookOffset)
+    this.target.copy(this.orbit.target)
   }
 
   private handlePointerDown = (event: PointerEvent): void => {

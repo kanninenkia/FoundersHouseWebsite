@@ -78,7 +78,7 @@
 .menu-nav {
   display: flex;
   flex-direction: column;
-  gap: clamp(0.75rem, 2vh, 2rem);
+  gap: 0;
   margin-top: 0;
   justify-content: flex-start;
   min-height: 0;
@@ -88,7 +88,7 @@
 
 .menu-nav-item {
   font-family: 'IBM Plex Sans', sans-serif;
-  font-size: calc(var(--menu-fluid-base) * 7);
+  font-size: 12vh; /* calc(var(--menu-fluid-base) * 7) */
   font-weight: 700;
   color: #FFF8F2;
   text-align: left;

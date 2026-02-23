@@ -212,6 +212,14 @@
     height: 600px;
     width: 60vw;
     background-color: #2B0906;
+    mask-image:
+        linear-gradient(to right,  transparent 0%, black 12%, black 88%, transparent 100%),
+        linear-gradient(to bottom, transparent 0%, black 12%, black 88%, transparent 100%);
+    mask-composite: intersect;
+    -webkit-mask-image:
+        linear-gradient(to right,  transparent 0%, black 12%, black 88%, transparent 100%),
+        linear-gradient(to bottom, transparent 0%, black 12%, black 88%, transparent 100%);
+    -webkit-mask-composite: source-in;
 }
 
 .ambitious-map .ambitious-map-inner {

@@ -26,27 +26,20 @@ const ParallaxMotion = ({
   const mouseY = useMotionValue(0);
   const parallaxX = useMotionValue(0);
   const parallaxY = useMotionValue(0);
-  const [isDisabled, setIsDisabled] = useState(false);
+  const [isDisabled, setIsDisabled] = useState(
+    () => typeof window !== 'undefined' ? window.innerWidth < 1200 : false
+  );
 
-  // Check if parallax should be disabled based on screen size
+  // Keep in sync with resize
   useEffect(() => {
-    const checkScreenSize = () => {
-      const disabled = window.innerWidth < 1200;
-      console.log('[ParallaxMotion] Screen width:', window.innerWidth, 'Disabled:', disabled);
-      setIsDisabled(disabled);
-    };
-    checkScreenSize();
+    const checkScreenSize = () => setIsDisabled(window.innerWidth < 1200);
     window.addEventListener("resize", checkScreenSize);
     return () => window.removeEventListener("resize", checkScreenSize);
   }, []);
 
   useEffect(() => {
-    if (isDisabled) {
-      console.log('[ParallaxMotion] Parallax disabled for screen size');
-      return; // Don't attach listeners if disabled
-    }
-    
-    console.log('[ParallaxMotion] Attaching mousemove listener');
+    if (isDisabled) return;
+
     const handle = (e: MouseEvent) => {
       const { innerWidth, innerHeight } = window;
       const normX = (e.clientX / innerWidth) * 2 - 1;
@@ -55,10 +48,7 @@ const ParallaxMotion = ({
       mouseY.set(normY);
     };
     window.addEventListener("mousemove", handle);
-    return () => {
-      console.log('[ParallaxMotion] Removing mousemove listener');
-      window.removeEventListener("mousemove", handle);
-    };
+    return () => window.removeEventListener("mousemove", handle);
   }, [mouseX, mouseY, isDisabled]);
 
   useEffect(() => {
@@ -85,6 +75,32 @@ const ParallaxMotion = ({
       if (timeoutY) clearTimeout(timeoutY);
     };
   }, [mouseX, mouseY, parallaxX, parallaxY, speedX, speedY, easing, delay, isDisabled]);
+
+  // On mobile/tablet: skip the motion.div entirely — values would be 0 anyway,
+  // but the motion.div still registers subscriptions in Framer Motion's internals.
+  if (isDisabled) {
+    return (
+      <div style={{ position: "relative", width: "100%", height: "100%" }} {...rest}>
+        {background && (
+          <div
+            style={{
+              background,
+              position: "absolute",
+              top: 0,
+              left: 0,
+              width: "100%",
+              height: "100%",
+              zIndex: 0,
+              pointerEvents: "none",
+            }}
+          />
+        )}
+        <div style={{ position: "relative", zIndex: 1, width: "100%", height: "100%" }}>
+          {children}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <motion.div

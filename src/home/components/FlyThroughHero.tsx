@@ -251,6 +251,73 @@ function HeroText({ scrollYProgress }: { scrollYProgress: MotionValue<number> })
 }
 
 // =============================================================================
+// DESKTOP-ONLY COMPONENTS (not rendered on mobile — hooks inside don't run)
+// =============================================================================
+
+function AmbitiousMap({ scroll }: { scroll: MotionValue<number> }) {
+  const ambitiousMap = useTransform(scroll, [0, 1], [-200, 400]);
+  const ambitiousRotateXRaw = useTransform(scroll, [0, 0.7, 1], [0, 60, 60]);
+  const ambitiousRotateYRaw = useTransform(scroll, [0, 0.9, 1], [0, -10, -10]);
+  const ambitiousRotateZRaw = useTransform(scroll, [0, 0.5, 1], [0, 0, 50]);
+  const ambitiousRotateX = useSpring(ambitiousRotateXRaw, { stiffness: 90, damping: 20 });
+  const ambitiousRotateY = useSpring(ambitiousRotateYRaw, { stiffness: 35, damping: 20 });
+  const ambitiousRotateZ = useSpring(ambitiousRotateZRaw, { stiffness: 35, damping: 20 });
+  return (
+    <div className="ambitious-map">
+      <motion.div className="content-img-container"
+        style={{ y: ambitiousMap, rotateX: ambitiousRotateX, rotateY: ambitiousRotateY, rotateZ: ambitiousRotateZ }}
+      >
+        <div className="img-container-fade">
+          <div className="img-gradient-left" />
+          <div className="img-gradient-right" />
+          <div className="img-gradient-top" />
+          <div className="img-gradient-bottom" />
+        </div>
+        <div style={{ mixBlendMode: "multiply" }}>
+          <ParallaxMotion background="#2B0906" speedX={16} speedY={16} easing={[0.17, 0.67, 0.3, 0.99]}>
+            <motion.img
+              className="section-5-map-img"
+              src="/assets/models/birdseyemaps.webp"
+              alt="2D Map"
+              style={{ mixBlendMode: "multiply", width: "100%", height: "auto" }}
+              animate={{}}
+              transition={{ duration: 0.6, ease: [0.17, 0.67, 0.3, 0.99] }}
+            />
+          </ParallaxMotion>
+        </div>
+        <ParallaxMotion speedX={16} speedY={16} easing={[0.17, 0.67, 0.3, 0.99]}>
+          <motion.img
+            className="section-5-map-img"
+            src="/assets/models/radar.webp"
+            alt="2D Map Pin"
+            style={{ width: "100%", height: "auto", top: "0%" }}
+            animate={{}}
+            transition={{ duration: 0.6, ease: [0.17, 0.67, 0.3, 0.99] }}
+          />
+        </ParallaxMotion>
+      </motion.div>
+    </div>
+  );
+}
+
+function SahkotaloBuilding({ scroll }: { scroll: MotionValue<number> }) {
+  const nextgenBuilding = useTransform(scroll, [0, 1], [-200, 400]);
+  return (
+    <motion.div className="part-sahkotalo-image" style={{ y: nextgenBuilding }}>
+      <div className="sahkotalo-img-parallax">
+        <ParallaxMotion speedX={32} speedY={32} delay={0} easing={[0.17, 0.67, 0.3, 0.99]}>
+          <img
+            src="/assets/images/values/sahkotalo.webp"
+            alt="Sähkötalo"
+            className="sahkotalo-img"
+          />
+        </ParallaxMotion>
+      </div>
+    </motion.div>
+  );
+}
+
+// =============================================================================
 // MAIN COMPONENT
 // =============================================================================
 
@@ -320,14 +387,7 @@ export function FlyThroughHero({ audioRef, audio2Ref }: { audioRef?: React.Mutab
     const ambitiousImg = useTransform(ambitiousScroll, [0, 1], [-150, 100]);
     const ambitiousImgContent = useTransform(ambitiousScroll, [0, 1], [-100, 50]);
     const ambitiousText = useTransform(ambitiousScroll, [0, 1], [250, -250]);
-    const ambitiousMap = useTransform(ambitiousScroll, [0, 1], [-200, 400]);
-    // Scroll-based rotation for content-img-container
-    const ambitiousRotateXRaw = useTransform(ambitiousScroll, [0, 0.7, 1], [0, 60, 60]);
-    const ambitiousRotateYRaw = useTransform(ambitiousScroll, [0, 0.9, 1], [0, -10, -10]);
-    const ambitiousRotateZRaw = useTransform(ambitiousScroll, [0, 0.5, 1], [0, 0, 50]);
-    const ambitiousRotateX = useSpring(ambitiousRotateXRaw, { stiffness: 90, damping: 20 });
-    const ambitiousRotateY = useSpring(ambitiousRotateYRaw, { stiffness: 35, damping: 20 });
-    const ambitiousRotateZ = useSpring(ambitiousRotateZRaw, { stiffness: 35, damping: 20 });
+    // ambitiousMap + rotateX/Y/Z springs live in <AmbitiousMap> — not computed on mobile
 
     //---------- LOCALIZED PARALLAX Y MOVEMENT FOR NEXTGEN IMAGE ----------//
     const nextgenSectionRef = useRef<HTMLDivElement>(null);
@@ -338,7 +398,7 @@ export function FlyThroughHero({ audioRef, audio2Ref }: { audioRef?: React.Mutab
     const nextgenImg = useTransform(nextgenScroll, [0, 1], [-150, 100]);
     const nextgenImgContent = useTransform(nextgenScroll, [0, 1], [-100, 50]);
     const nextgenText = useTransform(nextgenScroll, [0, 1], [250, -250]);
-    const nextgenBuilding = useTransform(nextgenScroll, [0, 1], [-200, 400]);
+    // nextgenBuilding lives in <SahkotaloBuilding> — not computed on mobile
 
     //---------- LOCALIZED PARALLAX Y MOVEMENT FOR BUILDERS IMAGE ----------//
     const buildersSectionRef = useRef<HTMLDivElement>(null);
@@ -468,8 +528,22 @@ return (
                 positionSpread={positionSpread}
                 />
             ))}
-            <HeroText scrollYProgress={scrollYProgress} />
             </div>
+            {/* Mobile blur veil — outside 3D perspective container to avoid backdrop-filter plane artifact */}
+            {isMobileView && (
+              <div
+                style={{
+                  position: 'absolute',
+                  inset: 0,
+                  zIndex: 15,
+                  backdropFilter: 'blur(14px)',
+                  WebkitBackdropFilter: 'blur(14px)',
+                  background: 'rgba(80, 10, 12, 0.5)',
+                  pointerEvents: 'none',
+                }}
+              />
+            )}
+            <HeroText scrollYProgress={scrollYProgress} />
         </motion.div>
 
         {/* Scroll container for animation progress only */}
@@ -722,42 +796,7 @@ return (
                     </ParallaxMotion>
                   </motion.div>
                   
-                  <div className="ambitious-map">
-                    <motion.div className="content-img-container"
-                      style={{ y: ambitiousMap, rotateX: ambitiousRotateX, rotateY: ambitiousRotateY, rotateZ: ambitiousRotateZ }}
-                    >
-                      <div className="img-container-fade">
-                          <div className="img-gradient-left" />
-                          <div className="img-gradient-right" />
-                          <div className="img-gradient-top" />
-                          <div className="img-gradient-bottom" />
-                      </div>
-                      {/*<motion.div className="ambitious-map-inner" style={{ rotateX: ambitiousRotateX }}>*/}
-                        <div style={{ mixBlendMode: "multiply" }}>
-                          <ParallaxMotion background="#2B0906" speedX={16} speedY={16} easing={[0.17, 0.67, 0.3, 0.99]}>
-                            <motion.img
-                              className="section-5-map-img"
-                              src="/assets/models/birdseyemaps.webp"
-                              alt="2D Map"
-                              style={{ mixBlendMode: "multiply", width: "100%", height: "auto" }}
-                              animate={{  }}
-                              transition={{ duration: 0.6, ease: [0.17, 0.67, 0.3, 0.99] }}
-                            />
-                          </ParallaxMotion>
-                        </div>
-                        <ParallaxMotion speedX={16} speedY={16} easing={[0.17, 0.67, 0.3, 0.99]}>
-                          <motion.img
-                            className="section-5-map-img"
-                            src="/assets/models/radar.webp"
-                            alt="2D Map Pin"
-                            style={{ width: "100%", height: "auto", top: "0%" }}
-                            animate={{  }}
-                            transition={{ duration: 0.6, ease: [0.17, 0.67, 0.3, 0.99] }}
-                          />
-                        </ParallaxMotion>
-                      {/*</motion.div>*/}
-                    </motion.div>
-                  </div>
+                  {!isMobileView && <AmbitiousMap scroll={ambitiousScroll} />}
                 </div>
 
 
@@ -822,18 +861,7 @@ return (
                       </ParallaxMotion>
                     </motion.div>
                   </div>
-                  {/* Sahkotalo image, desktop only */}
-                  <motion.div className="part-sahkotalo-image" style={{ y: nextgenBuilding }}>
-                    <div className="sahkotalo-img-parallax">
-                      <ParallaxMotion speedX={32} speedY={32} delay={0} easing={[0.17, 0.67, 0.3, 0.99]}>
-                        <img 
-                          src="/assets/images/values/sahkotalo.webp" 
-                          alt="Sähkötalo"
-                          className="sahkotalo-img"
-                        />
-                      </ParallaxMotion>
-                    </div>
-                  </motion.div>
+                  {!isMobileView && <SahkotaloBuilding scroll={nextgenScroll} />}
                 </div>
 
 

@@ -14,13 +14,13 @@
   font-weight: 600;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  border-radius: 2px;
+  border-radius: 0;
   white-space: nowrap;
   transform-origin: center;
   transform:
     translate(-50%, -50%)
     translate(var(--poi-x, 0px), var(--poi-y, 0px))
-    rotateX(70deg)
+    rotateX(45deg)
     scaleY(0.85)
     scale(var(--poi-scale, 1));
   will-change: transform, opacity;
@@ -38,6 +38,8 @@
 .poi-layer-item.poi-gray {
   background: rgba(160, 160, 160, 1);
   color: rgba(255, 255, 255, 1);
+  font-size: 10px;
+  padding: 4px 8px;
 }
 
 .poi-layer-item::before {
@@ -103,7 +105,7 @@
   bottom: calc(100% + 37px);
   padding: 6px 10px;
   background: rgba(216, 46, 17, 0.55);
-  border-radius: 2px;
+  border-radius: 0;
   opacity: 0;
   transform: translateX(-50%) scale(0.9);
   pointer-events: auto;
