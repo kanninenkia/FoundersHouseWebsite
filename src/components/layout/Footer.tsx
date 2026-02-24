@@ -98,8 +98,8 @@ const Footer: React.FC = () => {
         {/* Right Column: Contact Info */}
         <div className="footer-contact">
           <MagneticElement strength={0.3} range={80}>
-            <a href="mailto:contact@founders-house.com" className="footer-link">
-              CONTACT@FOUNDERS-HOUSE.COM
+            <a href="mailto:team@founders-house.fi" className="footer-link">
+              TEAM@FOUNDERS-HOUSE.FI
             </a>
           </MagneticElement>
           <div className="footer-social-links">

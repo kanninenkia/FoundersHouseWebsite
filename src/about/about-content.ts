@@ -72,7 +72,7 @@ export const aboutContent = {
       {
         id: "niklas",
         name: "Niklas Kervinen",
-        tagline: "Marketing",
+        tagline: "Marketing & Brand",
         email: "team@founders-house.fi",
         linkedin: "https://www.linkedin.com/in/niklas-kervinen/",
         image: "assets/images/team/niklas.webp",

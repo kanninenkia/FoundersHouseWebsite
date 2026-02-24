@@ -287,6 +287,10 @@
 
 /* Standard phones */
 @media (max-width: 767px) {
+    
+
+    /*---------------------------------------------------------*/
+
     .quotes-section .quotes-grid {
         grid-template-columns: 1fr;
         padding-bottom: 15%;

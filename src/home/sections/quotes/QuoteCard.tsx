@@ -28,11 +28,11 @@ export const QuoteCard = ({
   const getNameColor = () => {
     switch(nameColor) {
       case 'dark-red':
-        return '#590D0F'
+        return '#FFF8F2'
       case 'light-red':
-        return '#9E1B1E'
+        return '#FFF8F2'
       default:
-        return '#FFFFFF'
+        return '#FFF8F2'
     }
   }
 

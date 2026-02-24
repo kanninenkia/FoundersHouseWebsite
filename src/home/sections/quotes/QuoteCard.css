@@ -112,12 +112,12 @@
   }
 
   .quote-card-text {
-    font-size: clamp(0.8rem, 2vw, 0.95rem);
-    margin-bottom: clamp(0.75rem, 1.5vw, 1rem);
+    font-size: clamp(0.75rem, 3.8vw, 3.9rem);
+    margin-bottom: 2rem;
   }
 
   .quote-card-name {
-    font-size: clamp(1.4rem, 3.5vw, 1.75rem);
+    font-size: clamp(4.4rem, 3.5vw, 3.75rem);
   }
 }
 
@@ -131,11 +131,11 @@
   }
 
   .quote-card-text {
-    font-size: clamp(0.75rem, 1.8vw, 0.9rem);
+    font-size: clamp(1rem, 3.8vw, 2.9rem);
     line-height: 1.4;
   }
 
   .quote-card-name {
-    font-size: clamp(1.25rem, 3vw, 1.5rem);
+    font-size: clamp(3.25rem, 4vw, 3.5rem);
   }
 }
