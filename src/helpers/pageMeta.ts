@@ -7,7 +7,7 @@ export interface PageMetaConfig {
   type?: string
 }
 
-const DEFAULT_SITE_URL = 'https://foundershouse.com'
+const DEFAULT_SITE_URL = 'https://founders-house.fi'
 const DEFAULT_OG_IMAGE = '/assets/images/events/The Legends Day.webp'
 
 const resolveSiteUrl = (): string => {

@@ -2,8 +2,10 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" sizes="any" href="/assets/logos/logo.svg" />
-    <link rel="apple-touch-icon" href="/assets/logos/logo.svg" />
+    <link rel="icon" href="/assets/logos/logo.svg" type="image/svg+xml" sizes="any" />
+    <link rel="icon" href="/assets/logos/logoWhite.png" type="image/png" sizes="192x192" />
+    <link rel="apple-touch-icon" href="/assets/logos/logoWhite.png" sizes="180x180" />
+    <link rel="shortcut icon" href="/assets/logos/logoWhite.png" type="image/png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#000000" />
     <meta name="description" content="Founders House Helsinki - Built for the obsessed, built for the exceptional. This is where the next generation of Founders are born." />
@@ -37,7 +39,7 @@
       "@graph": [
         {
           "@type": "Organization",
-          "@id": "https://foundershouse.com/#organization",
+          "@id": "https://founders-house.fi/#organization",
           "name": "Founders House Helsinki",
           "url": "https://founders-house.fi",
           "logo": "https://founders-house.fi/assets/logos/FH_horizontal_logo.webp",
@@ -62,6 +64,43 @@
           "name": "Founders House - Helsinki",
           "description": "Built for the obsessed, built for the exceptional. A premium community space in Helsinki for ambitious founders.",
           "isPartOf": { "@id": "https://founders-house.fi/#website" }
+        },
+        {
+          "@type": "ItemList",
+          "@id": "https://founders-house.fi/#primary-sitelinks",
+          "name": "Primary pages",
+          "itemListElement": [
+            {
+              "@type": "SiteNavigationElement",
+              "position": 1,
+              "name": "Map",
+              "url": "https://founders-house.fi/"
+            },
+            {
+              "@type": "SiteNavigationElement",
+              "position": 2,
+              "name": "Home",
+              "url": "https://founders-house.fi/home"
+            },
+            {
+              "@type": "SiteNavigationElement",
+              "position": 3,
+              "name": "About",
+              "url": "https://founders-house.fi/about"
+            },
+            {
+              "@type": "SiteNavigationElement",
+              "position": 4,
+              "name": "Join",
+              "url": "https://founders-house.fi/join"
+            },
+            {
+              "@type": "SiteNavigationElement",
+              "position": 5,
+              "name": "Events",
+              "url": "https://founders-house.fi/events"
+            }
+          ]
         }
       ]
     }

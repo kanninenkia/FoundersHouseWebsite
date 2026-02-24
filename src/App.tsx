@@ -68,7 +68,7 @@ function AppContent() {
     '/home': {
       title: 'Home — Founders House',
       description: 'Founders House in Helsinki — built for the obsessed, built for the exceptional.',
-      path: '/home'
+      path: '/'
     },
     '/about': {
       title: 'About — Founders House',
