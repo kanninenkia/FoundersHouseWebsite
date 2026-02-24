@@ -511,7 +511,7 @@ export const LoadingScreen = ({ onComplete, duration, scrollProgress, isReturnVi
             className={`loading-logo ${shouldBlurLogo ? 'blur-out' : ''} ${shouldFadeOutForReturn ? 'return-fade-out' : ''}`}
             style={{ height: '76px', width: 'auto' }}
           >
-            <img src="/assets/logos/fhlogo_horizontal.png" alt="Founders House" style={{ height: '100%', width: 'auto', display: 'block' }} />
+            <img src="/assets/logos/FH_horizontal_logo.webp" alt="Founders House" style={{ height: '100%', width: 'auto', display: 'block' }} />
           </div>
         )}
         {showLoadingBar && (

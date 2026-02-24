@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://foundershouse.com/sitemap.xml
+Sitemap: https://founders-house.fi/sitemap.xml

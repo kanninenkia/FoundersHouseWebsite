@@ -257,7 +257,7 @@
   height: 100%;
   object-fit: cover;
   display: block;
-  filter: grayscale(0.9) brightness(0.5);
+  filter: grayscale(0.9) brightness(0.3);
 }
 
 /* Static background image - no cycling */
