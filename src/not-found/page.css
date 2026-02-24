@@ -74,6 +74,23 @@
   display: inline-flex;
   white-space: nowrap;
   overflow: visible;
+  font-size: clamp(1rem, 1.5vw, 1.25rem);
+  line-height: 1.2;
+}
+
+.not-found-footer .menu-social-link .char {
+  position: relative;
+  display: inline-block;
+  overflow: hidden;
+  height: 1em;
+}
+
+.not-found-footer .menu-social-link:hover .char-original {
+  transform: translateY(-100%);
+}
+
+.not-found-footer .menu-social-link:hover .char-clone {
+  transform: translateY(0);
 }
 
 @media (max-width: 1024px) {

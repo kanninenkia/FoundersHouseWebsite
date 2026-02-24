@@ -84,9 +84,9 @@ export default function NotFoundPage() {
               className="menu-social-link"
             >
               {item.label.split("").map((letter, i) => (
-                <span key={`${item.label}-${i}`} className="char-small" style={{ transitionDelay: `${i * 0.02}s` }}>
-                  <span className="char-original-small">{letter}</span>
-                  <span className="char-clone-small">{letter}</span>
+                <span key={`${item.label}-${i}`} className="char" style={{ transitionDelay: `${i * 0.02}s` }}>
+                  <span className="char-original">{letter}</span>
+                  <span className="char-clone">{letter}</span>
                 </span>
               ))}
             </a>
