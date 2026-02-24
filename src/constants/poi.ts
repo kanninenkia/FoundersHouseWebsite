@@ -128,22 +128,21 @@ export const SUPERCELL_POI: PointOfInterest = {
 }
 
 /**
- * Relex
- * Note: Relex is not on the map - using placeholder coordinates
+ * Aiven
  */
-export const RELEX_POI: PointOfInterest = {
-  id: 'relex',
-  name: 'Relex',
-  description: 'AI-powered supply chain and retail planning platform',
-  website: 'https://relexsolutions.com',
+export const AIVEN_POI: PointOfInterest = {
+  id: 'aiven',
+  name: 'Aiven',
+  description: 'Open source data infrastructure platform',
+  website: 'https://aiven.io',
   mapCoords: {
-    x: -250,
-    y: 400
+    x: 160.98,
+    y: 838.37
   },
   worldCoords: {
-    x: -250,
-    y: -42,
-    z: -400
+    x: 160.98,
+    y: -45.38,
+    z: -838.37
   },
   cameraView: {
     distance: 450,
@@ -327,7 +326,7 @@ export const ILLUSIAN_POI: PointOfInterest = {
  */
 export const POINTS_OF_INTEREST: Record<string, PointOfInterest> = {
   LIFELINE_VENTURES: LIFELINE_VENTURES_POI,
-  RELEX: RELEX_POI,
+  AIVEN: AIVEN_POI,
   SUPERCELL: SUPERCELL_POI,
   WOLT: WOLT_POI,
   OURA: OURA_POI,

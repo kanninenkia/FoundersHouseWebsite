@@ -29,7 +29,7 @@ export class AutoTourManager {
     this.currentIndex = config?.currentIndex ?? 0
     this.poiSequence = config?.poiSequence ?? [
       'SUPERCELL',
-      'RELEX',
+      'AIVEN',
       'TOM',
       'METACORE',
       'IXI',
