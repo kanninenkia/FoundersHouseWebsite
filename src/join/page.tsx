@@ -391,7 +391,41 @@ export default function JoinPage({ audioRef, audio2Ref }: { audioRef?: React.Mut
                       }}
                     />
                   </div>
-                                  </ParallaxMotion>
+                  <motion.div
+                    className="community-social-links"
+                    initial={{ opacity: 0 }}
+                    whileInView={{ opacity: 1 }}
+                    viewport={{ once: true, amount: 0.5 }}
+                    transition={{ delay: 0.2, duration: 0.6, ease: "easeOut" }}
+                  >
+                    <a
+                      href="https://www.instagram.com/foundershousehelsinki/"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="community-social-icon"
+                      aria-label="Instagram"
+                    >
+                      <svg width="30" height="30" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <rect x="2" y="2" width="20" height="20" rx="5" stroke="currentColor" strokeWidth="2"/>
+                        <circle cx="12" cy="12" r="5" stroke="currentColor" strokeWidth="2"/>
+                        <circle cx="17.5" cy="6.5" r="1.5" fill="currentColor"/>
+                      </svg>
+                    </a>
+                    <a
+                      href="https://www.linkedin.com/company/founders-house-helsinki/about/"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="community-social-icon"
+                      aria-label="LinkedIn"
+                    >
+                      <svg width="30" height="30" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                        <rect x="2" y="9" width="4" height="12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                        <circle cx="4" cy="4" r="2" stroke="currentColor" strokeWidth="2"/>
+                      </svg>
+                    </a>
+                  </motion.div>
+                </ParallaxMotion>
               </motion.div>
             </div>
 

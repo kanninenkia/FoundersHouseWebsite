@@ -331,3 +331,26 @@
     text-wrap: balance;
     pointer-events: none;
 }
+.community-social-links {
+    display: flex;
+    gap: 16px;
+    margin-top: 24px;
+}
+
+.community-social-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 80px;
+    height: 80px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    color: white;
+    transition: border-color 0.2s ease, color 0.2s ease;
+    text-decoration: none;
+}
+
+.community-social-icon:hover {
+    border-color: #D82E11;
+    color: #D82E11;
+}
