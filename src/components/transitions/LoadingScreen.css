@@ -1028,16 +1028,16 @@
     0% {
       top: 100vh;
       left: 50%;
-      width: 90vw;
+      width: 100vw;
       height: 100vh;
-      transform: translateX(-50%) scale(0.95);
+      transform: translateX(-50%) scaleX(0.9);
     }
     100% {
       top: 65vh;
       left: 50%;
-      width: 90vw;
+      width: 100vw;
       height: 100vh;
-      transform: translateX(-50%) scale(1);
+      transform: translateX(-50%) scaleX(0.9);
     }
   }
 
@@ -1050,16 +1050,16 @@
     0% {
       top: 65vh;
       left: 50%;
-      width: 90vw;
+      width: 100vw;
       height: 100vh;
-      transform: translateX(-50%);
+      transform: translateX(-50%) scaleX(0.9);
     }
     100% {
       top: 0;
-      left: 0;
+      left: 50%;
       width: 100vw;
       height: 100vh;
-      transform: none;
+      transform: translateX(-50%) scaleX(1);
     }
   }
 }
