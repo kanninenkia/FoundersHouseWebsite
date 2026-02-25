@@ -24,7 +24,7 @@ export const POIInfoBox = ({ poi, onClose }: POIInfoBoxProps) => {
           <div className="poi-info-content">
             <div className="poi-info-logo">
               <img
-                src={`/assets/logos/POIs/${poi.id}.png`}
+                src={`/assets/logos/POIs/${poi.id}.${poi.id === 'aiven' ? 'webp' : 'png'}`}
                 alt={`${poi.name} logo`}
                 onError={(e) => {
                   // Fallback to placeholder if logo doesn't exist
