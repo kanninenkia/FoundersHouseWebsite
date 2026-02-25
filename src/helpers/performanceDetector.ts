@@ -15,14 +15,16 @@ export interface PerformanceProfile {
  * Returns settings that affect the visual experience
  */
 export function detectPerformanceTier(): PerformanceProfile {
-  // Cap pixel ratio at 1.5 to reduce rendering load
-  // Most users won't notice the difference but it's 2.25x fewer pixels on retina displays
-  const pixelRatio = Math.min(window.devicePixelRatio || 1, 1.5)
+  // Mobile devices: limit to 1.25x to prevent memory crashes
+  // Desktop: cap at 1.5x to reduce rendering load
+  const isMobile = typeof window !== 'undefined' && window.innerWidth <= 1024;
+  const maxPixelRatio = isMobile ? 1.25 : 1.5;
+  const pixelRatio = Math.min(window.devicePixelRatio || 1, maxPixelRatio)
 
   return {
     tier: 'high',
     pixelRatio,
-    antialias: true, // Keep for visual quality
+    antialias: !isMobile, // Disable antialiasing on mobile for better performance
     shadowsEnabled: false // Shadows not used in current experience
   }
 }

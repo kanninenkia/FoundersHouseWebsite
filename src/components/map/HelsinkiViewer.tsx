@@ -172,8 +172,9 @@ export const HelsinkiViewer = ({
 
 
   useEffect(() => {
-    // Don't run cursor smoothing when menu is open
-    if (isMenuOpen) return;
+    // Don't run cursor smoothing when menu is open OR on mobile (performance)
+    const isMobile = window.innerWidth <= 1024;
+    if (isMenuOpen || isMobile) return;
 
     let animationFrameId: number
 
@@ -181,16 +182,16 @@ export const HelsinkiViewer = ({
       setCursorPosition(prev => {
         const dx = targetCursorPosition.current.x - prev.x
         const dy = targetCursorPosition.current.y - prev.y
-        
+
         // Lerp factor - lower = smoother but slower, higher = faster but less smooth
         const lerp = 0.3
-        
+
         return {
           x: prev.x + dx * lerp,
           y: prev.y + dy * lerp
         }
       })
-      
+
       animationFrameId = requestAnimationFrame(smoothCursor)
     }
 

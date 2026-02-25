@@ -103,7 +103,14 @@ function AppContent() {
   })
 
   const [scrollProgress, setScrollProgress] = useState(() => {
-    if (performance.navigation.type !== 1) {
+    // performance.navigation is deprecated and not available in all browsers
+    // Use Navigation Timing API Level 2 instead
+    const isReload = typeof performance !== 'undefined' &&
+                     performance.getEntriesByType &&
+                     performance.getEntriesByType('navigation').length > 0 &&
+                     (performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming).type === 'reload';
+
+    if (!isReload) {
       const saved = sessionStorage.getItem('scrollProgress');
       return saved ? parseFloat(saved) : 0;
     }

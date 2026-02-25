@@ -1,6 +1,22 @@
 @media (max-width: 768px) {
+  /* Apply mobile-safe bottom positioning to all POI elements */
+  .poi-navigator {
+    bottom: var(--poi-mobile-bottom);
+    height: 100px;
+    padding-bottom: var(--poi-mobile-safe); /* Prevent touch targets from sitting on home indicator */
+  }
+
   .poi-fan {
     display: block;
+    bottom: calc(var(--poi-mobile-bottom) + 8px);
+  }
+
+  .poi-fan-lead {
+    bottom: 5px;
+  }
+
+  .poi-fan-toggle {
+    bottom: 10px;
   }
 
   .poi-list,
@@ -18,12 +34,21 @@
     padding: 0.3rem 0.6rem;
   }
 
-  .poi-navigator {
-    height: 100px;
+  /* Disable gradient blur on mobile - improves performance and visibility */
+  .gradient-blur {
+    display: none;
   }
 
-  .gradient-blur {
-    height: 110px;
+  /* Also disable the dark overlay on mobile */
+  .gradient-blur-overlay {
+    display: none;
+  }
+}
+
+/* Reduce base offset on very short viewports to preserve vertical space */
+@media (max-width: 768px) and (max-height: 700px) {
+  :root {
+    --poi-mobile-bottom-base: 44px;
   }
 }
 
@@ -41,13 +66,11 @@
     height: 60px;
   }
 
-  .gradient-blur {
-    height: 90px;
-  }
+  /* gradient-blur already disabled by parent @media (max-width: 768px) */
 
   .poi-fan {
     right: 12px;
-    bottom: 14px;
+    /* bottom is already set by mobile offset from parent @media */
   }
 
   .poi-fan-item {
@@ -60,7 +83,5 @@
     height: 22px;
   }
 
-  .poi-fan-lead {
-    bottom: 8px;
-  }
+  /* .poi-fan-lead bottom is already set by mobile offset from parent @media */
 }

@@ -126,17 +126,17 @@ function FloatingElement({ type, src, x, y, z, w, h, scrollYProgress, faint = fa
     [1, 1, 0.6, 0]
   );
 
-  // Blur in sync with opacity
+  // Blur in sync with opacity - reduced for mobile performance
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
   const blur = useTransform(
     scrollYProgress,
     [0, 0.36, 0.54, 0.68],
-    [0, 0, 4, 10]
+    isMobile ? [0, 0, 2, 4] : [0, 0, 4, 10]
   );
 
   const spread = positionSpread ?? 1;
-  
+
   // Mobile-specific adjustment for img-1
-  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
   const adjustedX = (id === 'img-1' && isMobile) ? x - 10 : x;
   
   return (
@@ -201,9 +201,10 @@ function FloatingElement({ type, src, x, y, z, w, h, scrollYProgress, faint = fa
 function HeroText({ scrollYProgress }: { scrollYProgress: MotionValue<number> }) {
   // Move slower: less y movement
   const scale = useTransform(scrollYProgress, [0, 0.4, 0.8], [1, 1.15, 1.5]);
-  // Fade and blur out later
+  // Fade and blur out later - reduced blur for mobile performance
   const opacity = useTransform(scrollYProgress, [0, 0.7, 0.92], [1, 1, 0]);
-  const blur = useTransform(scrollYProgress, [0, 0.7, 0.92], [0, 0, 40]);
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+  const blur = useTransform(scrollYProgress, [0, 0.7, 0.92], isMobile ? [0, 0, 8] : [0, 0, 40]);
   const y = useTransform(scrollYProgress, [0, 1], [0, -32]);
 
   return (
@@ -827,15 +828,16 @@ return (
             ))}
             </div>
             {/* Mobile blur veil — outside 3D perspective container to avoid backdrop-filter plane artifact */}
+            {/* Reduced from 14px to 3px on mobile for performance (desktop doesn't render this element) */}
             {isMobileView && (
               <div
                 style={{
                   position: 'absolute',
                   inset: 0,
                   zIndex: 15,
-                  backdropFilter: 'blur(14px)',
-                  WebkitBackdropFilter: 'blur(14px)',
-                  background: 'rgba(80, 10, 12, 0.5)',
+                  backdropFilter: 'blur(3px)',
+                  WebkitBackdropFilter: 'blur(3px)',
+                  background: 'rgba(80, 10, 12, 0.6)',
                   pointerEvents: 'none',
                 }}
               />
