@@ -5,14 +5,7 @@
 // Non-developers: Simply edit the text between the quotes.
 // Save the file after making changes - no coding knowledge required!
 
-export interface QuoteCardData {
-  name: string
-  quote: string
-  imageUrl: string
-  nameColor: 'white' | 'dark-red' | 'light-red'
-  delay: number
-  animateY: number // Alternating up/down animation
-}
+import { quoteCardsData } from './sections/quotes/quoteCardsData'
 
 export const homeContent = {
   // Hero section: Main animated text (4 lines)
@@ -24,56 +17,7 @@ export const homeContent = {
   },
 
   // Quote cards: Testimonials from supporters
-  quotes: [
-    {
-      name: "ILKKA PAANANEN",
-      quote: "I'm backing Founders House because every serious founder deserves the environment we had in our early days.",
-      imageUrl: "/assets/images/team/ilkka.webp",
-      nameColor: "light-red" as const,
-      delay: 0.1,
-      animateY: 60,
-    },
-    {
-      name: "MARIANNE VIKKULA",
-      quote: "I believe the next Oura, Supercell and Wolt will be built at Founder House. It’s never been a better time to start.",
-      imageUrl: "/assets/images/team/marianne_vikkula.jpg",
-      nameColor: "white" as const,
-      delay: 0.2,
-      animateY: -60,
-    },
-    {
-      name: "TIMO AHOPELTO",
-      quote: "The environment matters more than people realize. Founders House gets this right—it's about surrounding yourself with people who are building the future.",
-      imageUrl: "/assets/images/team/timo.webp",
-      nameColor: "dark-red" as const,
-      delay: 0.3,
-      animateY: 60,
-    },
-    {
-      name: "EERIKA SAVOLAINEN",
-      quote: "To be successful early on, a startup needs energy and excitement to keep moving, and Founders House is something that can really bring that to early-stage teams.",
-      imageUrl: "/assets/images/team/eerika_savolainen.jpeg",
-      nameColor: "white" as const,
-      delay: 0.4,
-      animateY: 60,
-    },
-    {
-      name: "KRISTO OVASKA",
-      quote: "Finland has exceptional talent, but the strongest companies are built when ambitious founders are surrounded by peers who push them forward every single day. Founders House creates that kind of environment",
-      imageUrl: "/assets/images/team/kristo_ovaska.jpeg",
-      nameColor: "dark-red" as const,
-      delay: 0.5,
-      animateY: -60,
-    },
-    {
-      name: "RISTO SIILASMAA",
-      quote: "Founders House has really great quality companies and founders. That’s a really good start for the community that they’re building here",
-      imageUrl: "/assets/images/team/risto_siilasmaa.jpg",
-      nameColor: "light-red" as const,
-      delay: 0.6,
-      animateY: 60,
-    },
-  ] as QuoteCardData[],
+  quotes: quoteCardsData,
 
   // Values sections: Each section has a title and description
   values: {
