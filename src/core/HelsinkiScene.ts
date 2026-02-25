@@ -110,13 +110,17 @@ export class HelsinkiScene {
     this.renderer = createRenderer(config.container)
 
     // Create second renderer for sähkötalo (full color, no greyscale)
+    const isMobile = typeof window !== 'undefined' && window.innerWidth <= 1024;
     this.sahkotaloRenderer = new THREE.WebGLRenderer({
       alpha: true,
-      antialias: true,
+      antialias: !isMobile, // Disable antialias on mobile for performance
       powerPreference: 'high-performance'
     })
-    this.sahkotaloRenderer.setSize(config.container.clientWidth, config.container.clientHeight)
-    this.sahkotaloRenderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
+    // Use window dimensions (not container) to match main renderer and camera aspect ratio
+    this.sahkotaloRenderer.setSize(window.innerWidth, window.innerHeight)
+    // Mobile devices: limit to 1.25x pixel ratio to prevent memory overflow
+    const maxPixelRatio = isMobile ? 1.25 : 2;
+    this.sahkotaloRenderer.setPixelRatio(Math.min(window.devicePixelRatio, maxPixelRatio))
     this.sahkotaloRenderer.domElement.classList.add('sahkotalo-canvas')
     this.sahkotaloRenderer.domElement.style.position = 'absolute'
     this.sahkotaloRenderer.domElement.style.pointerEvents = 'none'
@@ -223,12 +227,15 @@ export class HelsinkiScene {
       this.composer
     )
 
-    // Also resize sähkötalo renderer
-    if (this.sahkotaloRenderer && this.container) {
-      const width = this.container.clientWidth
-      const height = this.container.clientHeight
+    // Also resize sähkötalo renderer - use window dimensions to match main renderer
+    if (this.sahkotaloRenderer) {
+      const width = window.innerWidth
+      const height = window.innerHeight
       this.sahkotaloRenderer.setSize(width, height)
-      this.sahkotaloRenderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
+      // Apply same mobile pixel ratio cap as initial setup to prevent memory pressure on resize/rotation
+      const isMobile = typeof window !== 'undefined' && window.innerWidth <= 1024;
+      const maxPixelRatio = isMobile ? 1.25 : 2;
+      this.sahkotaloRenderer.setPixelRatio(Math.min(window.devicePixelRatio, maxPixelRatio))
     }
   }
 
@@ -1125,7 +1132,9 @@ export class HelsinkiScene {
       // Calculate volume in cubic meters (assuming 1 unit = 1 meter)
       const volume = mapWidth * mapDepth * mapHeight;
       const density = 1 / 5; // 1 particle per 5 cubic meters
-      const count = 1000; // Exactly 1000 particles for balanced effect and performance
+      // Mobile devices can't handle 1000 particles - drastically reduce for mobile
+      const isMobile = typeof window !== 'undefined' && window.innerWidth <= 1024;
+      const count = isMobile ? 150 : 1000; // 150 on mobile, 1000 on desktop
       // Set particle size to 1/2000th of map width
       const size = Math.min(mapWidth, mapDepth) / 2000;
       // console.log('Creating', count, 'particles at', centerX, centerZ, 'size', size);

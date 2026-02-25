@@ -71,17 +71,60 @@ export const POINavigator = ({ onPOISelect, initialPOI = 'FOUNDERS_HOUSE' }: POI
 
   useEffect(() => {
     const updateFanRise = () => {
-      const target = Math.round(window.innerHeight * 0.15)
+      // Use visualViewport for actual visible height (accounts for browser chrome)
+      const viewport = window.visualViewport
+      const visibleHeight = viewport?.height ?? window.innerHeight
+
+      // Account for reserved space (navbar top + POI bottom offset + safe insets)
+      const navbarHeight = 80  // Approximate navbar height
+      const bottomOffsetBase = 56  // Our --poi-mobile-bottom-base default
+
+      // Try to read actual safe-area-inset-bottom from CSS
+      let safeInset = 0
+      try {
+        const computedSafe = getComputedStyle(document.documentElement)
+          .getPropertyValue('--poi-mobile-safe')
+          .trim()
+        if (computedSafe && computedSafe !== '0px') {
+          safeInset = parseInt(computedSafe.replace('px', '')) || 0
+        }
+      } catch (e) {
+        // Fallback: no safe inset
+      }
+
+      const availableHeight = visibleHeight - navbarHeight - bottomOffsetBase - safeInset
+
+      // Calculate target rise as % of available space
+      const target = Math.round(availableHeight * 0.15)
       const minGap = 30
       const minRise = Math.max(0, poiList.length - 1) * minGap
       const desiredRise = Math.max(minRise, target)
-      const clamped = Math.max(120, Math.min(360, desiredRise))
+
+      // Clamp to reasonable bounds, but respect available space
+      const maxAllowedRise = Math.min(360, availableHeight * 0.6)
+      const clamped = Math.max(120, Math.min(maxAllowedRise, desiredRise))
+
       setFanMaxRise(clamped)
     }
 
     updateFanRise()
+
+    // Listen to both window resize AND visualViewport changes
     window.addEventListener('resize', updateFanRise)
-    return () => window.removeEventListener('resize', updateFanRise)
+
+    const viewport = window.visualViewport
+    if (viewport) {
+      viewport.addEventListener('resize', updateFanRise)
+      viewport.addEventListener('scroll', updateFanRise)  // Address bar show/hide
+    }
+
+    return () => {
+      window.removeEventListener('resize', updateFanRise)
+      if (viewport) {
+        viewport.removeEventListener('resize', updateFanRise)
+        viewport.removeEventListener('scroll', updateFanRise)
+      }
+    }
   }, [poiList.length])
 
   // Calculate the selected index for the vector path
@@ -107,6 +150,7 @@ export const POINavigator = ({ onPOISelect, initialPOI = 'FOUNDERS_HOUSE' }: POI
     const x = -(baseX + magnitude * stepX)
     return { x, y }
   }
+  const leadOffset = getFanOffset(fanCenterIndex)
 
   const getInitialX = (index: number): number => {
     if (index === centerIndex) return 0
@@ -197,8 +241,8 @@ export const POINavigator = ({ onPOISelect, initialPOI = 'FOUNDERS_HOUSE' }: POI
             aria-label="Point of interest: Founders House"
             initial={false}
             animate={{
-              x: isMobileMenuOpen ? getFanOffset(foundersHouseIndex).x : leadClosedX,
-              y: isMobileMenuOpen ? getFanOffset(foundersHouseIndex).y : 0
+              x: isMobileMenuOpen ? -24 : leadClosedX,
+              y: isMobileMenuOpen ? leadOffset.y : 0
             }}
             transition={{
               duration: 0.45,
