@@ -48,8 +48,8 @@ const FAINT_BLOCKS = [
 const ELEMENTS = [
   // Images - all square (1:1 aspect ratio), with optional parallax variance
   { id: 'img-1', type: 'image', src: '/assets/images/events/LoadInImage-min.webp', x: -38, y: 8, z: 0.3, w: 220, h: 220, speedX: 40, speedY: 10 },
-  { id: 'img-2', type: 'image', src: '/assets/images/membership/join-process.webp', x: -18, y: -30, z: 0.5, w: 180, h: 180, speedX: 10, speedY: 30 },
-  { id: 'img-3', type: 'image', src: '/assets/images/events/FH_people1.webp', x: 18, y: -34, z: 0.4, w: 210, h: 210 },
+  { id: 'img-2', type: 'image', src: '/assets/images/events/join-process.webp', x: -18, y: -30, z: 0.5, w: 180, h: 180, speedX: 10, speedY: 30 },
+  { id: 'img-3', type: 'image', src: '/assets/images/membership/FH_people1.webp', x: 18, y: -34, z: 0.4, w: 210, h: 210 },
   { id: 'img-4', type: 'image', src: '/assets/images/events/Wave x Maki Photo.webp', x: 35, y: 15, z: 0.6, w: 280, h: 280, speedX: 30, speedY: 5 },
   { id: 'img-5', type: 'image', src: '/assets/images/events/Wave x Maki Photo (2).webp', x: 3, y: 30, z: 0.35, w: 220, h: 220 },
   { id: 'img-6', type: 'image', src: '/assets/images/events/FH_zechen.webp', x: -22, y: 40, z: 0.55, w: 200, h: 200, speedX: 15, speedY: 15 },
