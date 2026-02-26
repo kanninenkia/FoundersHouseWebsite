@@ -18,7 +18,7 @@
 :root {
   --poi-mobile-bottom-base: 1vh;
   --poi-mobile-safe: env(safe-area-inset-bottom, 0px);
-  --poi-mobile-bottom: calc(var(--poi-mobile-bottom-base) + var(--poi-mobile-safe));
+  --poi-mobile-bottom: var(--poi-mobile-safe);
 }
 
 .poi-navigator {

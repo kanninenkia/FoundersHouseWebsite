@@ -68,7 +68,7 @@ export default function AboutPage({ audioRef, audio2Ref }: { audioRef?: React.Mu
   useEffect(() => {
     const timer = setTimeout(() => {
       setShowNavBar(true);
-    }, 6000);
+    }, 3000);
     return () => clearTimeout(timer);
   }, []);
 

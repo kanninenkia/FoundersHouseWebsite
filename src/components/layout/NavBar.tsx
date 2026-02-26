@@ -36,53 +36,66 @@ export const NavBar = ({
   const { navigateWithTransition } = useTransition()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isMuted, setIsMuted] = useState(() => {
-    // Simple check: if audio is playing, it's not muted
-    if (audioRef?.current && !audioRef.current.paused) {
-      return false
-    }
-    
-    // If audio hasn't started yet, check isUserMutedRef
+    // localStorage is the most reliable source — toggleAudio always writes here
+    try {
+      const stored = localStorage.getItem('fh_audio_muted')
+      if (stored !== null) return stored === 'true'
+    } catch {}
+
+    // Fall back to live audio state if available
+    if (audioRef?.current && !audioRef.current.paused) return false
+
+    // Fall back to the global ref
     const isUserMutedRef = (window as any).__isUserMutedRef
-    if (isUserMutedRef !== undefined) {
-      return isUserMutedRef.current
-    }
-    
-    // Default: show as muted if audio not initialized
+    if (isUserMutedRef !== undefined) return isUserMutedRef.current
+
+    // Unknown — assume muted until audio starts
     return true
   })
 
-  // Sync muted state with audio playing state and user mute preference
+  // Sync icon with audio state. Audio may be initialized after mount, so we
+  // poll until the element is ready rather than bailing out early.
   useEffect(() => {
-    const audio = audioRef?.current
-    if (!audio) return
-    
-    const isUserMutedRef = (window as any).__isUserMutedRef
-    
+    let attached = false
+
     const updateMutedState = () => {
-      // If user manually muted, respect that
-      if (isUserMutedRef?.current === true) {
-        setIsMuted(true)
-        return
-      }
-      
-      // Otherwise, check if audio is playing
-      setIsMuted(audio.paused)
+      const audio = audioRef?.current
+      const isUserMutedRef = (window as any).__isUserMutedRef
+
+      // isUserMutedRef is the authoritative manual-mute flag
+      if (isUserMutedRef?.current === true) { setIsMuted(true); return }
+
+      // localStorage as fallback when __isUserMutedRef isn't set up yet
+      // (prevents the interval from flipping the icon back after a gain-only mute)
+      try {
+        const stored = localStorage.getItem('fh_audio_muted')
+        if (stored === 'true') { setIsMuted(true); return }
+      } catch {}
+
+      // Finally, mirror the actual play/pause state
+      if (audio) setIsMuted(audio.paused)
     }
 
-    // Listen to play/pause events for immediate updates
-    audio.addEventListener('play', updateMutedState)
-    audio.addEventListener('pause', updateMutedState)
-    
-    // Check periodically in case state changes
-    const interval = setInterval(updateMutedState, 1000)
-    
-    // Initial check
+    const tryAttach = () => {
+      const audio = audioRef?.current
+      if (!audio || attached) return
+      attached = true
+      audio.addEventListener('play', updateMutedState)
+      audio.addEventListener('pause', updateMutedState)
+    }
+
+    // Try immediately, then keep polling until audio element is ready
+    tryAttach()
     updateMutedState()
+    const interval = setInterval(() => { tryAttach(); updateMutedState() }, 500)
 
     return () => {
-      audio.removeEventListener('play', updateMutedState)
-      audio.removeEventListener('pause', updateMutedState)
       clearInterval(interval)
+      const audio = audioRef?.current
+      if (audio && attached) {
+        audio.removeEventListener('play', updateMutedState)
+        audio.removeEventListener('pause', updateMutedState)
+      }
     }
   }, [audioRef])
 

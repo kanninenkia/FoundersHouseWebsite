@@ -53,10 +53,10 @@ export const LoadingScreen = ({ onComplete, duration, scrollProgress, isReturnVi
   const [loadingImage] = useState(() => {
     const images = [
       '/assets/images/events/LoadInImage-min.webp',
-      '/assets/images/membership/join-process.webp',
+      '/assets/images/events/join-process.webp',
       '/assets/images/events/Wave x Maki Photo (2).webp',
       '/assets/images/events/Wave x Maki Photo.webp',
-      '/assets/images/events/FH_people1.webp',
+      '/assets/images/membership/FH_people1.webp',
       '/assets/images/events/FH_zechen.webp'
     ]
     const randomIndex = Math.floor(Math.random() * images.length)
@@ -511,7 +511,7 @@ export const LoadingScreen = ({ onComplete, duration, scrollProgress, isReturnVi
             className={`loading-logo ${shouldBlurLogo ? 'blur-out' : ''} ${shouldFadeOutForReturn ? 'return-fade-out' : ''}`}
             style={{ height: '76px', width: 'auto' }}
           >
-            <img src="/assets/logos/FH_horizontal_logo.webp" alt="Founders House" style={{ height: '100%', width: 'auto', display: 'block' }} />
+            <img src="/assets/logos/fhlogo_horizontal.png" alt="Founders House" style={{ height: '100%', width: 'auto', display: 'block' }} />
           </div>
         )}
         {showLoadingBar && (

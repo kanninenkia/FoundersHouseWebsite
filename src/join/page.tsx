@@ -39,7 +39,7 @@ export default function JoinPage({ audioRef, audio2Ref }: { audioRef?: React.Mut
     useEffect(() => {
     const timer = setTimeout(() => {
       setShowNavBar(true);
-    }, 6000);
+    }, 3000);
     return () => clearTimeout(timer);
   }, []);
 
