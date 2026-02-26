@@ -8,9 +8,9 @@ import "./pageMobile.css";
 import { Footer, NavBar } from "../components/layout";
 import { aboutContent } from './about-content';
 
-const HEADER_IMG_SRC = "/assets/images/membership/join-process.webp";
+const HEADER_IMG_SRC = "/assets/images/events/join-process.webp";
 const SECTION2_IMG_SRC = "/assets/images/events/Wave x Maki Photo (2).webp";
-const SECTION3_IMG_1_SRC = "/assets/images/events/FH_people1.webp";
+const SECTION3_IMG_1_SRC = "/assets/images/membership/FH_people1.webp";
 const SECTION3_IMG_2_SRC = "/assets/images/events/Wave x Maki Photo.webp";
 const SECTION3_IMG_3_SRC = "/assets/images/events/LoadInImage-min.webp";
 const SECTION4_IMG_SRC = "/assets/images/events/FH_zechen.webp";
@@ -165,7 +165,7 @@ export default function AboutPage({ audioRef, audio2Ref }: { audioRef?: React.Mu
   // Transition from stage 1 to stage 2 after a delay
   useEffect(() => {
     if (stage === 1) {
-      const timer = setTimeout(() => setStage(2), 3000); // 2 seconds for stage 1, then transition
+      const timer = setTimeout(() => setStage(2), 1000); // 2 seconds for stage 1, then transition
       return () => clearTimeout(timer);
     }
   }, [stage]);

@@ -1,4 +1,9 @@
 @media (max-width: 768px) {
+  .poi-navigator-wrapper {
+    position: fixed;
+    bottom: 60vh;
+  }
+
   /* Apply mobile-safe bottom positioning to all POI elements */
   .poi-navigator {
     bottom: var(--poi-mobile-bottom);

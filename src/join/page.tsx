@@ -13,7 +13,7 @@ import { joinContent } from './join-content';
 const HEADER_IMG_SRC = "/assets/images/membership/horses.webp";
 const RESIDENT_SRC = "/assets/images/membership/resident.webp";
 const MEMBER_SRC = "/assets/images/membership/member.webp";
-const PROCESS_SRC = "/assets/images/membership/join-process.webp";
+const PROCESS_SRC = "/assets/images/membership/FH_people1.webp";
 
 export default function JoinPage({ audioRef, audio2Ref }: { audioRef?: React.MutableRefObject<HTMLAudioElement | null>, audio2Ref?: React.MutableRefObject<HTMLAudioElement | null> }) {
   const [stage, setStage] = useState(1);
@@ -89,7 +89,7 @@ export default function JoinPage({ audioRef, audio2Ref }: { audioRef?: React.Mut
   useEffect(() => {
     if (stage === 1) {
       setEnableScrollScale(false);
-      const timer = setTimeout(() => setStage(2), 3000);
+      const timer = setTimeout(() => setStage(2), 1000);
       return () => clearTimeout(timer);
     } else if (stage === 2) {
       // Wait for the transition to finish before enabling scroll-based scale

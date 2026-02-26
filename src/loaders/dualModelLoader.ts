@@ -235,7 +235,7 @@ ${shader.fragmentShader}
                 `#include <color_fragment>
 // Apply grayscale to diffuse color BEFORE fog
 float gray = dot(diffuseColor.rgb, vec3(0.299, 0.587, 0.114));
-diffuseColor.rgb = mix(diffuseColor.rgb, vec3(gray), 0.95);
+diffuseColor.rgb = mix(diffuseColor.rgb, vec3(gray), 0.6);
 // Lower contrast (0.88 = slightly reduced contrast)
 diffuseColor.rgb = (diffuseColor.rgb - 0.5) * 0.88 + 0.5;`
               ).replace(

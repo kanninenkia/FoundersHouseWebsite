@@ -8,7 +8,7 @@ import { NavBar } from '../components/layout';
 import { FullScreenMenu } from '../components/layout';
 import { eventsData } from './hooks/events-data.ts';
 
-const HEADER_IMG_SRC = "/assets/images/events/FH_people1.webp";
+const HEADER_IMG_SRC = "/assets/images/events/join-process.webp";
 
 const removeDuplicatePageCssSheets = () => {
   if (typeof document === "undefined") return false;
@@ -153,7 +153,7 @@ export default function EventsPage({ audioRef, audio2Ref }: { audioRef?: React.M
 
   useEffect(() => {
     if (stage === 1 && fontsReady) {
-      const timer = setTimeout(() => setStage(2), 3000);
+      const timer = setTimeout(() => setStage(2), 1000);
       return () => clearTimeout(timer);
     }
   }, [stage, fontsReady]);
@@ -755,7 +755,7 @@ export default function EventsPage({ audioRef, audio2Ref }: { audioRef?: React.M
                       animate={{ opacity: 1 }}
                       transition={{ delay: 2.6, duration: 1, ease: [0.11, 0.45, 0.08, 1.00] }}
                       >
-                        We host highly curated events, networking opportunities and community building sessions designed to accelerate your startup journey. 
+                        We host highly curated events, networking opportunities and community building sessions designed to accelerate your startup journey. Founding a company is extremely hard, so we support our residents by helping them build and maintain their wellbeing.
                     </motion.h3>
                   </ParallaxMotion>
                 </div>

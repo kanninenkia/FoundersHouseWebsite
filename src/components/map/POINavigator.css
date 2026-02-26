@@ -16,7 +16,7 @@
 
 /* CSS Custom Properties for Mobile Safe Positioning */
 :root {
-  --poi-mobile-bottom-base: 56px;
+  --poi-mobile-bottom-base: 1vh;
   --poi-mobile-safe: env(safe-area-inset-bottom, 0px);
   --poi-mobile-bottom: calc(var(--poi-mobile-bottom-base) + var(--poi-mobile-safe));
 }
