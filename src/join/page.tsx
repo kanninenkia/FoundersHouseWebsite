@@ -115,7 +115,7 @@ export default function JoinPage({ audioRef, audio2Ref }: { audioRef?: React.Mut
         animate={
           stage === 1
             ? { width: "100%", height: "100vh", overflow: "hidden", position: "absolute", top: "10vh", left: "50%", x: "-50%", scale: 0.9, zIndex: 2 }
-            : { width: "100%", height: "100vh", overflow: "hidden", position: "absolute", top: "0", left: "50%", x: "-50%", zIndex: 2, scale: 1 }
+            : { width: "100%", height: "100vh", overflow: "hidden", position: "absolute", top: "0", left: "50%", x: "-50%", scale: 1, zIndex: 5 }
         }
         transition={{ duration: 1.2, ease: [0.32, 0.26, 0, 1] }}
         style={stage === 2 && enableScrollScale ? { scale: stage1ImgScale } : {}}
@@ -214,7 +214,7 @@ export default function JoinPage({ audioRef, audio2Ref }: { audioRef?: React.Mut
             key="stage2"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            style={{ position: "relative", width: "100%", zIndex: 4 }}
+            style={{ position: "relative", width: "100%", zIndex: 2 }}
             className="stage2-wrapper"
           >
 

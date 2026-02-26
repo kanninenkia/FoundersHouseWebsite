@@ -286,7 +286,7 @@
     width: 100vw;
     overflow: hidden;
     padding: 0 0 25% 0;
-    z-index: 5;
+    z-index: 1;
 }
 
 .last-section-bg-container {

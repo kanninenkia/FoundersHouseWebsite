@@ -204,6 +204,16 @@
         height: 220px;
     }
 
+    .section-2 .first-border .button .custom-btn-content {
+        font-size: 1.3rem;
+        line-height: 1.3rem;
+        padding: 0.8rem 1.4em;
+    }
+
+    .section-2 .first-border .button .custom-btn-content .btn-content-inner {
+        height: 20px;
+    }
+
     .last-section {
         padding: 10% 0 55% 0;
         margin-top: 5vh;
@@ -269,6 +279,16 @@
 
     .section-2 .content-wrapper .join-type .type-img-container img {
         height: 200px;
+    }
+
+    .section-2 .first-border .button .custom-btn-content {
+        font-size: 1.3rem;
+        line-height: 1.3rem;
+        padding: 0.8rem 1.4em;
+    }
+
+    .section-2 .first-border .button .custom-btn-content .btn-content-inner {
+        height: 20px;
     }
 
     .last-section-content {
