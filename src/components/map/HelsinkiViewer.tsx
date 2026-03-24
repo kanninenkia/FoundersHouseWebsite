@@ -66,6 +66,7 @@ export const HelsinkiViewer = ({
   const [showUIState, setShowUIState] = useState(false)
   const fadeTimers = useRef<{ hero?: NodeJS.Timeout; ui?: NodeJS.Timeout }>({})
   const [isCameraFlying, setIsCameraFlying] = useState(false)
+  const [isHeroFadingOut, setIsHeroFadingOut] = useState(false)
   const [showNavBar, setShowNavBar] = useState(false)
   const [showCustomCursor, setShowCustomCursor] = useState(false)
     // Track animation paused state
@@ -125,6 +126,8 @@ export const HelsinkiViewer = ({
       navigateWithTransition('/home')
       setIsTransitionActive(false)
     }
+
+    setIsHeroFadingOut(true)
 
     if (sceneRef.current && !isMobile) {
       // Desktop: play 3D camera zoom into Founders House, then navigate
@@ -578,8 +581,8 @@ export const HelsinkiViewer = ({
       <div
         className="hero-text-container"
         style={{
-          opacity: showHeroText ? heroTextOpacity : 0,
-          transition: 'opacity 0.4s ease-out',
+          opacity: isHeroFadingOut ? 0 : (showHeroText ? heroTextOpacity : 0),
+          transition: isHeroFadingOut ? 'opacity 1s ease-out' : 'opacity 0.4s ease-out',
           pointerEvents: 'none',
         }}
       >

@@ -248,30 +248,6 @@ export const SWAPPIE_POI: PointOfInterest = {
 }
 
 /**
- * Linear
- */
-export const LINEAR_POI: PointOfInterest = {
-  id: 'linear',
-  name: 'Linear',
-  description: 'Fast issue tracking and project management for high-performing teams',
-  website: 'https://linear.app',
-  mapCoords: {
-    x: 163.29,
-    y: 289.33
-  },
-  worldCoords: {
-    x: 163.29,
-    y: -36.12,
-    z: -289.33
-  },
-  cameraView: {
-    distance: 450,
-    azimuth: 90,
-    elevation: 30
-  }
-}
-
-/**
  * Smartly
  */
 export const SMARTLY_POI: PointOfInterest = {
@@ -329,9 +305,8 @@ export const POINTS_OF_INTEREST: Record<string, PointOfInterest> = {
   AIVEN: AIVEN_POI,
   SUPERCELL: SUPERCELL_POI,
   WOLT: WOLT_POI,
-  OURA: OURA_POI,
   FOUNDERS_HOUSE: FOUNDERS_HOUSE_POI,
-  LINEAR: LINEAR_POI,
+  OURA: OURA_POI,
   SILO: SILO_POI,
   SWAPPIE: SWAPPIE_POI,
   SMARTLY: SMARTLY_POI,

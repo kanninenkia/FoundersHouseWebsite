@@ -36,7 +36,6 @@ export class AutoTourManager {
       'FOUNDERS_HOUSE',
       'VARJO',
       'OURA',
-      'LINEAR',
       'DISTANCE',
       'SWARMIA',
     ]

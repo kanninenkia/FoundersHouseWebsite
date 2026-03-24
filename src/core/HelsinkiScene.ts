@@ -544,7 +544,7 @@ export class HelsinkiScene {
     const effectiveThreshold = isLookingAtFoundersHouse ? 20 : (allowImmediateCenter ? 30 : threshold)
     const isEffectivelyInCenter = radialDistance <= effectiveThreshold
 
-    // Hide hero text when viewing other POIs (when suppressAutoCentering is true, we're at Silo/Linear)
+    // Hide hero text when viewing other POIs (when suppressAutoCentering is true, we're at Silo)
     // BUT show text when at Founders House initial position
     const opacity = (isEffectivelyInCenter && !this.suppressAutoCentering) || this.isAtFoundersHouseInitialPosition ? 1 : 0
     // Only call callback if opacity changed to avoid triggering React re-renders every frame
@@ -834,13 +834,13 @@ export class HelsinkiScene {
 
     // Suppress auto-centering when focusing nearby POIs to avoid recentering FH.
     // CRITICAL: For FOUNDERS_HOUSE, use special flag to show text but suppress drift
-    // For SILO/LINEAR, suppress to hide text
+    // For SILO, suppress to hide text
     if (poiName === 'FOUNDERS_HOUSE') {
       this.suppressAutoCentering = false  // Don't suppress text visibility
       this.isAtFoundersHouseInitialPosition = true  // But suppress drift
       // Camera animation places it at exact initial position - no drift needed
     } else {
-      this.suppressAutoCentering = poiName === 'SILO' || poiName === 'LINEAR'
+      this.suppressAutoCentering = poiName === 'SILO'
       this.isAtFoundersHouseInitialPosition = false
     }
 

@@ -115,7 +115,7 @@
 
 .poi-list {
   display: grid;
-  grid-template-columns: repeat(11, auto);
+  grid-template-columns: repeat(10, auto);
   justify-content: center;
   align-items: center;
   padding: 0 2rem;
@@ -169,7 +169,7 @@
 /* Removed - POI items now appear clean above global noise overlay */
 
 /* Make FOUNDERS HOUSE visually prominent */
-.poi-item:nth-child(6) {
+.poi-item:nth-child(5) {
   font-size: 1rem;
   font-weight: 600;
   padding: 0.5rem 1.5rem;

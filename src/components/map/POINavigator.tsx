@@ -11,7 +11,7 @@ interface POINavigatorProps {
 
 export const POINavigator = ({ onPOISelect, initialPOI = 'FOUNDERS_HOUSE' }: POINavigatorProps) => {
   const [selectedPOI, setSelectedPOI] = useState<string>(initialPOI)
-  const [focusedIndex, setFocusedIndex] = useState(5)
+  const [focusedIndex, setFocusedIndex] = useState(4)
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null)
   const [isInitialAnimationComplete, setIsInitialAnimationComplete] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
@@ -130,8 +130,8 @@ export const POINavigator = ({ onPOISelect, initialPOI = 'FOUNDERS_HOUSE' }: POI
   // Calculate the selected index for the vector path
   const selectedIndex = poiList.findIndex(poi => poi.key === selectedPOI)
 
-  // Calculate expansion offset from center (Founders House is center at index 5)
-  const centerIndex = 5 // FOUNDERS_HOUSE position
+  // Calculate expansion offset from center (Founders House is center at index 4)
+  const centerIndex = 4 // FOUNDERS_HOUSE position
   const fanCenterIndex = Math.floor(poiList.length / 2)
   const foundersHouseIndex = poiList.findIndex((poi) => poi.key === 'FOUNDERS_HOUSE')
   const leadClosedX = 0
