@@ -62,12 +62,12 @@ function AppContent() {
   const pageMetaRef = useRef<Record<string, PageMetaConfig>>({
     '/': {
       title: 'Founders House — Helsinki',
-      description: 'Built for the obsessed. Built for the exceptional. A premium community space in Helsinki for ambitious founders.',
+      description: "Built for the obsessed, built for the exceptional. This is where the next generation of Founders are born. Finland's GDP Growth starts here.",
       path: '/'
     },
     '/home': {
       title: 'Home — Founders House',
-      description: 'Founders House in Helsinki — built for the obsessed, built for the exceptional.',
+      description: 'Learn about why we exist, who we are, and how to join the next generation of founders.',
       path: '/'
     },
     '/about': {
@@ -77,7 +77,7 @@ function AppContent() {
     },
     '/join': {
       title: 'Join — Founders House',
-      description: 'Apply to become part of Founders House — a premium community space for ambitious founders in Helsinki.',
+      description: 'Apply to become part of Founders House — the community for ambitious and exceptional founders in Helsinki.',
       path: '/join'
     },
     '/events': {
