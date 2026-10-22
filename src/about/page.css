@@ -422,9 +422,8 @@
 }
 
 .last-section .team-text-wrapper {
-    position: absolute;
+    position: relative;
     z-index: 15;
-    top: 5%;
 }
 
 .last-section .team-text-wrapper .text-wrapper-h3 {
