@@ -48,7 +48,7 @@ export const aboutContent = {
       {
         id: "kia",
         name: "Kia Kanninen",
-        tagline: "Operational Lead",
+        tagline: "CEO",
         email: "kia@founders-house.fi",
         linkedin: "https://www.linkedin.com/in/kiakanninen/",
         image: "assets/images/team/kia2.0.jpg",
