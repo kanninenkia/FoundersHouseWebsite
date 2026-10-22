@@ -16,14 +16,13 @@ const SECTION3_IMG_3_SRC = "/assets/images/events/LoadInImage-min.webp";
 const SECTION4_IMG_SRC = "/assets/images/events/FH_zechen.webp";
 const SECTION5_MAP_IMG_SRC = "/assets/models/birdseyemaps.webp";
 const SECTION5_MAP_TOP_IMG_SRC = "/assets/models/radar.webp";
-const FOUNDERS_HOUSE_TEAM_IMG_SRC = "/assets/images/team/Founders House BW.webp";
 
 // Profile images for preloading
 const PROFILE_IMAGES = [
-  "/assets/images/team/camilla.webp",
-  "/assets/images/team/kia.webp",
-  "/assets/images/team/niklas.webp",
-  "/assets/images/team/johannes.webp",
+  "/assets/images/team/kia2.0.jpg",
+  "/assets/images/team/lenni.webp",
+  "/assets/images/team/arttu.webp",
+  "/assets/images/team/lasse.webp",
   "/assets/images/team/robin.webp"
 ];
 
@@ -493,31 +492,6 @@ export default function AboutPage() {
             </motion.div>
 
             <motion.div className="last-section">
-              <div className="team-img-wrapper">
-                <ParallaxMotion speedX={15} speedY={15} easing={[0.17, 0.67, 0.3, 0.99]}>
-                  <div className="team-img-container">
-                    
-                    
-                    <img src={FOUNDERS_HOUSE_TEAM_IMG_SRC} alt="Founders House Team" />
-                    
-                    {/*
-                    <GridDistortion
-                      imageSrc={FOUNDERS_HOUSE_TEAM_IMG_SRC}
-                      grid={20}
-                      mouse={0.25}
-                      strength={0.01}
-                      relaxation={0.95}
-                      className="team-distortion-img"
-                    />
-                    */}
-                  </div>
-                </ParallaxMotion>
-              </div>
-              <motion.div className="floating-red-border-wrapper">
-                <ParallaxMotion speedX={40} speedY={20} easing={[0.17, 0.67, 0.3, 0.99]}>
-                  <div className="floating-red-border"></div>
-                </ParallaxMotion>
-              </motion.div>
               <div className="team-text-wrapper">
                 <ParallaxMotion speedX={25} speedY={25} delay={10} easing={[0.17, 0.67, 0.3, 0.99]}>
                   <div style={{ position: 'relative', display: 'inline-block', overflow: 'hidden' }}>
